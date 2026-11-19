@@ -55,6 +55,13 @@ kbd{font-family:inherit;font-size:11px;padding:1px 6px;border-radius:5px;border:
 .menu button:hover{background:var(--hover)}
 .menu button small{display:block;color:var(--dim);font-size:12px;margin-top:2px}
 .only-m{display:none!important}
+.ttw{display:flex;align-items:center;gap:11px;min-width:0}.ttx{min-width:0}
+.art{position:relative;flex:none;width:36px;height:36px;border-radius:8px;background:linear-gradient(135deg,#2a2825,#1b1a18);overflow:hidden;display:grid;place-items:center}
+.art svg{width:16px;height:16px;fill:none;stroke:#4a463f;stroke-width:1.6}
+.art img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .25s}.art img.on{opacity:1}
+.art.big{width:52px;height:52px;border-radius:10px}.art.big svg{width:22px;height:22px}
+.edt{font-size:9px;color:var(--warn);margin-left:6px;vertical-align:middle}
+
 .tools{display:contents}
 /* sidebar */
 aside{grid-area:side;border-right:1px solid var(--line);overflow:auto;padding:14px 10px;background:var(--night)}
@@ -336,7 +343,7 @@ ol.guide b{color:var(--bone)}
   <div class="grab"></div><button class="btn ghost icon dclose" id="dClose" aria-label="Details schließen"><svg class="i" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
   <div class="dh">
     <button class="btn icon" id="btnPlay" title="Abspielen / Stopp (Leertaste)" aria-label="Abspielen oder stoppen"><svg class="i" viewBox="0 0 24 24" id="playIco"><path d="M8 5.5v13l11-6.5z"/></svg></button>
-    <div style="min-width:0"><div class="tn" id="dTitle"></div><div class="ta" id="dArtist"></div></div>
+    <div id="dArt"></div><div style="min-width:0"><div class="tn" id="dTitle"></div><div class="ta" id="dArtist"></div></div>
     <div class="facts" id="dFacts"></div>
     <div class="spacer"></div>
     <div class="jumps" id="dJumps"></div>
@@ -461,20 +468,21 @@ const RB={
     const named=(type,idOfs,nameOf)=>{const m=new Map();for(const o of RB.rows(dv,type)){try{m.set(dv.getUint32(o+idOfs,true),nameOf(o))}catch(e){}}return m};
     const artists=named(2,4,o=>{const st=dv.getUint16(o,true);return S_(o+(st===0x64?dv.getUint16(o+0x0a,true):dv.getUint8(o+9)))});
     const albums=named(3,12,o=>{const st=dv.getUint16(o,true);return S_(o+(st===0x84?dv.getUint16(o+0x16,true):dv.getUint8(o+0x15)))});
-    const genres=named(1,0,o=>S_(o+4)),keys=named(5,0,o=>S_(o+8));
+    const genres=named(1,0,o=>S_(o+4)),keys=named(5,0,o=>S_(o+8)),arts=named(13,0,o=>S_(o+4));
     const tracks=[];
     for(const o of RB.rows(dv,0)){try{const u4=x=>dv.getUint32(o+x,true),u2=x=>dv.getUint16(o+x,true),s=i=>S_(o+u2(0x5e+2*i));
-      tracks.push({id:u4(0x48),sr:u4(0x08),size:u4(0x10),key:keys.get(u4(0x20))||'',bitrate:u4(0x30),bpm:u4(0x38)/100,genre:genres.get(u4(0x3c))||'',album:albums.get(u4(0x40))||'',
+      tracks.push({art:arts.get(u4(0x1c))||'',id:u4(0x48),sr:u4(0x08),size:u4(0x10),key:keys.get(u4(0x20))||'',bitrate:u4(0x30),bpm:u4(0x38)/100,genre:genres.get(u4(0x3c))||'',album:albums.get(u4(0x40))||'',
         artist:artists.get(u4(0x44))||'',dur:u2(0x54),rating:dv.getUint8(o+0x59),anlz:s(14),comment:s(16),title:s(17),file:s(19),path:s(20)})}catch(e){}}
     const tree=RB.rows(dv,7).map(o=>({parent:dv.getUint32(o,true),sort:dv.getUint32(o+8,true),id:dv.getUint32(o+12,true),folder:dv.getUint32(o+16,true)!==0,name:S_(o+20)}));
     const entries=RB.rows(dv,8).map(o=>({idx:dv.getUint32(o,true),track:dv.getUint32(o+4,true),pl:dv.getUint32(o+8,true)}));
     return{tracks,tree,entries}},
   anlz(buf){
     const dv=new DataView(buf);const id=o=>String.fromCharCode(dv.getUint8(o),dv.getUint8(o+1),dv.getUint8(o+2),dv.getUint8(o+3));
-    if(dv.byteLength<28||id(0)!=='PMAI')return{beats:[],cob:[],co2:[]};
-    let p=dv.getUint32(4);const beats=[],cob=[],co2=[];let guard=0;
+    if(dv.byteLength<28||id(0)!=='PMAI')return{beats:[],cob:[],co2:[],pv:[]};
+    let p=dv.getUint32(4);const beats=[],cob=[],co2=[],pv=[];let guard=0;
     while(p+12<=dv.byteLength&&guard++<1000){const tag=id(p),lh=dv.getUint32(p+4),lt=dv.getUint32(p+8);if(lt<12||p+lt>dv.byteLength)break;
-      if(tag==='PQTZ'){const n=dv.getUint32(p+20);for(let i=0;i<n;i++){const b=p+24+i*8;if(b+8>p+lt)break;beats.push({n:dv.getUint16(b),bpm:dv.getUint16(b+2)/100,t:dv.getUint32(b+4)/1000})}}
+      if(tag==='PWAV'){const n=dv.getUint32(p+12);const o=p+lh;const out=[];for(let i=0;i<n&&o+i<p+lt;i++)out.push(dv.getUint8(o+i)&0x1f);for(let i=0;i<out.length;i+=4)pv.push(Math.max(...out.slice(i,i+4)))}
+      else if(tag==='PQTZ'){const n=dv.getUint32(p+20);for(let i=0;i<n;i++){const b=p+24+i*8;if(b+8>p+lt)break;beats.push({n:dv.getUint16(b),bpm:dv.getUint16(b+2)/100,t:dv.getUint32(b+4)/1000})}}
       else if(tag==='PCOB'){const hot=dv.getUint32(p+12)===1;let q=p+lh;
         while(q+40<=p+lt&&id(q)==='PCPT'){const ql=dv.getUint32(q+8)||56;const st=dv.getUint32(q+16),hc=dv.getUint32(q+12),ty=dv.getUint8(q+28),tm=dv.getUint32(q+32),lt2=dv.getUint32(q+36);
           if(st!==0)cob.push({num:hot?hc-1:-1,type:ty===2?4:0,start:tm/1000,end:ty===2&&lt2!==0xffffffff?lt2/1000:null,name:''});q+=ql}}
@@ -482,7 +490,7 @@ const RB={
         while(q+28<=p+lt&&id(q)==='PCP2'){const ql=dv.getUint32(q+8)||0x90;const hc=dv.getUint32(q+12),ty=dv.getUint8(q+16),tm=dv.getUint32(q+20),lt2=dv.getUint32(q+24);
           co2.push({num:hc?hc-1:-1,type:ty===2?4:0,start:tm/1000,end:ty===2&&lt2!==0xffffffff?lt2/1000:null,name:''});q+=ql}}
       p+=lt}
-    return{beats,cob,co2}}
+    return{beats,cob,co2,pv}}
 };
 async function loadUsb(files){
   const pdbF=files.find(f=>/(^|\/)PIONEER\/rekordbox\/export\.pdb$/i.test(relOf(f)));
@@ -502,7 +510,8 @@ async function loadUsb(files){
     const dat=get(r.anlz),ext=r.anlz?get(r.anlz.replace(/\.DAT$/i,'.EXT')):null;
     try{if(dat){const a=RB.anlz(await dat.arrayBuffer());let co2=[];if(ext){co2=RB.anlz(await ext.arrayBuffer()).co2}
       const tem=[];let prev=null;for(const b of a.beats){if(prev===null||Math.abs(b.bpm-prev)>0.005){tem.push({t:b.t,bpm:b.bpm,beat:b.n||1});prev=b.bpm}}
-      t.tempos=tem;t.marks=co2.length?co2:a.cob}}catch(e){}
+      t.tempos=tem;t.marks=co2.length?co2:a.cob;if(a.pv.length)t.pwav=a.pv}}catch(e){}
+    if(r.art)t.artFile=get(r.art)||null;
     t.file=get(r.path)||null;
     state.tracks.set(t.id,t);state.order.push(t.id);if(++i%60===0)await sleep(0);
   }
@@ -515,11 +524,33 @@ async function loadUsb(files){
   addFiles(files,true);
   afterLoad();
 }
+const META=[['title','Titel'],['artist','Artist'],['album','Album'],['genre','Genre'],['keyRaw','Key'],['comments','Kommentar']];
+function applyMeta(t){if(!t.orig)t.orig=Object.fromEntries(META.map(([k])=>[k,t[k]]));const me=(t.manual&&t.manual.meta)||{};for(const[k]of META)t[k]=me[k]!=null?me[k]:t.orig[k];
+  t.key=parseKey(t.keyRaw);t.cam=t.key?t.key.n+t.key.l:'';t.keyName=t.key?(CAM2KEY[t.cam]||t.keyRaw):t.keyRaw}
+const hasMeta=t=>!!(t.manual&&t.manual.meta&&Object.keys(t.manual.meta).length);
+/* artwork: rekordbox stick artwork, else embedded MP3 cover (ID3 APIC) */
+const ART=new Map(),ARTQ=new Set();let artBusy=0;
+const ssz=(u,o)=>(u[o]&0x7f)<<21|(u[o+1]&0x7f)<<14|(u[o+2]&0x7f)<<7|(u[o+3]&0x7f);
+function readApic(u){if(!(u[0]===0x49&&u[1]===0x44&&u[2]===0x33))return null;const ver=u[3],size=ssz(u,6);let p=10;if(u[5]&0x40)p+=ver===4?ssz(u,10):4+((u[10]<<24|u[11]<<16|u[12]<<8|u[13])>>>0);
+  while(p+10<=Math.min(u.length,10+size)){const id=String.fromCharCode(u[p],u[p+1],u[p+2],u[p+3]);if(!/^[A-Z0-9]{4}$/.test(id))break;const fs=ver===4?ssz(u,p+4):((u[p+4]<<24|u[p+5]<<16|u[p+6]<<8|u[p+7])>>>0);
+    if(fs<=0)break;
+    if(id==='APIC'&&p+10+fs<=u.length){let q=p+10;const end=p+10+fs,enc=u[q++];let m='';while(q<end&&u[q])m+=String.fromCharCode(u[q++]);q+=2;
+      if(enc===1||enc===2){while(q+1<end&&!(u[q]===0&&u[q+1]===0))q+=2;q+=2}else{while(q<end&&u[q])q++;q++}
+      if(q<end)return new Blob([u.slice(q,end)],{type:/png/i.test(m)?'image/png':'image/jpeg'})}
+    p+=10+fs}return null}
+async function loadArt(t){
+  if(ART.has(t.id))return ART.get(t.id);let url=null;
+  try{if(t.artFile)url=URL.createObjectURL(t.artFile);
+    else if(t.file&&/\.mp3$/i.test(t.file.name)){const h=new Uint8Array(await t.file.slice(0,10).arrayBuffer());if(h[0]===0x49&&h[1]===0x44&&h[2]===0x33){const sz=10+ssz(h,6);if(sz<6e6){const b=readApic(new Uint8Array(await t.file.slice(0,sz).arrayBuffer()));if(b)url=URL.createObjectURL(b)}}}}catch(e){}
+  ART.set(t.id,url);return url}
+function pumpArt(){while(artBusy<4&&ARTQ.size){const id=ARTQ.values().next().value;ARTQ.delete(id);const t=state.tracks.get(id);if(!t)continue;artBusy++;
+  loadArt(t).then(url=>{artBusy--;for(const img of $$(`img[data-art="${CSS.escape(id)}"]`)){if(url){img.src=url;img.classList.add('on')}}pumpArt()})}}
+function artTag(t,cls){const u=ART.get(t.id);if(u===undefined&&(t.artFile||t.file))ARTQ.add(t.id);return`<span class="art ${cls||''}">${u?`<img class="on" src="${u}" alt="">`:`<img data-art="${esc(t.id)}" alt="">`}<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="2"/></svg></span>`}
 async function afterLoad(){
   state.cur=state.playlists.length?0:-1;state.sel.clear();state.focus=null;
   if(state.source==='xml')matchFiles();
   const[an,mn]=await Promise.all([IDB.all('analysis'),IDB.all('manual')]);let n=0;
-  for(const t of state.tracks.values()){const m=mn.get(mKey(t));if(m)t.manual=m;const a=an.get(aKey(t));if(a&&a.v===ALG_V){t.analysis=a;t.status='done';n++}}
+  for(const t of state.tracks.values()){const m=mn.get(mKey(t));if(m){t.manual=m;applyMeta(t)}const a=an.get(aKey(t));if(a&&a.v===ALG_V){t.analysis=a;t.status='done';n++}}
   renderAll();
   const nf=[...state.tracks.values()].filter(t=>!t.tempos.length).length;
   toast(`${state.tracks.size} Tracks · ${state.playlists.length} Playlists geladen${n?` · ${n} frühere Analysen wiederhergestellt`:''}${nf?` · ${nf} ohne Beatgrid`:''}`);
@@ -689,7 +720,7 @@ function stars(t){return t.manual&&t.manual.E?t.manual.E:autoStars(t)}
 const HIST=[];
 function snap(t){HIST.push({id:t.id,m:t.manual?JSON.parse(JSON.stringify(t.manual)):null});if(HIST.length>300)HIST.shift()}
 function setManual(t,patch,noSnap){if(!noSnap)snap(t);t.manual=Object.assign({},t.manual||{},patch);for(const k in t.manual)if(t.manual[k]==null)delete t.manual[k];if(!Object.keys(t.manual).length)t.manual=null;IDB.put('manual',mKey(t),t.manual);refreshTrack(t)}
-function undo(){const h=HIST.pop();if(!h){toast('Nichts zum Rückgängigmachen');return}const t=state.tracks.get(h.id);if(!t)return;t.manual=h.m;IDB.put('manual',mKey(t),t.manual);if(state.focus!==t.id){state.focus=t.id;state.sel=new Set([t.id])}refreshTrack(t);toast('Rückgängig: '+t.title)}
+function undo(){const h=HIST.pop();if(!h){toast('Nichts zum Rückgängigmachen');return}const t=state.tracks.get(h.id);if(!t)return;t.manual=h.m;IDB.put('manual',mKey(t),t.manual);applyMeta(t);if(state.focus!==t.id){state.focus=t.id;state.sel=new Set([t.id])}refreshTrack(t);toast('Rückgängig: '+t.title)}
 function refreshTrack(t){relCache=null;updateRow(t);if(t.id===state.focus)renderDetail();renderBar()}
 
 /* ================= quality / status ================= */
@@ -757,14 +788,15 @@ function rowHtml(t,pos){
   const a=t.analysis,s=stars(t),ct=a?computeCues(t):null;
   const cb=k=>{if(!ct)return`<span class="cb ${k}">${k}</span>`;const st=slotState(t,k);return`<span class="cb ${k} ${st==='kept'?'kept':'on'}" title="${k==='L'?'Exit Loop':CUE[k].name}${st==='kept'?' – vorhandener Cue bleibt':st==='repl'?' – ersetzt vorhandenen':''}">${k}</span>`};
   const cls=['r',state.sel.has(t.id)?'sel':'',state.focus===t.id?'focus':''].join(' ');
-  return`<tr data-id="${esc(t.id)}" class="${cls}"><td class="num">${pos}</td><td class="tt" title="${esc(t.path)}"><div class="ti">${esc(t.title)}</div><div class="ar">${esc(t.artist)||'&nbsp;'}</div></td>
+  return`<tr data-id="${esc(t.id)}" class="${cls}"><td class="num">${pos}</td><td class="tt" title="${esc(t.path)}"><div class="ttw">${artTag(t)}<div class="ttx"><div class="ti">${esc(t.title)}${hasMeta(t)?'<span class="edt" title="Infos bearbeitet">●</span>':''}</div><div class="ar">${esc(t.artist)||'&nbsp;'}</div></div></div></td>
   <td class="r">${t.bpm?t.bpm.toFixed(1):'–'}</td>
   <td>${t.key?`<span class="kc" style="--h:${(t.key.n-1)*30}">${t.cam}</span><span class="kn">${esc(t.keyName)}</span>`:`<span class="kn">${esc(t.keyRaw)||'–'}</span>`}</td>
   <td>${a?`<span class="meter" data-s="${s}"><i></i><i></i><i></i><i></i><i></i></span>${t.manual&&t.manual.E?'<span class="man" title="manuell gesetzt">●</span>':''}<span class="esc">${a.score}</span>`:'<span class="meter"><i></i><i></i><i></i><i></i><i></i></span>'}</td>
   <td class="r lu">${a?a.lufs.toFixed(1):'–'}</td><td class="r">${gainCell(t)}</td><td class="r lu">${t.kbps?`<span class="kb ${t.kbps<128?'bad':t.kbps<160?'mid':''}">${t.kbps}</span>`:'–'}</td><td class="r du">${fmtT(t.dur)}</td>
   <td><span class="cues">${['A','F','G','L'].map(cb).join('')}</span></td>
-  <td class="sp">${a?spark(t,ct):''}</td><td>${STI[statusOf(t)]}${ct&&ct.ok?' <span class="st ok" title="von dir bestätigt">✓</span>':''}</td></tr>`;
+  <td class="sp">${a?spark(t,ct):t.pwav?pspark(t):''}</td><td>${STI[statusOf(t)]}${ct&&ct.ok?' <span class="st ok" title="von dir bestätigt">✓</span>':''}</td></tr>`;
 }
+function pspark(t){const v=t.pwav,W=120,H=22,n=v.length;let d='M0 '+H;for(let i=0;i<n;i++)d+=` L${(i/n*W).toFixed(1)} ${(H-1-v[i]/31*(H-3)).toFixed(1)}`;d+=` L${W} ${H}Z`;return`<svg class="spark" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" aria-hidden="true"><title>Vorschau aus rekordbox – noch nicht analysiert</title><path d="${d}" fill="#736D63" opacity=".55"/></svg>`}
 function spark(t,c){
   const a=t.analysis,W=120,H=22,n=a.rms.length;if(n<2)return'';const top=pct(a.rms,0.95),lo=top-24;const x=i=>i/n*W,y=v=>H-1-clamp((v-lo)/24)*(H-3);
   let d='M0 '+H;for(let i=0;i<n;i++)d+=` L${x(i).toFixed(1)} ${y(a.rms[i]).toFixed(1)} L${x(i+1).toFixed(1)} ${y(a.rms[i]).toFixed(1)}`;d+=` L${W} ${H}Z`;
@@ -792,7 +824,7 @@ function renderRows(){
   let h=top?`<tr class="sp"><td colspan="12" style="height:${top*ROWH}px"></td></tr>`:'';
   for(let i=top;i<end;i++){const id=state.view[i];h+=rowHtml(state.tracks.get(id),state.idxOf.get(id)+1)}
   if(end<n)h+=`<tr class="sp"><td colspan="12" style="height:${(n-end)*ROWH}px"></td></tr>`;
-  tb.innerHTML=h;state.rendered=[top,end];
+  tb.innerHTML=h;state.rendered=[top,end];pumpArt();
 }
 function updateRow(t){const tr=$(`tr[data-id="${CSS.escape(t.id)}"]`);if(!tr)return;const tmp=document.createElement('tbody');tmp.innerHTML=rowHtml(t,(state.idxOf.get(t.id)??0)+1);tr.replaceWith(tmp.firstElementChild)}
 function updateSel(){for(const tr of $$('#main tbody tr.r')){const id=tr.dataset.id;tr.classList.toggle('sel',state.sel.has(id));tr.classList.toggle('focus',state.focus===id)}renderTop()}
@@ -802,7 +834,7 @@ function scrollToId(id){rowDims();const i=state.view.indexOf(id);if(i<0)return;c
 const TL={drag:null,hover:-1,sel:'G'};
 function renderDetail(){
   const d=$('#detail'),t=state.focus&&state.tracks.get(state.focus);if(!t){d.classList.add('hidden');return}d.classList.remove('hidden');
-  $('#dTitle').textContent=t.title;$('#dArtist').textContent=t.artist;const a=t.analysis,ct=a?cueTimes(t):null;
+  $('#dTitle').textContent=t.title;$('#dArtist').textContent=t.artist;$('#dArt').innerHTML=artTag(t,'big');pumpArt();const a=t.analysis,ct=a?cueTimes(t):null;
   const es=stars(t);
   $('#dFacts').innerHTML=`<span><b>${t.bpm?t.bpm.toFixed(1):'–'}</b> BPM</span><span>${t.key?`<span class="kc" style="--h:${(t.key.n-1)*30}">${t.cam}</span>`:'–'} ${esc(t.keyName||'')}</span>`
     +(a?`<span title="Klick auf die Balken = eigene Bewertung">Energie <span class="estars">${[1,2,3,4,5].map(i=>`<button data-e="${i}" class="${i<=es?'on':''}" aria-label="Energie ${i}"></button>`).join('')}</span> <b>${es}</b>${t.manual&&t.manual.E?` <button class="lnk" data-e="0">auto ${autoStars(t)}</button>`:''}</span><span><b>${a.lufs.toFixed(1)}</b> LUFS</span><span>Gain ${gainCell(t)}</span>`:'')
@@ -812,6 +844,7 @@ function renderDetail(){
   if(ct&&!ct.c.ok&&(ct.c.conf!=='high'||ct.c.flags.length))acts+=`<button class="btn sm okb" data-act="confirm" title="Cues geprüft und ok (C)">✓ Bestätigen</button>`;
   if(ct&&ct.c.ok)acts+=`<button class="btn sm ghost" data-act="unconfirm" title="Bestätigung zurücknehmen">Bestätigt ✓</button>`;
   if(ct&&ct.c.manual)acts+=`<button class="btn sm ghost" data-act="reset" title="Cues auf Automatik zurücksetzen (R)">Auto</button>`;
+  acts+=`<button class="btn sm ghost" data-act="edit" title="Titel, Artist, Key usw. bearbeiten">Infos bearbeiten</button>`;
   if(t.file&&(a||t.status==='error'))acts+=`<button class="btn sm ghost" data-act="reanalyze">${t.status==='error'?'Erneut versuchen':'Neu analysieren'}</button>`;
   $('#dActs').innerHTML=acts;
   let foot='';
@@ -830,6 +863,8 @@ function drawTL(){
   const g=tlGeom(),{cv,w,h,t,a,x}=g;if(!t||!w)return;const dpr=window.devicePixelRatio||1;
   if(cv.width!==Math.round(w*dpr)||cv.height!==Math.round(h*dpr)){cv.width=Math.round(w*dpr);cv.height=Math.round(h*dpr)}
   const c=cv.getContext('2d');c.setTransform(dpr,0,0,dpr,0,0);c.clearRect(0,0,w,h);const F='"Space Grotesk",sans-serif';
+  if(!a&&t.pwav){const v=t.pwav,n=v.length,mid=h*0.6;for(let i=0;i<n;i++){const X=i/n*w,bw=Math.max(1,w/n-0.8),hh=v[i]/31*(mid-14);c.fillStyle='rgba(115,109,99,.55)';c.fillRect(X,mid-hh,bw,hh);c.fillStyle='rgba(115,109,99,.28)';c.fillRect(X,mid+1,bw,hh*0.45)}
+    c.fillStyle='#ABA499';c.font=`12px ${F}`;c.fillText('Vorschau aus rekordbox – analysieren für Cues und Energie',12,18);return}
   if(!a){c.fillStyle='#736D63';c.font=`13px ${F}`;c.fillText(t.status==='error'?'Analyse fehlgeschlagen':t.file?'Noch keine Analyse – Enter drücken':'Keine Audiodatei verbunden',14,h/2+4);return}
   const ct=cueTimes(t),cc=ct.c,n=a.rms.length,TOP=24,BOT=h-14,mid=TOP+(BOT-TOP)*0.62,up=mid-TOP-2,dn=BOT-mid-2;
   const rT=pct(a.rms,0.97),lT=pct(a.low,0.97),m9=pct(a.mid,0.9),nv=(v,top)=>clamp((v-(top-30))/30);
@@ -904,6 +939,7 @@ function buildTrackEl(doc,t,plan,locOverride){
     for(const tm of t.tempos){const e=doc.createElement('TEMPO');e.setAttribute('Inizio',tm.t.toFixed(3));e.setAttribute('Bpm',tm.bpm.toFixed(2));e.setAttribute('Metro','4/4');e.setAttribute('Battito',String(tm.beat||1));el.appendChild(e)}
     for(const m of t.marks){const e=doc.createElement('POSITION_MARK');e.setAttribute('Name',m.name||'');e.setAttribute('Type',String(m.type||0));e.setAttribute('Start',m.start.toFixed(3));if(m.end!=null)e.setAttribute('End',m.end.toFixed(3));e.setAttribute('Num',String(m.num));el.appendChild(e)}}
   if(locOverride)el.setAttribute('Location',locOverride);
+  if(hasMeta(t)){const map={title:'Name',artist:'Artist',album:'Album',genre:'Genre',keyRaw:'Tonality',comments:'Comments'};for(const[k,attr]of Object.entries(map))if(t.manual.meta[k]!=null)el.setAttribute(attr,t.manual.meta[k])}
   if(plan&&plan.changed){const ct=plan.ct;
     for(const pm of[...el.querySelectorAll('POSITION_MARK')]){const num=+pm.getAttribute('Num'),nm=pm.getAttribute('Name')||'';if((num===-1&&nm.startsWith(CUE.L.name))||(S.overwrite&&[0,5,6].includes(num)))pm.remove()}
     const add=attrs=>{const pm=doc.createElement('POSITION_MARK');for(const[k,v]of Object.entries(attrs))pm.setAttribute(k,String(v));el.appendChild(pm)};
@@ -946,7 +982,7 @@ function selfCheckXml(xml,cx){ // parse what we produced and verify it before do
 }
 function exportXml(){
   const cx=exportCtx();if(!cx.plans.length){toast('Keine Tracks im Export',1);return}
-  if(!cx.plans.some(p=>p.changed)&&!confirmNoChange){toast('Kein Track mit gültigen Cues – nichts zu exportieren. Erst analysieren bzw. bestätigen.',1);return}
+  if(!cx.plans.some(p=>p.changed||hasMeta(p.t))&&!confirmNoChange){toast('Kein Track mit gültigen Cues – nichts zu exportieren. Erst analysieren bzw. bestätigen.',1);return}
   const xml=buildXmlDoc(cx);const errs=selfCheckXml(xml,cx);
   if(errs.length){toast('Export abgebrochen – Selbstprüfung fehlgeschlagen: '+errs.slice(0,2).join('; '),1);return}
   download(`${safeName(cx.name)}.xml`,xml,'application/xml');closeModal();
@@ -1096,12 +1132,12 @@ function renderXmlDiff(){
   for(const p of ch)for(const r of p.rows){if(r.act==='neu')nNew++;else if(r.act==='ersetzt')nRep++;else nKeep++}
   const fmt=x=>x==null?'–':fmtT(x);
   const rows=cx.plans.map(p=>p.changed?`<tr><td>${esc(p.t.title)}</td>${p.rows.map(r=>`<td><span class="${r.act==='neu'?'neu':r.act==='ersetzt'?'ers':'blb'}">${r.k} ${r.act==='bleibt'?'bleibt '+fmt(r.old):r.act==='ersetzt'&&r.old!=null?fmt(r.old)+'→'+fmt(r.nw):fmt(r.nw)}</span></td>`).join('')}<td>${p.ratingNew!=null?`${p.ratingOld}★→${p.ratingNew}★`:'–'}</td></tr>`
-    :`<tr><td>${esc(p.t.title)}</td><td colspan="5"><span class="skip">unverändert – ${esc(p.reason)}</span></td></tr>`).join('');
+    :`<tr><td>${esc(p.t.title)}</td><td colspan="5">${hasMeta(p.t)?'<span class="ers">nur Infos geändert</span>, ':''}<span class="skip">keine neuen Cues – ${esc(p.reason)}</span></td></tr>`).join('');
   $('#xDiff').innerHTML=`<div class="sum"><div><b>${ch.length}</b><span>Tracks mit Cues</span></div><div><b>${sk.length}</b><span>unverändert</span></div><div><b>${nNew}</b><span>neue Cues</span></div><div><b>${nRep}</b><span>ersetzte Cues</span></div></div>
     ${nKeep?`<div class="note">${nKeep} vorhandene Hot Cues bleiben unangetastet (Einstellung „überschreiben“ ist aus).</div>`:''}
     ${sk.length?`<div class="note warn">${sk.length} Tracks bekommen keine neuen Cues (Fehler, nicht analysiert oder unbestätigt). Sie sind trotzdem in der Playlist, damit sie vollständig bleibt – mit ihrem bisherigen Stand.</div>`:''}
     <div class="diff"><table><thead><tr><th>Track</th><th>A</th><th>F</th><th>G</th><th>Loop</th><th>Rating</th></tr></thead><tbody>${rows}</tbody></table></div>`;
-  $('#xGo').disabled=!ch.length;$('#xInfo').textContent=ch.length?'':'Nichts zu exportieren';
+  const nm=cx.plans.filter(p=>hasMeta(p.t)).length;$('#xGo').disabled=!ch.length&&!nm;$('#xInfo').textContent=ch.length||nm?(nm?`${nm} Tracks mit geänderten Infos`:''):'Nichts zu exportieren';
 }
 function openModal(kind,ctx){
   lastFocus=document.activeElement;const m=$('#modal');let h='';const pl=state.cur>=0?state.playlists[state.cur]:null;
@@ -1147,6 +1183,10 @@ function openModal(kind,ctx){
     <span><kbd>←</kbd> <kbd>→</kbd></span><span>Gewählten Marker 1 Bar verschieben (Shift: 8 Bars)</span><span><kbd>C</kbd></span><span>Cues bestätigen</span>
     <span><kbd>R</kbd></span><span>Cues auf Automatik</span><span><kbd>⌘Z</kbd> / <kbd>Strg+Z</kbd></span><span>Rückgängig</span><span><kbd>/</kbd></span><span>Suche</span></div>
     </div><div class="foot"><button class="btn primary" data-close>Verstanden</button></div>`;
+  }else if(kind==='edit'){const t=ctx;
+    h=`<h2>Infos bearbeiten</h2><p class="sub">Änderungen gehen beim Export nach rekordbox und Serato mit. Deine Audiodatei bleibt unverändert.</p><div class="body">
+    ${META.map(([k,l])=>`<div class="field"><label for="me_${k}">${l}${t.orig&&t.orig[k]!==t[k]?`<small>Original: ${esc(t.orig[k])||'leer'}</small>`:''}</label><input class="inp" id="me_${k}" value="${esc(t[k])}" ${k==='keyRaw'?'placeholder="z.B. 8A oder Am"':''}></div>`).join('')}
+    </div><div class="foot">${hasMeta(t)?'<button class="btn ghost" data-act="metaReset" style="margin-right:auto">Original wiederherstellen</button>':''}<button class="btn ghost" data-close>Abbrechen</button><button class="btn primary" data-act="metaSave">Speichern</button></div>`;
   }else if(kind==='serato'){
     h=`<h2>Serato Crates exportieren</h2><p class="sub">Wandelt Playlists in Serato-Crates um (ZIP mit _Serato_-Ordner).</p><div class="body">
     <div class="opts plsel">${state.playlists.map((p,i)=>`<label><input type="checkbox" value="${i}" ${i===state.cur?'checked':''}> ${esc([...p.folder,p.name].join(' / '))}<span class="c">${p.ids.length}</span></label>`).join('')}</div>
@@ -1187,7 +1227,12 @@ $('#btnAnalyze').onclick=()=>analyzeIds(state.sel.size>1?[...state.sel]:state.vi
 $('#btnExport').onclick=e=>{e.stopPropagation();$('#exportMenu').classList.toggle('open')};
 document.addEventListener('click',e=>{if(!e.target.closest('.menu-wrap'))$('#exportMenu').classList.remove('open')});
 $('#exportMenu').onclick=e=>{const b=e.target.closest('button');if(!b)return;$('#exportMenu').classList.remove('open');if(b.dataset.act==='csv')exportCsv();else openModal(b.dataset.act)};
-$('#modalBg').addEventListener('click',e=>{if(e.target.id==='modalBg'||e.target.closest('[data-close]'))closeModal();const a=e.target.closest('[data-act]');if(a){if(a.dataset.act==='doXml')exportXml();if(a.dataset.act==='doSerato')exportSerato()}});
+$('#modalBg').addEventListener('click',e=>{if(e.target.id==='modalBg'||e.target.closest('[data-close]'))closeModal();const a=e.target.closest('[data-act]');if(a){if(a.dataset.act==='doXml')exportXml();if(a.dataset.act==='doSerato')exportSerato();if(a.dataset.act==='metaSave'||a.dataset.act==='metaReset')saveMeta(a.dataset.act==='metaReset')}});
+function saveMeta(reset){const t=state.tracks.get(state.focus);if(!t)return;applyMeta(t);let meta=null;
+  if(!reset){meta={};for(const[k]of META){const v=$('#me_'+k).value.trim();if(v!==String(t.orig[k]??''))meta[k]=v}if(!Object.keys(meta).length)meta=null}
+  if(meta&&meta.keyRaw&&!parseKey(meta.keyRaw)){toast('Key nicht erkannt – z.B. 8A, Am oder F#m',1);return}
+  setManual(t,{meta});applyMeta(t);closeModal();renderAll();toast(reset?'Original wiederhergestellt':'Infos gespeichert – gehen beim nächsten Export mit')}
+
 let rowsRaf=0;$('#main').addEventListener('scroll',()=>{if(!rowsRaf)rowsRaf=requestAnimationFrame(()=>{rowsRaf=0;renderRows()})},{passive:true});
 $('#main').addEventListener('click',e=>{
   const a=e.target.closest('[data-act]');if(a){if(a.dataset.act==='xml')$('#inXml').click();if(a.dataset.act==='dir')pickMusic();if(a.dataset.act==='help')openModal('guide');return}
@@ -1217,6 +1262,7 @@ $('#btnPlay').onclick=()=>{if(PB.src)stop();else{const t=state.tracks.get(state.
 $('#dJumps').onclick=e=>{const b=e.target.closest('[data-jump]');if(b)jump(b.dataset.jump)};
 $('#dFacts').onclick=e=>{const b=e.target.closest('[data-e]');if(!b)return;const t=state.tracks.get(state.focus);if(!t)return;const v=+b.dataset.e;setManual(t,{E:v||null});toast(v?`Energie für „${t.title}“ auf ${v}/5 gesetzt`:'Energie wieder automatisch')};
 $('#dActs').onclick=e=>{const b=e.target.closest('[data-act]');if(!b)return;const t=state.tracks.get(state.focus);if(!t)return;const a=b.dataset.act;
+  if(a==='edit'){openModal('edit',t);return}
   if(a==='confirm')setManual(t,{ok:true});if(a==='unconfirm')setManual(t,{ok:null});if(a==='reset')setManual(t,{A:null,F:null,G:null,L:null});if(a==='reanalyze')analyzeIds([t.id],true)};
 const cv=$('#tl');
 const HIT=()=>matchMedia('(pointer:coarse)').matches?16:8;let tlDown=null;

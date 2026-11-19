@@ -306,6 +306,34 @@ ol.guide b{color:var(--bone)}
   .empty{margin:5vh auto}
   .toasts{left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom))}.toast{max-width:none}
 }
+/* hero */
+.empty{max-width:1120px}
+.hero{display:grid;grid-template-columns:1.05fr 1fr;gap:48px;align-items:center;margin-bottom:56px}
+.hero h1{font-size:clamp(34px,4.6vw,60px);line-height:1;letter-spacing:-.03em;margin:0 0 18px;font-weight:700;max-width:14ch}
+.hero p{color:var(--smoke);line-height:1.6;margin:0 0 26px;font-size:15.5px;max-width:52ch}
+.hero .row{display:flex;gap:10px;flex-wrap:wrap}
+.btn.lg{height:46px;padding:0 20px;border-radius:12px;font-size:14.5px}
+.deck{position:relative;border-radius:24px;padding:1px;background:linear-gradient(160deg,#3a3732,#1a1917 40%,#2a2825);box-shadow:0 40px 90px -30px rgba(0,0,0,.9)}
+.deck .photo{position:absolute;inset:-12% -10% auto auto;width:120%;height:auto;opacity:0;border-radius:30px;filter:saturate(1.1);-webkit-mask-image:radial-gradient(closest-side,#000 40%,transparent);mask-image:radial-gradient(closest-side,#000 40%,transparent);z-index:0;transition:opacity .8s;pointer-events:none}
+.deck .photo.on{opacity:.55}
+.deck-in{position:relative;z-index:1;border-radius:23px;background:rgba(23,22,20,.86);backdrop-filter:blur(10px);padding:18px}
+.deck-head{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+.deck-head div{flex:1;min-width:0}.deck-head b{display:block;font-size:15px}.deck-head span{color:var(--dim);font-size:12.5px}
+.chip-k{font-weight:600;font-size:12px;padding:3px 8px;border-radius:7px;background:hsl(150 45% 20%);color:hsl(150 85% 78%)!important}
+.chip-b{font-size:12px;padding:3px 8px;border-radius:7px;background:var(--raised);border:1px solid var(--line);color:var(--smoke)!important}
+.padgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px}
+.padgrid i{--c:#3a3732;height:46px;border-radius:10px;border:1.5px solid #2c2a26;background:#1c1b19;display:grid;place-items:center;font-style:normal;font-weight:700;font-size:13px;color:var(--c)}
+.padgrid i.lit{animation:lite .5s ease-out var(--d) both}
+@keyframes lite{from{border-color:#2c2a26;background:#1c1b19;color:transparent;box-shadow:none}to{border-color:color-mix(in srgb,var(--c) 70%,transparent);background:color-mix(in srgb,var(--c) 16%,#141312);color:var(--c);box-shadow:0 0 22px -4px color-mix(in srgb,var(--c) 70%,transparent),inset 0 0 12px -6px var(--c)}}
+.wave{display:block;width:100%;height:120px;border-radius:12px;background:#11100F}
+.wave .ph{animation:sweep 5s cubic-bezier(.4,0,.2,1) 2s both}
+@keyframes sweep{from{transform:translateX(0)}to{transform:translateX(440px)}}
+.steps{grid-template-columns:repeat(3,1fr)}
+.step.img{overflow:hidden}
+.cardimg{display:block;width:calc(100% + 40px);margin:0 -20px 16px;height:120px;object-fit:cover;opacity:0;transition:opacity .6s;margin-top:-20px}.cardimg.on{opacity:.9}
+.empty>p.foot-tip{margin-top:22px;font-size:13px;color:var(--fg3)}
+@media (max-width:1000px){.hero{grid-template-columns:1fr;gap:32px}}
+@media (max-width:760px){.hero{margin-bottom:32px}.hero p{font-size:14.5px}.deck-in{padding:14px}.padgrid i{height:40px}.wave{height:96px}}
 @media (prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -803,16 +831,32 @@ function spark(t,c){
   return`<svg class="spark" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" aria-hidden="true"><rect x="${x(c.F)}" y="0" width="${Math.max(1,x(c.G)-x(c.F))}" height="${H}" fill="#FF9A1F" opacity=".16"/><rect x="${x(c.L)}" y="0" width="${Math.max(1,x(c.L+S.loopBars)-x(c.L))}" height="${H}" fill="#3D9BFF" opacity=".28"/><path d="${d}" fill="#BDB6AA" opacity=".55"/><rect x="${x(c.A)}" y="0" width="1.5" height="${H}" fill="#28E214"/><rect x="${x(c.F)}" y="0" width="1.5" height="${H}" fill="#FF9A1F"/><rect x="${x(c.G)}" y="0" width="1.5" height="${H}" fill="#F0443A"/></svg>`;
 }
 const isM=()=>matchMedia('(max-width:760px)').matches;let ROWH=52,HEADH=36;const rowDims=()=>{ROWH=isM()?66:52;HEADH=isM()?0:36};
+const ASSETS={hero:false,usb:false}; // set true once the Higgsfield images are in /assets
+function heroDeck(){
+  let r=7;const rnd=()=>(r=(r*9301+49297)%233280)/233280;const N=88,bars=[];
+  for(let i=0;i<N;i++){const p=i/N;let e=p<.09?.35+p*3:p<.36?.82:p<.47?.38:p<.88?.9:.55-(p-.88)*2.5;bars.push(Math.max(.12,Math.min(1,e*(.78+rnd()*.3))))}
+  const W=440,H=120,mid=78,bw=W/N,F=.62,G=.88,L0=.8;
+  let svg='';bars.forEach((v,i)=>{const p=i/N,x=(i*bw).toFixed(1),hu=(v*(mid-14)).toFixed(1),hd=(v*.55*(H-mid-6)).toFixed(1);
+    const col=p>=L0&&p<G?'#78B6FF':p>=F&&p<G?'#FFBE78':'#F4F0E8',op=p>=F&&p<G?.95:.42+v*.4;
+    svg+=`<rect x="${x}" y="${(mid-hu).toFixed(1)}" width="${(bw-1.2).toFixed(1)}" height="${hu}" rx="1" fill="${col}" opacity="${op.toFixed(2)}"/><rect x="${x}" y="${mid+1}" width="${(bw-1.2).toFixed(1)}" height="${hd}" fill="#ABA499" opacity=".3"/>`});
+  const mk=(p,c,l)=>`<g><rect x="${(p*W-1).toFixed(1)}" y="8" width="2" height="${H-8}" fill="${c}"/><rect x="${(p*W-1).toFixed(1)}" y="0" width="${l.length>1?30:16}" height="14" rx="3.5" fill="${c}"/><text x="${(p*W+(l.length>1?3:4)).toFixed(1)}" y="10.5" font-size="9.5" font-weight="700" fill="#11100F">${l}</text></g>`;
+  const pads=[['A','var(--cA)',1],['B','',0],['C','',0],['D','',0],['E','',0],['F','var(--cF)',2],['G','var(--cG)',3],['Loop','var(--cL)',4]];
+  return`<div class="deck" aria-hidden="true">${ASSETS.hero?'<img data-opt class="photo" src="assets/hero-960.webp" alt="">':''}<div class="deck-in">
+    <div class="deck-head"><span class="art big"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="2"/></svg></span><div><b>Hermès</b><span>Vermeer</span></div><span class="chip-k">6A</span><span class="chip-b">150 BPM</span></div>
+    <div class="padgrid">${pads.map(([l,c,o])=>`<i class="${o?'lit':''}" style="${c?`--c:${c};`:''}--d:${o*0.45}s">${o?l:''}</i>`).join('')}</div>
+    <svg class="wave" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none"><rect x="${F*W}" y="0" width="${(G-F)*W}" height="${H}" fill="rgba(255,154,31,.08)"/>${svg}${mk(0.012,'#2FD44E','A')}${mk(F,'#FF9A1F','F')}${mk(L0,'#3D9BFF','Loop')}${mk(G,'#F0443A','G')}<rect class="ph" x="0" y="4" width="1.5" height="${H-4}" fill="#fff"/></svg></div></div>`}
 function renderMain(){
   const m=$('#main');
   if(!state.source){
     const coarse=matchMedia('(pointer:coarse)').matches;
-    m.innerHTML=`<div class="empty"><h1>Jeder Track bereit<br>für den Mix.<span class="pads" aria-hidden="true"><i style="background:var(--cA)"></i><i style="background:var(--cF)"></i><i style="background:var(--cG)"></i><i style="background:var(--cL)"></i></span></h1>
-    <p>Setzt Hot Cue A auf den Start, F und G als 32-Bar-Fenster vor dem Energieabfall und einen Exit Loop, bewertet Energie und Lautstärke und bringt alles zurück nach rekordbox oder Serato. Läuft komplett in deinem Browser, deine Musik verlässt nie den Rechner.</p>
-    <div class="steps"><div class="step main"><b>Empfohlen</b><h3>rekordbox XML</h3><p>In rekordbox Datei → Collection im xml-Format exportieren, hier laden, dann den Musikordner verbinden.</p><div class="row"><button class="btn" data-act="xml">XML laden</button><button class="btn alt" data-act="dir">Musikordner</button></div></div>
-    <div class="step"><b>Schneller Weg</b><h3>USB-Stick</h3><p>Den ganzen Stick mit PIONEER-Ordner wählen: Playlists, Beatgrids und Musik in einem Schritt. Chrome fragt nach „Hochladen“, es bleibt trotzdem alles lokal.</p><div class="row"><button class="btn" data-act="dir">Stick wählen</button></div></div>
-    <div class="step"><b>Danach</b><h3>Prüfen &amp; exportieren</h3><p>Playlist analysieren, Cues anhören, bei Bedarf verschieben, dann exportieren und in rekordbox importieren.</p><div class="row"><button class="btn" data-act="help">Anleitung</button></div></div></div>
-    <p style="margin-top:22px;font-size:13px;color:var(--fg3)">${coarse?'Am Handy: XML und einzelne Audiodateien lassen sich wählen, ganze Ordner und Sticks nur am Rechner. Für große Playlists ist Chrome oder Edge am Desktop die bessere Wahl.':'Tipp: XML, Musikordner oder Stick einfach ins Fenster ziehen.'}</p></div>`;return}
+    m.innerHTML=`<div class="empty"><section class="hero"><div class="hero-txt"><h1>Jeder Track bereit für den Mix.</h1>
+    <p>Hot Cue A auf den Start, F und G als 32-Bar-Fenster vor dem Energieabfall, ein Exit Loop, Energie und Lautstärke. Für die ganze Playlist auf einmal, zurück nach rekordbox oder Serato. Alles läuft in deinem Browser, deine Musik verlässt nie den Rechner.</p>
+    <div class="row"><button class="btn primary lg" data-act="xml">rekordbox XML laden</button><button class="btn lg" data-act="dir">${coarse?'Audiodateien wählen':'USB-Stick wählen'}</button></div></div>${heroDeck()}</section>
+    <div class="steps"><div class="step"><b>Empfohlen</b><h3>rekordbox XML</h3><p>In rekordbox Datei → Collection im xml-Format exportieren, hier laden und den Musikordner verbinden. Die Cues gehen danach sauber in deine Library zurück.</p><div class="row"><button class="btn" data-act="xml">XML laden</button><button class="btn ghost" data-act="dir">Musikordner</button></div></div>
+    <div class="step img">${ASSETS.usb?'<img data-opt class="cardimg" src="assets/usb-960.webp" alt="">':''}<b>Schneller Weg</b><h3>USB-Stick</h3><p>Den ganzen Stick mit PIONEER-Ordner wählen: Playlists, Beatgrids, Cover und Musik in einem Schritt. Chrome fragt nach „Hochladen“, es bleibt trotzdem alles lokal.</p><div class="row"><button class="btn" data-act="dir">Stick wählen</button></div></div>
+    <div class="step"><b>Danach</b><h3>Prüfen und exportieren</h3><p>Analysieren, Cues anhören und mit Maus, Pfeiltasten oder Finger verschieben. Jeder Export wird vorher geprüft und zeigt dir, was sich ändert.</p><div class="row"><button class="btn" data-act="help">Anleitung</button></div></div></div>
+    <p class="foot-tip">${coarse?'Am Handy lassen sich XML und einzelne Audiodateien wählen, ganze Ordner und Sticks nur am Rechner.':'Tipp: XML, Musikordner oder Stick einfach ins Fenster ziehen.'}</p></div>`;
+    $$('#main img[data-opt]').forEach(i=>{i.addEventListener('error',()=>i.remove());i.addEventListener('load',()=>i.classList.add('on'));if(i.complete&&i.naturalWidth)i.classList.add('on')});return}
   computeView();
   const th=(k,l,cls='')=>{const i=state.sort.findIndex(s=>s.k===k);return`<th class="${cls}" data-sort="${k}" title="Klick: sortieren · Shift+Klick: weitere Ebene">${l}${i>=0?`<span class="si">${state.sort[i].d>0?'↑':'↓'}${state.sort.length>1?i+1:''}</span>`:''}</th>`};
   m.innerHTML=`<table><thead><tr>${th('idx','#')}${th('title','Track')}${th('bpm','BPM','r')}${th('key','Key')}${th('energy','Energy')}${th('lufs','LUFS','r lu')}${th('gain','Gain','r')}${th('kbps','kbps','r lu')}${th('dur','Zeit','r du')}<th>Cues</th><th class="sp">Verlauf</th><th>Status</th></tr></thead><tbody id="tb"></tbody></table>${state.view.length?'':'<div class="empty" style="margin-top:40px"><p>Keine Tracks in dieser Ansicht.</p></div>'}`;

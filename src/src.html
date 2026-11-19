@@ -272,7 +272,7 @@ function download(name,data,type){const b=data instanceof Blob?data:new Blob([da
 const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
 const safeName=s=>String(s).replace(/[\/\\:*?"<>|%\x00-\x1f]/g,'-').replace(/^\.+/,'').slice(0,120)||'Playlist';
 
-const ALG_V=6;
+const ALG_V=6;const APP_V='2.1';
 const RATING_VAL=[0,51,102,153,204,255];
 const ENERGY_T=[48,56,63,70];
 const DEFAULTS={mixBars:32,loopBars:8,sens:3,overwrite:false,energyMode:'abs',writeRating:true,writeComment:true,phrase:8,requireConfirm:true,maxMin:20};
@@ -867,20 +867,103 @@ function zip(files){const te=new TextEncoder(),loc=[],cen=[];let off=0;
     loc.push(h,d);cen.push(c);off+=h.length+d.length}
   const cs=cen.reduce((a,b)=>a+b.length,0),e=new Uint8Array(22),ev=new DataView(e.buffer);ev.setUint32(0,0x06054b50,true);ev.setUint16(8,files.length,true);ev.setUint16(10,files.length,true);ev.setUint32(12,cs,true);ev.setUint32(16,off,true);
   return new Blob([...loc,...cen,e],{type:'application/zip'})}
-function exportSerato(){
+/* ---- Serato cue writing (ID3 GEOB "Serato Markers2", MP3 only) ---- */
+const SER_COL={A:[0x00,0xCC,0x00],F:[0xCC,0x88,0x00],G:[0xCC,0x00,0x00],X:[0xCC,0x00,0x00]};
+const b64e=u8=>{let s='';for(let i=0;i<u8.length;i+=0x8000)s+=String.fromCharCode.apply(null,u8.subarray(i,i+0x8000));return btoa(s)};
+const b64d=s=>{s=s.replace(/[^A-Za-z0-9+/]/g,'');if(s.length%4===1)s+='A==';else while(s.length%4)s+='=';const b=atob(s),o=new Uint8Array(b.length);for(let i=0;i<b.length;i++)o[i]=b.charCodeAt(i);return o};
+const asc=s=>new TextEncoder().encode(s);
+const be32=v=>{const b=new Uint8Array(4);new DataView(b.buffer).setUint32(0,Math.max(0,Math.round(v))>>>0);return b};
+function readM2(data){ // data = GEOB payload after the descriptor → entries [{name,data}]
+  if(!data||data.length<3||data[0]!==1||data[1]!==1)return[];let end=data.indexOf(0,2);if(end<0)end=data.length;
+  const p=b64d(new TextDecoder().decode(data.subarray(2,end)));if(p[0]!==1||p[1]!==1)return[];const out=[];let i=2;
+  while(i<p.length){let j=i;while(j<p.length&&p[j])j++;const name=new TextDecoder().decode(p.subarray(i,j));if(!name)break;const len=new DataView(p.buffer,p.byteOffset+j+1,4).getUint32(0);out.push({name,data:p.slice(j+5,j+5+len)});i=j+5+len}
+  return out;
+}
+function buildM2(entries){
+  const parts=[new Uint8Array([1,1])];for(const e of entries){parts.push(asc(e.name),new Uint8Array([0]),be32(e.data.length),e.data)}parts.push(new Uint8Array([0]));
+  const b=b64e(cat(parts)).match(/.{1,72}/g).join('\n');const body=cat([new Uint8Array([1,1]),asc(b),new Uint8Array([0])]);
+  const out=new Uint8Array(Math.max(470,body.length));out.set(body);return out;
+}
+const cueEntry=(idx,ms,rgb,name)=>({name:'CUE',data:cat([new Uint8Array([0,idx]),be32(ms),new Uint8Array([0,...rgb,0,0]),asc(name),new Uint8Array([0])])});
+const loopEntry=(idx,s,e,name)=>({name:'LOOP',data:cat([new Uint8Array([0,idx]),be32(s),be32(e),new Uint8Array([0xff,0xff,0xff,0xff,0x00,0x27,0xaa,0xe1,0,0]),asc(name),new Uint8Array([0])])});
+function seratoEntries(t,existing){
+  const ct=t.analysis&&!validate(t).length&&!needsConfirm(t)?cueTimes(t):null;
+  const keep=[],cues=new Map(),loops=new Map();
+  for(const e of existing){if(e.name==='CUE')cues.set(e.data[1],e);else if(e.name==='LOOP')loops.set(e.data[1],e);else keep.push(e)}
+  // rekordbox hot cues → Serato (only where Serato slot is empty)
+  for(const m of t.marks)if(m.type===0&&m.num>=0&&m.num<8&&!cues.has(m.num))cues.set(m.num,cueEntry(m.num,m.start*1000,SER_COL.X,m.name||''));
+  let wrote=0;
+  if(ct){for(const k of['A','F','G']){const idx=CUE[k].num;if(slotState(t,k)==='kept')continue;if(cues.has(idx)&&!S.overwrite&&!t.marks.some(m=>m.num===idx))continue;cues.set(idx,cueEntry(idx,ct[k]*1000,SER_COL[k],CUE[k].name));wrote++}
+    let li=[...loops.entries()].find(([,e])=>new TextDecoder().decode(e.data.subarray(20)).startsWith(CUE.L.name));li=li?li[0]:0;while(loops.has(li)&&!new TextDecoder().decode(loops.get(li).data.subarray(20)).startsWith(CUE.L.name))li++;
+    if(li<8){loops.set(li,loopEntry(li,ct.L0*1000,ct.L1*1000,`${CUE.L.name} ${S.loopBars} Bars`));wrote++}}
+  const col=keep.find(e=>e.name==='COLOR')||{name:'COLOR',data:new Uint8Array([0,0xff,0xff,0xff])};
+  const rest=keep.filter(e=>e.name!=='COLOR');
+  return{entries:[col,...[...cues.keys()].sort((a,b)=>a-b).map(k=>cues.get(k)),...[...loops.keys()].sort((a,b)=>a-b).map(k=>loops.get(k)),...rest],wrote,count:cues.size+loops.size};
+}
+const ss32=(u,o)=>(u[o]&0x7f)<<21|(u[o+1]&0x7f)<<14|(u[o+2]&0x7f)<<7|(u[o+3]&0x7f);
+const toSS=v=>new Uint8Array([(v>>>21)&0x7f,(v>>>14)&0x7f,(v>>>7)&0x7f,v&0x7f]);
+function isM2Frame(u,body,len){const s=new TextDecoder('latin1').decode(u.subarray(body,Math.min(body+80,body+len)));return s.includes('Serato Markers2')}
+function m2Payload(u,body,len){let p=body+1;const end=body+len;for(let n=0;n<3;n++){while(p<end&&u[p])p++;p++}return u.subarray(p,end)}
+function writeSeratoMp3(buf,t){
+  const u=new Uint8Array(buf);let ver=3,frames=[],audio=0,existing=[];
+  if(u[0]===0x49&&u[1]===0x44&&u[2]===0x33){ver=u[3];const fl=u[5],size=ss32(u,6);audio=10+size+((fl&0x10)?10:0);
+    if(ver!==3&&ver!==4)throw new Error(`ID3v2.${ver} nicht unterstützt`);if(fl&0x80)throw new Error('ID3-Tag mit Unsynchronisation nicht unterstützt');
+    let p=10;if(fl&0x40)p+=ver===4?ss32(u,10):4+new DataView(buf,10,4).getUint32(0);
+    while(p+10<=10+size){const id=String.fromCharCode(u[p],u[p+1],u[p+2],u[p+3]);if(!/^[A-Z0-9]{4}$/.test(id))break;
+      const fs=ver===4?ss32(u,p+4):new DataView(buf,p+4,4).getUint32(0);if(fs<=0||p+10+fs>10+size)break;
+      if(id==='GEOB'&&isM2Frame(u,p+10,fs))existing=readM2(m2Payload(u,p+10,fs));else frames.push(u.subarray(p,p+10+fs));p+=10+fs}}
+  else if(!(u[0]===0xff&&(u[1]&0xe0)===0xe0))throw new Error('Keine gültige MP3-Datei');
+  const r=seratoEntries(t,existing);
+  const body=cat([new Uint8Array([0]),asc('application/octet-stream'),new Uint8Array([0,0]),asc('Serato Markers2'),new Uint8Array([0]),buildM2(r.entries)]);
+  const fh=cat([asc('GEOB'),ver===4?toSS(body.length):be32(body.length),new Uint8Array([0,0])]);
+  const tagBody=cat([...frames,fh,body,new Uint8Array(1024)]);
+  const out=cat([asc('ID3'),new Uint8Array([ver,0,0]),toSS(tagBody.length),tagBody,u.subarray(audio)]);
+  return{bytes:out,wrote:r.wrote,count:r.count};
+}
+async function dirHandleFor(root,rel,create){let d=root;const parts=rel.split('/').filter(Boolean),name=parts.pop();for(const p of parts)d=await d.getDirectoryHandle(p,{create});return{d,name}}
+async function writeFileAt(root,rel,data){const{d,name}=await dirHandleFor(root,rel,true);const fh=await d.getFileHandle(name,{create:true});const w=await fh.createWritable();await w.write(data);await w.close()}
+async function readFileAt(root,rel){const{d,name}=await dirHandleFor(root,rel,false);return(await d.getFileHandle(name)).getFile()}
+
+async function exportSerato(){
   const chosen=$$('#modal .plsel input:checked').map(i=>+i.value);if(!chosen.length){toast('Keine Playlist gewählt',1);return}
   const useSort=$('#srtSort')?.checked,withDb=$('#srtDb')?.checked,mode=$('input[name=smode]:checked')?.value||'over',suffix=($('#sSuffix')?.value||' Edited');
-  const groups=new Map(),files=[],names=[];
-  for(const idx of chosen){const p=state.playlists[idx];const ids=useSort?sortedIds(p.ids):p.ids;const byVol=new Map();
-    for(const id of ids){const t=state.tracks.get(id),L=seratoLoc(t.path);if(!byVol.has(L.vol))byVol.set(L.vol,[]);byVol.get(L.vol).push(L.rel);if(!groups.has(L.vol))groups.set(L.vol,new Map());groups.get(L.vol).set(id,t)}
-    const nm=mode==='over'?p.name:p.name+suffix;names.push(nm);const cname=[...p.folder,nm].map(safeName).join('%%');
-    for(const[vol,rels]of byVol)files.push({vol,name:`_Serato_/Subcrates/${cname}.crate`,data:crateBytes(rels)})}
-  const multi=groups.size>1;if(withDb)for(const[vol,m]of groups)files.push({vol,name:'_Serato_/database V2',data:dbBytes([...m.values()])});
+  const cueMode=$('input[name=scue]:checked')?.value||'none';
+  const crates=[],groups=new Map(),names=[];
+  for(const idx of chosen){const p=state.playlists[idx];const ids=useSort?sortedIds(p.ids):p.ids;const nm=mode==='over'?p.name:p.name+suffix;names.push(nm);
+    crates.push({cname:[...p.folder,nm].map(safeName).join('%%'),ids});for(const id of ids){const t=state.tracks.get(id),L=seratoLoc(t.path);if(!groups.has(L.vol))groups.set(L.vol,new Map());groups.get(L.vol).set(id,t)}}
   const vols=[...groups.keys()];
-  const readme=`JAILR Prep – Serato Export (${today()})\n\nCrates: ${names.join(', ')}\n\n`+vols.map(v=>v==='Systemlaufwerk'?`• "${multi?v+'/':''}_Serato_" → in deinen Musik-Ordner (Mac: ~/Music/_Serato_) kopieren.`:`• "${multi?v+'/':''}_Serato_" → ins Hauptverzeichnis von "${v}" kopieren (neben PIONEER und Contents).`).join('\n')+
-   `\n\nVorher einen vorhandenen _Serato_-Ordner sichern. ${mode==='over'?'Crates mit gleichem Namen werden ersetzt.':'Bestehende Crates bleiben, die neuen haben den Zusatz "'+suffix.trim()+'".'}${withDb?' Die "database V2" wird ersetzt.':''}\nHot Cues werden nicht übertragen – Serato liest Cues aus den Audiodateien.\n`;
-  const zf=files.map(f=>({name:(multi?f.vol+'/':'')+f.name,data:f.data}));zf.push({name:'LIESMICH.txt',data:readme});
-  download(`JAILR_Serato_${today()}.zip`,zip(zf));closeModal();toast(`${chosen.length} Crates exportiert → ${vols.join(', ')}`);
+  if(cueMode==='none'){ // ZIP like before
+    const multi=vols.length>1,files=[];
+    for(const c of crates){const byVol=new Map();for(const id of c.ids){const L=seratoLoc(state.tracks.get(id).path);if(!byVol.has(L.vol))byVol.set(L.vol,[]);byVol.get(L.vol).push(L.rel)}for(const[vol,rels]of byVol)files.push({vol,name:`_Serato_/Subcrates/${c.cname}.crate`,data:crateBytes(rels)})}
+    if(withDb)for(const[vol,m]of groups)files.push({vol,name:'_Serato_/database V2',data:dbBytes([...m.values()])});
+    const readme=`JAILR Prep – Serato Export (${today()})\n\nCrates: ${names.join(', ')}\n\n`+vols.map(v=>v==='Systemlaufwerk'?`• "${multi?v+'/':''}_Serato_" → in deinen Musik-Ordner (Mac: ~/Music/_Serato_) kopieren.`:`• "${multi?v+'/':''}_Serato_" → ins Hauptverzeichnis von "${v}" kopieren (neben PIONEER und Contents).`).join('\n')+
+      `\n\nVorher einen vorhandenen _Serato_-Ordner sichern. ${mode==='over'?'Crates mit gleichem Namen werden ersetzt.':'Bestehende Crates bleiben, die neuen haben den Zusatz "'+suffix.trim()+'".'}${withDb?' Die "database V2" wird ersetzt.':''}\nOhne Cues exportiert.\n`;
+    const zf=files.map(f=>({name:(multi?f.vol+'/':'')+f.name,data:f.data}));zf.push({name:'LIESMICH.txt',data:readme});
+    download(`JAILR_Serato_${today()}.zip`,zip(zf));closeModal();toast(`${chosen.length} Crates exportiert → ${vols.join(', ')}`);return}
+  // with cues: write straight onto the drive (Chrome/Edge)
+  if(!window.showDirectoryPicker){toast('Cues schreiben geht nur in Chrome oder Edge am Desktop.',1);return}
+  const drives=vols.filter(v=>v!=='Systemlaufwerk');
+  if(drives.length!==1){toast(drives.length?'Bitte nur Playlists von einem Laufwerk gleichzeitig wählen.':'Cues schreiben geht nur für Tracks auf einem USB-Stick/externen Laufwerk.',1);return}
+  const vol=drives[0];let root;
+  try{toast(`Bitte jetzt das Hauptverzeichnis von „${vol}“ wählen und Schreibzugriff erlauben.`);root=await window.showDirectoryPicker({id:'jailr-serato',mode:'readwrite'})}catch(e){toast('Abgebrochen – nichts wurde geschrieben.');return}
+  const tracks=[...groups.get(vol).values()];
+  try{await readFileAt(root,seratoLoc(tracks[0].path).rel)}catch(e){toast(`Im gewählten Ordner fehlt „${seratoLoc(tracks[0].path).rel}“. Bitte das Hauptverzeichnis von „${vol}“ wählen.`,1);return}
+  closeModal();state.busy=true;renderTop();$('#progress').classList.add('on');
+  const relMap=new Map(),rep={ok:0,cues:0,skip:[],err:[]};let done=0;
+  for(const t of tracks){if(state.cancel)break;const rel=seratoLoc(t.path).rel;relMap.set(t.id,rel);
+    $('#progTxt').textContent=`Serato-Cues ${++done}/${tracks.length}`;$('#progBar').style.width=(done/tracks.length*100)+'%';
+    if(!/\.mp3$/i.test(rel)){rep.skip.push(`${t.title}: nur MP3 unterstützt`);continue}
+    try{const src=await readFileAt(root,rel);const r=writeSeratoMp3(await src.arrayBuffer(),t);if(!r.count){rep.skip.push(`${t.title}: keine Cues`);continue}
+      const tgt=cueMode==='copy'?'_JAILR Serato/'+rel:rel;await writeFileAt(root,tgt,r.bytes);relMap.set(t.id,tgt);rep.ok++;rep.cues+=r.wrote}
+    catch(e){rep.err.push(`${t.title}: ${e.name==='NotFoundError'?'Datei nicht auf dem Laufwerk gefunden':e.name==='QuotaExceededError'?'Laufwerk ist voll':e.name==='NotAllowedError'?'Kein Schreibzugriff':e.message||e}`)}
+    await sleep(0)}
+  try{for(const c of crates)await writeFileAt(root,`_Serato_/Subcrates/${c.cname}.crate`,crateBytes(c.ids.filter(id=>relMap.has(id)).map(id=>relMap.get(id))));
+    if(withDb)await writeFileAt(root,'_Serato_/database V2',dbBytes(tracks.map(t=>Object.assign(Object.create(t),{path:'/Volumes/'+vol+'/'+relMap.get(t.id)}))))}
+  catch(e){rep.err.push('Crates: '+(e.message||e))}
+  state.busy=false;$('#progress').classList.remove('on');renderTop();
+  const log=`JAILR Prep – Serato-Cues (${today()})\nModus: ${cueMode==='copy'?'Kopien in "_JAILR Serato"':'Originaldateien ergänzt'}\n${rep.ok} Dateien mit Cues, ${rep.cues} neue Cues/Loops\n\nÜbersprungen:\n${rep.skip.join('\n')||'–'}\n\nFehler:\n${rep.err.join('\n')||'–'}\n`;
+  try{await writeFileAt(root,`_Serato_/JAILR-Prep-Log ${today()}.txt`,log)}catch(e){}
+  toast(`Serato: ${rep.ok} Dateien mit Cues, ${names.length} Crates geschrieben${rep.err.length?` · ${rep.err.length} Fehler (Log in _Serato_)`:''}`,rep.err.length>0);
 }
 
 /* ================= problem list (CSV) ================= */
@@ -962,13 +1045,19 @@ function openModal(kind,ctx){
     <h3>Crate-Name</h3><div class="opts"><label><input type="radio" name="smode" value="over" checked> Gleicher Name – überschreibt gleichnamige Crates</label><label><input type="radio" name="smode" value="new"> Neue Crate mit Zusatz <input class="inp" id="sSuffix" value=" Edited" aria-label="Namenszusatz"></label></div>
     <div class="field"><label>Aktuelle Sortierung übernehmen</label>${sw('srtSort',true)}</div>
     <div class="field"><label>Serato-Datenbank mitschreiben<small>Für einen frischen Stick sinnvoll. Ersetzt eine vorhandene „database V2“.</small></label>${sw('srtDb',true)}</div>
-    <div class="note">Wohin der Ordner gehört, steht in der LIESMICH.txt. Hot Cues überträgt dieser Weg nicht.</div>
-    </div><div class="foot"><button class="btn ghost" data-close>Abbrechen</button><button class="btn primary" data-act="doSerato">ZIP herunterladen</button></div>`;
+    <h3>Cues für Serato</h3><div class="opts">
+      <label><input type="radio" name="scue" value="none" checked> Ohne Cues – nur Crates als ZIP</label>
+      <label><input type="radio" name="scue" value="copy" ${window.showDirectoryPicker?'':'disabled'}> Mit Cues, als Kopie<span class="c">Originale bleiben unverändert · Ordner „_JAILR Serato“</span></label>
+      <label><input type="radio" name="scue" value="inplace" ${window.showDirectoryPicker?'':'disabled'}> Mit Cues, in die Originaldateien<span class="c">nur Serato-Daten werden ergänzt</span></label></div>
+    <div class="note" id="scueNote">${window.showDirectoryPicker?'Mit Cues: Du wählst den Stick, die App schreibt Crates und Cues direkt darauf. Übertragen werden A/F/G, Exit Loop und deine vorhandenen rekordbox-Hot-Cues (nur MP3). Vorhandene Serato-Cues bleiben, außer „überschreiben“ ist an.':'Cues schreiben geht nur in Chrome oder Edge am Desktop.'}</div>
+    <div class="note warn" id="scueWarn" hidden>Originaldateien werden verändert (nur der Serato-Tag, der Ton bleibt identisch). Vorher ein Backup des Sticks machen. rekordbox und CDJs spielen die Dateien weiter normal.</div>
+    </div><div class="foot"><button class="btn ghost" data-close>Abbrechen</button><button class="btn primary" data-act="doSerato" id="sGo">ZIP herunterladen</button></div>`;
   }
   m.innerHTML=h;$('#modalBg').classList.add('on');
   if(kind==='settings'){const on=(id,fn)=>$('#'+id).addEventListener('change',e=>{fn(e.target);saveS();relCache=null;renderMain();renderBar();renderDetail()});
     on('sMix',e=>S.mixBars=+e.value);on('sLoop',e=>S.loopBars=+e.value);on('sSens',e=>S.sens=clamp(+e.value||3,1,12));on('sMode',e=>S.energyMode=e.value);on('sConf',e=>S.requireConfirm=e.checked);
     on('sOver',e=>S.overwrite=e.checked);on('sRate',e=>S.writeRating=e.checked);on('sCom',e=>S.writeComment=e.checked);on('sMax',e=>S.maxMin=+e.value)}
+  if(kind==='serato')m.addEventListener('change',e=>{if(e.target.name==='scue'){$('#scueWarn').hidden=e.target.value!=='inplace';$('#sGo').textContent=e.target.value==='none'?'ZIP herunterladen':'Stick wählen & schreiben'}});
   if(kind==='xml'){renderXmlDiff();m.addEventListener('change',e=>{if(e.target.name==='xmode'){$('#xOverNote').hidden=e.target.value!=='over';$('#xScope').hidden=e.target.value==='over'}if(['xmode','xscope'].includes(e.target.name)||e.target.id==='xRoot')renderXmlDiff()});m.addEventListener('input',e=>{if(e.target.id==='xName'){$('input[name=xmode][value=new]').checked=true;$('#xOverNote').hidden=true;$('#xScope').hidden=false}})}
   const f=m.querySelector('input,select,button.primary');if(f)f.focus();
 }

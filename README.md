@@ -14,7 +14,7 @@ Läuft komplett lokal im Browser. Es wird nichts hochgeladen – die Seite ist p
 - **Energie 1–5** als Rating (Tempo, Dichte, Drive, Bass, Höhen – unabhängig von der Master-Lautstärke), per Klick überschreibbar
 - **Lautstärke (LUFS) & Gain-Empfehlung** relativ zur Playlist, Hinweise zu niedriger Bitrate und Übersteuerung
 - **Mehrfach-Sortierung** nach Key (Camelot), BPM, Energie u. a. gleichzeitig
-- **Export** nach rekordbox (XML) – als neue Playlist oder bestehende überschreiben – oder als **Serato-Crates** (ZIP)
+- **Export** nach rekordbox (XML) – als neue Playlist oder bestehende überschreiben – oder nach **Serato**: Crates plus **Hot Cues und Exit Loop direkt in die MP3s** (als Kopie oder in die Originale, Ton bleibt bitgenau gleich; Chrome/Edge)
 - **Problemliste (CSV)** mit allem, was nicht automatisch ging, und was zu tun ist
 
 ## Zwei Wege rein
@@ -36,7 +36,7 @@ Läuft komplett lokal im Browser. Es wird nichts hochgeladen – die Seite ist p
 
 - Empfohlen: Chrome oder Edge am Desktop. Safari geht, Mobile nicht.
 - Die Energie-Bewertung ist eine Heuristik. Im Zweifel zählt dein Ohr – eigener Wert per Klick.
-- Serato-Export überträgt Playlists, keine Cues.
+- Serato-Cues: aktuell nur MP3. Vorhandene Serato-Cues bleiben erhalten (außer „überschreiben“ ist an). Bei MP3s kann es zwischen rekordbox und Serato einen minimalen Zeitversatz geben – beim ersten Mal einen Cue in Serato gegenprüfen.
 
 ## Entwicklung
 

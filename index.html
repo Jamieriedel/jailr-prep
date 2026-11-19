@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-q5J0apLGbkjm+jNqbgdSv74fYDDKIcAGJGy1Qh8qbnw='; style-src 'unsafe-inline'; font-src data:; img-src 'self' data: blob:; media-src blob:; connect-src 'none'; worker-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-rMjO7rpBOfOtdEjq6sFjgiCK9aLDzc53Oix/FHdBI3Y='; style-src 'unsafe-inline'; font-src data:; img-src 'self' data: blob:; media-src blob:; connect-src 'none'; worker-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="referrer" content="no-referrer">
 <title>JAILR Prep – Cue & Energy Lab</title>
@@ -403,10 +403,10 @@ function download(name,data,type){const b=data instanceof Blob?data:new Blob([da
 const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
 const safeName=s=>String(s).replace(/[\/\\:*?"<>|%\x00-\x1f]/g,'-').replace(/^\.+/,'').slice(0,120)||'Playlist';
 
-const ALG_V=6;const APP_V='2.1';
+const ALG_V=6;const APP_V='2.5';
 const RATING_VAL=[0,51,102,153,204,255];
 const ENERGY_T=[48,56,63,70];
-const DEFAULTS={mixBars:32,loopBars:8,sens:3,overwrite:false,energyMode:'abs',writeRating:true,writeComment:true,phrase:8,requireConfirm:true,maxMin:20};
+const DEFAULTS={mixBars:8,mixV:2,loopBars:8,sens:3,overwrite:false,energyMode:'abs',writeRating:true,writeComment:true,phrase:8,requireConfirm:true,maxMin:20};
 const CUE={A:{num:0,name:'Start',rgb:[40,226,20],col:'#28E214'},F:{num:5,name:'Mix-Out Start',rgb:[255,154,31],col:'#FF9A1F'},G:{num:6,name:'Mix-Out Ende',rgb:[240,68,58],col:'#F0443A'},L:{name:'Exit Loop',col:'#3D9BFF'}};
 const ERR={nofile:'Audiodatei nicht gefunden',decode:'Datei nicht lesbar',nogrid:'Kein Beatgrid',grid:'Beatgrid unbrauchbar',toolong:'Zu lang',mem:'Zu wenig Speicher',other:'Analyse fehlgeschlagen'};
 const FIX={nofile:'Musikordner bzw. Stick (neu) verbinden. Liegt die Datei woanders, den passenden Ordner wählen.',decode:'Format oder Datei defekt. In rekordbox abspielen; falls ok, als MP3 320 / WAV neu exportieren.',nogrid:'Track in rekordbox analysieren (Beatgrid), Library neu exportieren.',grid:'Beatgrid in rekordbox prüfen/korrigieren und neu exportieren.',toolong:`Vermutlich ein DJ-Mix. Wird bewusst übersprungen (Limit in den Einstellungen).`,mem:'Browser-Tab neu laden und weniger Tracks auf einmal analysieren.',other:'„Erneut versuchen“. Bleibt der Fehler, Track in rekordbox prüfen.'};
@@ -427,6 +427,7 @@ function parseKey(raw){
 /* ================= settings & storage ================= */
 let S={...DEFAULTS};
 try{Object.assign(S,JSON.parse(localStorage.getItem('jailr-prep-settings')||'{}'))}catch(e){}
+if(S.mixV!==2){S.mixBars=8;S.mixV=2} // v2.5: Fenster wird in Beats gedacht, Standard 32 Beats
 function saveS(){try{localStorage.setItem('jailr-prep-settings',JSON.stringify(S))}catch(e){}}
 const IDB={db:undefined,
   open(){if(this.db!==undefined)return Promise.resolve(this.db);return new Promise(res=>{try{const r=indexedDB.open('jailr-prep',2);r.onupgradeneeded=()=>{for(const n of['analysis','manual'])if(!r.result.objectStoreNames.contains(n))r.result.createObjectStore(n)};r.onsuccess=()=>{this.db=r.result;res(this.db)};r.onerror=()=>{this.db=null;res(null)}}catch(e){this.db=null;res(null)}})},
@@ -858,7 +859,7 @@ function renderMain(){
   if(!state.source){
     const coarse=matchMedia('(pointer:coarse)').matches;
     m.innerHTML=`<div class="empty"><section class="hero"><div class="hero-txt"><h1>Jeder Track bereit für den Mix.</h1>
-    <p>Hot Cue A auf den Start, F und G als 32-Bar-Fenster vor dem Energieabfall, ein Exit Loop, Energie und Lautstärke. Für die ganze Playlist auf einmal, zurück nach rekordbox oder Serato. Alles läuft in deinem Browser, deine Musik verlässt nie den Rechner.</p>
+    <p>Hot Cue A auf den Start, F und G als 32-Beat-Fenster vor dem Energieabfall, ein Exit Loop, Energie und Lautstärke. Für die ganze Playlist auf einmal, zurück nach rekordbox oder Serato. Alles läuft in deinem Browser, deine Musik verlässt nie den Rechner.</p>
     <div class="row"><button class="btn primary lg" data-act="xml">rekordbox XML laden</button><button class="btn lg" data-act="dir">${coarse?'Audiodateien wählen':'USB-Stick wählen'}</button></div></div>${heroDeck()}</section>
     <div class="steps"><div class="step"><b>Empfohlen</b><h3>rekordbox XML</h3><p>In rekordbox Datei → Collection im xml-Format exportieren, hier laden und den Musikordner verbinden. Die Cues gehen danach sauber in deine Library zurück.</p><div class="row"><button class="btn" data-act="xml">XML laden</button><button class="btn ghost" data-act="dir">Musikordner</button></div></div>
     <div class="step img">${ASSETS.usb?'<img data-opt class="cardimg" src="assets/usb-960.webp" alt="">':''}<b>Schneller Weg</b><h3>USB-Stick</h3><p>Den ganzen Stick mit PIONEER-Ordner wählen: Playlists, Beatgrids, Cover und Musik in einem Schritt. Chrome fragt nach „Hochladen“, es bleibt trotzdem alles lokal.</p><div class="row"><button class="btn" data-act="dir">Stick wählen</button></div></div>
@@ -1198,7 +1199,7 @@ function openModal(kind,ctx){
   const sw=(id,on)=>`<label class="switch"><input type="checkbox" id="${id}" ${on?'checked':''}><span></span></label>`;
   if(kind==='settings'){
     h=`<h2>Einstellungen</h2><p class="sub">Gilt sofort. Manuell verschobene Cues und eigene Energie-Werte bleiben.</p><div class="body">
-    <div class="field"><label>Mix-Out-Fenster F → G<small>G sitzt am Ende der letzten Energiephase.</small></label><select id="sMix">${[16,32,64].map(v=>`<option ${S.mixBars===v?'selected':''} value="${v}">${v} Bars</option>`).join('')}</select></div>
+    <div class="field"><label>Mix-Out-Fenster F → G<small>G sitzt am Ende der letzten Energiephase.</small></label><select id="sMix">${[4,8,16,32].map(v=>`<option ${S.mixBars===v?'selected':''} value="${v}">${v*4} Beats (${v} Takte)</option>`).join('')}</select></div>
     <div class="field"><label>Exit-Loop-Länge<small>Memory Cue mit Loop auf der letzten Phrase mit Kick.</small></label><select id="sLoop">${[4,8,16].map(v=>`<option ${S.loopBars===v?'selected':''} value="${v}">${v} Bars</option>`).join('')}</select></div>
     <div class="field"><label>Mindest-Energieabfall für G<small>dB. Kleiner = auch sanfte Outros zählen. Standard 3.</small></label><input type="number" id="sSens" min="1" max="12" step="0.5" value="${S.sens}"></div>
     <div class="field"><label>Energie-Skala<small>Fest: gleicher Maßstab für alle Tracks (empfohlen fürs Rating). Relativ: 1–5 gleichmäßig verteilt in der aktuellen Playlist.</small></label><select id="sMode"><option value="abs" ${S.energyMode==='abs'?'selected':''}>Fest</option><option value="rel" ${S.energyMode==='rel'?'selected':''}>Relativ zur Playlist</option></select></div>

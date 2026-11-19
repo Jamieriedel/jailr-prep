@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-dIBNksVLtUs7v3R40Eud96lqQgbLGbN4AmjYO8Gk+3U='; style-src 'unsafe-inline'; font-src data:; img-src 'self' data: blob:; media-src blob:; connect-src 'none'; worker-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-q5J0apLGbkjm+jNqbgdSv74fYDDKIcAGJGy1Qh8qbnw='; style-src 'unsafe-inline'; font-src data:; img-src 'self' data: blob:; media-src blob:; connect-src 'none'; worker-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="referrer" content="no-referrer">
 <title>JAILR Prep – Cue & Energy Lab</title>
@@ -596,10 +596,15 @@ function addFiles(list,quiet){
   state.fileCount+=n;if(state.source==='xml')matchFiles();
   if(!quiet){renderAll();toast(`${n} Audiodateien verbunden`)}
 }
+function prefixMatch(t){ // rekordbox USB exports shorten long file names: "Long Title (Extended Mix).mp3" → "Long Title (Exte.mp3"
+  const stem=n=>nfc(n).toLowerCase().replace(/\.[a-z0-9]{2,4}$/,'').trim(),ts=stem(t.fname),ext=(t.fname.split('.').pop()||'').toLowerCase();if(ts.length<12)return null;
+  const hits=[];for(const[k,arr]of state.files){if(!k.endsWith('.'+ext))continue;const cs=stem(k);if(cs.length>=12&&cs.length<ts.length&&ts.startsWith(cs))hits.push(...arr)}
+  if(!hits.length)return null;const tp=t.path.toLowerCase().split('/');const sc=hits.map(x=>({x,s:x.rp.toLowerCase().split('/').filter(seg=>tp.includes(seg)).length+stem(x.f.name).length/1000})).sort((a,b)=>b.s-a.s);
+  if(sc.length>1&&Math.floor(sc[0].s)===Math.floor(sc[1].s)&&Math.abs(sc[0].s-sc[1].s)<1e-9)t.fileAmb=true;return sc[0].x.f}
 function matchFiles(){
   for(const t of state.tracks.values()){if(state.source==='usb')continue;
     const c=state.files.get(nfc(t.fname).toLowerCase());t.fileAmb=false;
-    if(!c||!c.length){t.file=null;continue}
+    if(!c||!c.length){t.file=prefixMatch(t);continue}
     if(c.length===1){t.file=c[0].f;continue}
     const tp=t.path.toLowerCase();const sc=c.map(x=>{const rp=x.rp.toLowerCase();let i=0;while(i<rp.length&&i<tp.length&&rp[rp.length-1-i]===tp[tp.length-1-i])i++;return{x,s:i+(t.size&&x.f.size===t.size?1000:0)}}).sort((a,b)=>b.s-a.s);
     t.file=sc[0].x.f;t.fileAmb=sc.length>1&&sc[0].s===sc[1].s;
@@ -725,6 +730,9 @@ function computeCues(t){
 }
 function cueTimes(t){const c=computeCues(t);if(!c)return null;const a=t.analysis,cap=x=>Math.min(x,a.dur-0.05);return{A:cap(barT(a,c.A)),F:cap(barT(a,c.F)),G:cap(barT(a,c.G)),L0:cap(barT(a,c.L)),L1:cap(barT(a,c.L+S.loopBars)),c}}
 function slotState(t,k){if(k==='L')return t.marks.some(m=>m.num===-1&&(m.name||'').startsWith(CUE.L.name))?'repl':'set';const ex=t.marks.find(m=>m.num===CUE[k].num);return ex?(S.overwrite?'repl':'kept'):'set'}
+function pairBlocked(t,ct){ // F/G only make sense together and after A
+  if(slotState(t,'F')==='kept'||slotState(t,'G')==='kept')return'F oder G ist schon mit deinem eigenen Cue belegt';
+  if(slotState(t,'A')==='kept'){const a=t.marks.find(m=>m.num===0);if(a&&ct&&a.start>=ct.F)return'dein Cue A liegt hinter dem Mix-Out-Fenster'}return''}
 function needsConfirm(t){const c=computeCues(t);return!!c&&c.conf==='low'&&!c.ok&&S.requireConfirm}
 function validate(t){
   const a=t.analysis;if(!a)return['nicht analysiert'];const ct=cueTimes(t),d=a.dur,e=[];
@@ -894,6 +902,7 @@ function renderDetail(){
   let foot='';
   if(a){const c=ct.c;foot+=`<span class="tag">Sicherheit <b style="color:${c.conf==='high'?'var(--ok)':c.conf==='mid'?'var(--warn)':'var(--err)'}">${{high:'hoch',mid:'mittel',low:'niedrig'}[c.conf]}</b></span><span class="tag" title="Bar-Nummern der Cues">Bars A ${c.A+1}, F ${c.F+1}, G ${c.G+1}, Loop ${c.L+1}–${c.L+S.loopBars}</span><span class="tag" title="Anteile am Energie-Score (0–100), gesamt ${a.score}">Tempo ${a.parts[0]}, Dichte ${a.parts[1]}, Drive ${a.parts[2]}, Bass ${a.parts[3]}, Höhen ${a.parts[4]}</span><span class="tag">Peak <b>${a.peak}</b> dBFS</span>`;
     for(const k of['A','F','G'])if(slotState(t,k)==='kept')foot+=`<span>Hot Cue ${k} ist schon belegt und bleibt</span>`;
+    {const pb=pairBlocked(t,ct);if(pb)foot+=`<span class="flag">F/G werden nicht gesetzt: ${esc(pb)}</span>`}
     for(const f of[...c.flags,...qFlags(t)])foot+=`<span class="flag">⚠ ${esc(f)}</span>`;for(const f of c.info)foot+=`<span>ℹ ${esc(f)}</span>`;
     for(const v of validate(t))foot+=`<span class="flag e">✕ ${esc(v)} – wird nicht exportiert</span>`;
     if(needsConfirm(t))foot+='<span class="flag">Wird erst nach Bestätigung exportiert</span>';
@@ -971,7 +980,8 @@ function planTrack(t){
   else{const v=validate(t);if(v.length)p.reason='Prüfung: '+v[0];else if(needsConfirm(t))p.reason='unsicher, nicht bestätigt'}
   if(p.reason)return p;
   const ct=cueTimes(t);p.changed=true;p.ct=ct;
-  for(const k of['A','F','G']){const st=slotState(t,k),old=t.marks.find(m=>m.num===CUE[k].num);p.rows.push({k,act:st==='set'?'neu':st==='repl'?'ersetzt':'bleibt',old:old?old.start:null,nw:st==='kept'?null:ct[k]})}
+  const pb=pairBlocked(t,ct);p.pairNote=pb;
+  for(const k of['A','F','G']){const st=slotState(t,k),old=t.marks.find(m=>m.num===CUE[k].num);const skip=pb&&k!=='A'&&st!=='kept';p.rows.push({k,act:skip?'übersprungen':st==='set'?'neu':st==='repl'?'ersetzt':'bleibt',old:old?old.start:null,nw:st==='kept'||skip?null:ct[k]})}
   p.rows.push({k:'L',act:slotState(t,'L')==='repl'?'ersetzt':'neu',nw:ct.L0});
   if(S.writeRating)p.ratingNew=stars(t);return p;
 }
@@ -987,7 +997,7 @@ function buildTrackEl(doc,t,plan,locOverride){
   if(plan&&plan.changed){const ct=plan.ct;
     for(const pm of[...el.querySelectorAll('POSITION_MARK')]){const num=+pm.getAttribute('Num'),nm=pm.getAttribute('Name')||'';if((num===-1&&nm.startsWith(CUE.L.name))||(S.overwrite&&[0,5,6].includes(num)))pm.remove()}
     const add=attrs=>{const pm=doc.createElement('POSITION_MARK');for(const[k,v]of Object.entries(attrs))pm.setAttribute(k,String(v));el.appendChild(pm)};
-    for(const r of plan.rows)if(r.k!=='L'&&r.act!=='bleibt'){const C=CUE[r.k];add({Name:C.name,Type:0,Start:ct[r.k].toFixed(3),Num:C.num,Red:C.rgb[0],Green:C.rgb[1],Blue:C.rgb[2]})}
+    for(const r of plan.rows)if(r.k!=='L'&&r.act!=='bleibt'&&r.act!=='übersprungen'){const C=CUE[r.k];add({Name:C.name,Type:0,Start:ct[r.k].toFixed(3),Num:C.num,Red:C.rgb[0],Green:C.rgb[1],Blue:C.rgb[2]})}
     add({Name:`${CUE.L.name} ${S.loopBars} Bars`,Type:4,Start:ct.L0.toFixed(3),End:ct.L1.toFixed(3),Num:-1});
     const st=stars(t);if(S.writeRating)el.setAttribute('Rating',String(RATING_VAL[st]));
     if(S.writeComment){const g=gainOf(t);const tag=`[E${st} ${t.analysis.score} | ${t.analysis.lufs.toFixed(1)} LUFS${g!=null&&Math.abs(g)>=1.5?` | Gain ${g>0?'+':''}${g.toFixed(1)}`:''}]`;const old=(el.getAttribute('Comments')||'').replace(/\s*\[E\d[^\]]*\]\s*/g,' ').trim();el.setAttribute('Comments',(old?old+' ':'')+tag)}}
@@ -1081,7 +1091,7 @@ function seratoEntries(t,existing){
   // rekordbox hot cues → Serato (only where Serato slot is empty)
   for(const m of t.marks)if(m.type===0&&m.num>=0&&m.num<8&&!cues.has(m.num))cues.set(m.num,cueEntry(m.num,m.start*1000,SER_COL.X,m.name||''));
   let wrote=0;
-  if(ct){for(const k of['A','F','G']){const idx=CUE[k].num;if(slotState(t,k)==='kept')continue;if(cues.has(idx)&&!S.overwrite&&!t.marks.some(m=>m.num===idx))continue;cues.set(idx,cueEntry(idx,ct[k]*1000,SER_COL[k],CUE[k].name));wrote++}
+  if(ct){const pb=pairBlocked(t,ct);for(const k of['A','F','G']){const idx=CUE[k].num;if(slotState(t,k)==='kept'||(pb&&k!=='A'))continue;if(cues.has(idx)&&!S.overwrite&&!t.marks.some(m=>m.num===idx))continue;cues.set(idx,cueEntry(idx,ct[k]*1000,SER_COL[k],CUE[k].name));wrote++}
     let li=[...loops.entries()].find(([,e])=>new TextDecoder().decode(e.data.subarray(20)).startsWith(CUE.L.name));li=li?li[0]:0;while(loops.has(li)&&!new TextDecoder().decode(loops.get(li).data.subarray(20)).startsWith(CUE.L.name))li++;
     if(li<8){loops.set(li,loopEntry(li,ct.L0*1000,ct.L1*1000,`${CUE.L.name} ${S.loopBars} Bars`));wrote++}}
   const col=keep.find(e=>e.name==='COLOR')||{name:'COLOR',data:new Uint8Array([0,0xff,0xff,0xff])};
@@ -1175,7 +1185,7 @@ function renderXmlDiff(){
   const cx=exportCtx(),ch=cx.plans.filter(p=>p.changed),sk=cx.plans.filter(p=>!p.changed);let nNew=0,nRep=0,nKeep=0;
   for(const p of ch)for(const r of p.rows){if(r.act==='neu')nNew++;else if(r.act==='ersetzt')nRep++;else nKeep++}
   const fmt=x=>x==null?'–':fmtT(x);
-  const rows=cx.plans.map(p=>p.changed?`<tr><td>${esc(p.t.title)}</td>${p.rows.map(r=>`<td><span class="${r.act==='neu'?'neu':r.act==='ersetzt'?'ers':'blb'}">${r.k} ${r.act==='bleibt'?'bleibt '+fmt(r.old):r.act==='ersetzt'&&r.old!=null?fmt(r.old)+'→'+fmt(r.nw):fmt(r.nw)}</span></td>`).join('')}<td>${p.ratingNew!=null?`${p.ratingOld}★→${p.ratingNew}★`:'–'}</td></tr>`
+  const rows=cx.plans.map(p=>p.changed?`<tr><td>${esc(p.t.title)}</td>${p.rows.map(r=>`<td><span class="${r.act==='neu'?'neu':r.act==='ersetzt'?'ers':'blb'}" ${r.act==='übersprungen'?`title="${esc(p.pairNote)}"`:''}>${r.k} ${r.act==='bleibt'?'bleibt '+fmt(r.old):r.act==='übersprungen'?'übersprungen':r.act==='ersetzt'&&r.old!=null?fmt(r.old)+'→'+fmt(r.nw):fmt(r.nw)}</span></td>`).join('')}<td>${p.ratingNew!=null?`${p.ratingOld}★→${p.ratingNew}★`:'–'}</td></tr>`
     :`<tr><td>${esc(p.t.title)}</td><td colspan="5">${hasMeta(p.t)?'<span class="ers">nur Infos geändert</span>, ':''}<span class="skip">keine neuen Cues – ${esc(p.reason)}</span></td></tr>`).join('');
   $('#xDiff').innerHTML=`<div class="sum"><div><b>${ch.length}</b><span>Tracks mit Cues</span></div><div><b>${sk.length}</b><span>unverändert</span></div><div><b>${nNew}</b><span>neue Cues</span></div><div><b>${nRep}</b><span>ersetzte Cues</span></div></div>
     ${nKeep?`<div class="note">${nKeep} vorhandene Hot Cues bleiben unangetastet (Einstellung „überschreiben“ ist aus).</div>`:''}

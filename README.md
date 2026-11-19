@@ -10,11 +10,11 @@ Läuft komplett lokal im Browser. Es wird nichts hochgeladen – die Seite ist p
 
 - **Hot Cue A** auf den ersten Downbeat
 - **Hot Cue G + H** als 32-Beat-Mix-Out-Fenster (8 Takte, einstellbar) vor dem Energieabfall am Ende
-- **Exit Loop** (8 Bars) als Memory Cue, damit der Track nicht ausläuft
+- **Emergency Loop** als Memory Cue: 16, 8 oder 4 Beats – die App nimmt die längste Länge, die nahtlos loopt
 - **Energie 1–5** als Rating (Tempo, Dichte, Drive, Bass, Höhen – unabhängig von der Master-Lautstärke), per Klick überschreibbar
 - **Lautstärke (LUFS) & Gain-Empfehlung** relativ zur Playlist, Hinweise zu niedriger Bitrate und Übersteuerung
 - **Mehrfach-Sortierung** nach Key (Camelot), BPM, Energie u. a. gleichzeitig
-- **Export** nach rekordbox (XML) – als neue Playlist oder bestehende überschreiben – oder nach **Serato**: Crates plus **Hot Cues und Exit Loop direkt in die MP3s** (als Kopie oder in die Originale, Ton bleibt bitgenau gleich; Chrome/Edge)
+- **Export** nach rekordbox (XML) – als neue Playlist oder bestehende überschreiben – oder nach **Serato**: Crates plus **Hot Cues und Emergency Loop direkt in die MP3s** (als Kopie oder in die Originale, Ton bleibt bitgenau gleich; Chrome/Edge)
 - **Problemliste (CSV)** mit allem, was nicht automatisch ging, und was zu tun ist
 
 ## Zwei Wege rein

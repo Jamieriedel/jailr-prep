@@ -219,6 +219,13 @@ canvas#tl{width:100%;height:150px;display:block;border-radius:12px;background:va
 .switch input:checked+span:before{transform:translateX(18px)}
 .switch input:focus-visible+span{outline:2px solid var(--bone)}
 ol.guide{padding-left:20px;line-height:1.65;color:var(--smoke)}
+.tour .dots{display:flex;gap:6px;padding:0 24px 4px}.tour .dots i{height:4px;flex:1;border-radius:2px;background:var(--line2)}.tour .dots i.on{background:var(--bone)}
+.tour .kick{color:var(--fg2);font-size:12px;letter-spacing:.02em;padding:14px 24px 0}
+.tour .slide{min-height:300px}.tour .slide p{color:var(--smoke);line-height:1.6;margin:0 0 10px}
+.tour .cuemap{display:grid;grid-template-columns:repeat(8,1fr);gap:5px;margin:12px 0}.tour .cuemap span{border:1px solid var(--line2);border-radius:8px;padding:8px 0 6px;text-align:center;font-weight:700;font-size:12px;color:var(--fg2)}
+.tour .cuemap span small{display:block;font-weight:500;font-size:10px;margin-top:2px}.tour .cuemap .on{color:#11100F;border-color:transparent}
+.tour .seg{display:inline-flex;border:1px solid var(--line2);border-radius:999px;padding:3px;margin:4px 0 12px}.tour .seg button{border:0;background:none;color:var(--fg2);padding:7px 14px;border-radius:999px;font:inherit;font-weight:600;cursor:pointer}.tour .seg button.on{background:var(--bone);color:#11100F}
+.tour .foot{display:flex;align-items:center;gap:10px}.tour .foot label{margin-right:auto;color:var(--fg2);font-size:12px;display:flex;gap:6px;align-items:center}
 ol.guide b{color:var(--bone)}
 .note{background:var(--raised);border:1px solid var(--line);border-radius:12px;padding:11px 13px;color:var(--smoke);font-size:12.5px;line-height:1.55;margin:10px 0}
 .note.warn{border-color:#5a4520;background:rgba(255,178,36,.05)}.note.err{border-color:#6b2a25;background:rgba(240,68,58,.05)}
@@ -357,6 +364,7 @@ ol.guide b{color:var(--bone)}
     </div>
   </div>
   <button class="btn ghost icon" id="btnSettings" title="Einstellungen" aria-label="Einstellungen"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></svg></button>
+  <button class="btn ghost no-m" id="btnTour" title="Schritt für Schritt erklärt">Tutorial</button>
   <button class="btn ghost icon no-m" id="btnHelp" title="Anleitung & Shortcuts (?)" aria-label="Hilfe"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.7.3-1 .9-1 1.7M12 17h.01"/></svg></button>
 </header>
 <aside id="side" aria-label="Playlists"></aside>
@@ -403,11 +411,12 @@ function download(name,data,type){const b=data instanceof Blob?data:new Blob([da
 const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
 const safeName=s=>String(s).replace(/[\/\\:*?"<>|%\x00-\x1f]/g,'-').replace(/^\.+/,'').slice(0,120)||'Playlist';
 
-const ALG_V=6;const APP_V='2.5';
+const ALG_V=10;const APP_V='2.5';
 const RATING_VAL=[0,51,102,153,204,255];
 const ENERGY_T=[48,56,63,70];
-const DEFAULTS={mixBars:8,mixV:2,loopBars:8,sens:3,overwrite:false,energyMode:'abs',writeRating:true,writeComment:true,phrase:8,requireConfirm:true,maxMin:20};
-const CUE={A:{num:0,name:'Start',rgb:[40,226,20],col:'#28E214'},F:{num:5,name:'Mix-Out Start',rgb:[255,154,31],col:'#FF9A1F'},G:{num:6,name:'Mix-Out Ende',rgb:[240,68,58],col:'#F0443A'},L:{name:'Exit Loop',col:'#3D9BFF'}};
+const DEFAULTS={mixBars:8,mixV:2,loopMax:16,loopBars:8,sens:3,overwrite:false,energyMode:'abs',writeRating:true,writeComment:true,phrase:8,requireConfirm:true,maxMin:20};
+const CUE={A:{num:0,name:'Start',rgb:[40,226,20],col:'#28E214'},F:{num:6,name:'Mix-Out Start',rgb:[255,154,31],col:'#FF9A1F'},G:{num:7,name:'Mix-Out Ende',rgb:[240,68,58],col:'#F0443A'},L:{name:'Emergency Loop',col:'#3D9BFF'}};
+const LBL={A:'A',F:'G',G:'H',L:'Loop'};const KEY2CUE={A:'A',G:'F',H:'G',L:'L'};
 const ERR={nofile:'Audiodatei nicht gefunden',decode:'Datei nicht lesbar',nogrid:'Kein Beatgrid',grid:'Beatgrid unbrauchbar',toolong:'Zu lang',mem:'Zu wenig Speicher',other:'Analyse fehlgeschlagen'};
 const FIX={nofile:'Musikordner bzw. Stick (neu) verbinden. Liegt die Datei woanders, den passenden Ordner wählen.',decode:'Format oder Datei defekt. In rekordbox abspielen; falls ok, als MP3 320 / WAV neu exportieren.',nogrid:'Track in rekordbox analysieren (Beatgrid), Library neu exportieren.',grid:'Beatgrid in rekordbox prüfen/korrigieren und neu exportieren.',toolong:`Vermutlich ein DJ-Mix. Wird bewusst übersprungen (Limit in den Einstellungen).`,mem:'Browser-Tab neu laden und weniger Tracks auf einmal analysieren.',other:'„Erneut versuchen“. Bleibt der Fehler, Track in rekordbox prüfen.'};
 class AErr extends Error{constructor(code,msg){super(msg||ERR[code]);this.code=code}}
@@ -673,6 +682,18 @@ function downbeats(t,dur){
   let x=f.t-bl0,n=((f.beat+2)%4)+1;const pre=[];while(x>=-0.02){pre.push([Math.max(0,x),n]);x-=bl0;n=((n+2)%4)+1}beats.push(...pre.reverse());
   for(let i=0;i<T.length;i++){const s=T[i],e=i+1<T.length?T[i+1].t:dur,bl=60/s.bpm;let tt=s.t,nb=s.beat;while(tt<e-1e-4){beats.push([tt,nb]);tt+=bl;nb=nb%4+1}}
   const db=beats.filter(b=>b[1]===1).map(b=>b[0]);if(!db.length)return null;const bar=240/T[T.length-1].bpm;if(db[db.length-1]+bar<=dur+0.05)db.push(db[db.length-1]+bar);return db}
+const FFTN=1024,NBD=32,KICKB=8,SUB=8,FD=NBD+12,DIM=SUB*FD,CHB=(()=>{const m=new Int8Array(FFTN/2).fill(-1);for(let k=5;k<FFTN/2;k++){const f=k*22050/FFTN;if(f<110||f>4200)continue;m[k]=((Math.round(12*Math.log2(f/440))%12)+12)%12}return m})(),BANDS=(()=>{const e=[];for(let i=0;i<=NBD;i++)e.push(Math.max(i+1,Math.round(40*Math.pow(8000/40,i/NBD)*FFTN/22050)));return e})();
+const HANN=(()=>{const w=new Float32Array(FFTN);for(let i=0;i<FFTN;i++)w[i]=0.5-0.5*Math.cos(2*Math.PI*i/FFTN);return w})();
+function fftMag(re,im){const n=re.length;for(let i=1,j=0;i<n;i++){let b=n>>1;for(;j&b;b>>=1)j^=b;j^=b;if(i<j){let t=re[i];re[i]=re[j];re[j]=t;t=im[i];im[i]=im[j];im[j]=t}}
+  for(let len=2;len<=n;len<<=1){const a=-2*Math.PI/len,wr=Math.cos(a),wi=Math.sin(a);for(let i=0;i<n;i+=len){let cr=1,ci=0;for(let k=0;k<len/2;k++){const u=i+k,v=u+len/2,tr=re[v]*cr-im[v]*ci,ti=re[v]*ci+im[v]*cr;re[v]=re[u]-tr;im[v]=im[u]-ti;re[u]+=tr;im[u]+=ti;const nr=cr*wr-ci*wi;ci=cr*wi+ci*wr;cr=nr}}}}
+function beatSpec(L,R,sr,db,nb){ // per beat: 8 sub-frames x (32 log bands + 12 chroma) (dB, Int8) – fingerprint for loop seams
+  const re=new Float32Array(FFTN),im=new Float32Array(FFTN),out=new Int8Array(nb*4*DIM),n=L.length;let w=0;
+  for(let b=0;b<nb;b++){const T0=db[b],T1=db[b+1];for(let q=0;q<4*SUB;q++){const o=Math.floor((T0+(T1-T0)*q/(4*SUB))*sr);
+    for(let i=0;i<FFTN;i++){const k=o+i;re[i]=k<n?(L[k]+R[k])*0.5*HANN[i]:0;im[i]=0}fftMag(re,im);
+    const q8=v=>Math.max(-128,Math.min(127,Math.round(10*Math.log10(v+1e-10))));
+    for(let bd=0;bd<NBD;bd++){let e=0;const a=BANDS[bd],z=Math.max(a+1,BANDS[bd+1]);for(let k=a;k<z;k++)e+=re[k]*re[k]+im[k]*im[k];out[w++]=q8(e/(z-a))}
+    const ch=new Float64Array(12);for(let k=0;k<FFTN/2;k++)if(CHB[k]>=0)ch[CHB[k]]+=re[k]*re[k]+im[k]*im[k];for(let c=0;c<12;c++)out[w++]=q8(ch[c])}}
+  return out}
 async function analyzeTrack(t){
   if(!t.file)throw new AErr('nofile');
   if(!t.tempos.length)throw new AErr('nogrid');
@@ -689,6 +710,7 @@ async function analyzeTrack(t){
   const db=downbeats(t,dur);if(!db||db.length<9)throw new AErr('grid');
   const nb=db.length-1,dB=v=>r1(10*Math.log10(v+1e-12));const rms=[],low=[],mid=[],hi=[];
   for(let b=0;b<nb;b++){const h0=Math.floor(db[b]*sr/HOP),hx=Math.max(h0+1,Math.min(nh,Math.floor(db[b+1]*sr/HOP)));let a=0,l=0,m=0,h=0,c=0;for(let k=h0;k<hx;k++){a+=eA[k];l+=eL[k];m+=eM[k];h+=eH[k];c++}c=c||1;rms.push(dB(a/c));low.push(dB(l/c));mid.push(dB(m/c));hi.push(dB(h/c))}
+  const bf=beatSpec(L,R,sr,db,nb);await sleep(0);
   const rB=pct(rms,0.8),body=rms.map(v=>v>=rB-6);let on=0,beatsBody=0,eHb=0,eAb=0;
   for(let b=0;b<nb;b++){if(!body[b])continue;beatsBody+=4;const h0=Math.floor(db[b]*sr/HOP),hx=Math.min(nh-1,Math.floor(db[b+1]*sr/HOP));let prev=-200,prev2=-200;
     for(let k=h0;k<hx;k++){eHb+=eH[k];eAb+=eA[k];const v=10*Math.log10(eH[k]+1e-12);if(v-prev>4&&v-prev2>3)on++;prev2=prev;prev=v}}
@@ -696,7 +718,7 @@ async function analyzeTrack(t){
   const full=rms.filter(v=>v>=rB-4).length/Math.max(1,nb),bassRel=pct(low,0.8)-rB;
   const sT=clamp((bpm-120)/55),sD=clamp((opb-0.4)/2.2),sA=clamp((full-0.4)/0.5),sB=clamp((bassRel+7)/6),sH=clamp((hiRatio+30)/22);
   const score=Math.round(100*(0.3*sT+0.25*sD+0.2*sA+0.15*sB+0.1*sH));
-  return{v:ALG_V,dur:r1(dur),db:db.map(x=>Math.round(x*1000)/1000),rms,low,mid,hi,lufs:r1(loud),peak:r1(20*Math.log10(pk+1e-9)),clip:Math.round(clip/(n*nc)*1e5)/1e5,
+  return{v:ALG_V,dur:r1(dur),db:db.map(x=>Math.round(x*1000)/1000),rms,low,mid,hi,bf,lufs:r1(loud),peak:r1(20*Math.log10(pk+1e-9)),clip:Math.round(clip/(n*nc)*1e5)/1e5,
     opb:Math.round(opb*100)/100,hiRatio:r1(hiRatio),score,parts:[sT,sD,sA,sB,sH].map(x=>Math.round(x*100)),full:Math.round(full*100),bassRel:r1(bassRel)};
 }
 
@@ -704,7 +726,7 @@ async function analyzeTrack(t){
 function barT(a,b){const d=a.db;if(b<d.length)return d[Math.max(0,b)];const bar=d[d.length-1]-d[d.length-2];return d[d.length-1]+(b-d.length+1)*bar}
 const cueCache=new WeakMap();
 function computeCues(t){
-  const a=t.analysis;if(!a)return null;const sig=JSON.stringify([S.mixBars,S.loopBars,S.sens,S.phrase,t.manual]);const cc=cueCache.get(t);if(cc&&cc.sig===sig&&cc.a===a)return cc.c;
+  const a=t.analysis;if(!a)return null;const sig=JSON.stringify([S.mixBars,S.loopMax,S.sens,S.phrase,t.manual]);const cc=cueCache.get(t);if(cc&&cc.sig===sig&&cc.a===a)return cc.c;
   const nb=a.rms.length,P=S.phrase,flags=[],info=[];let conf=2;
   const rB=pct(a.rms,0.8),lB=pct(a.low,0.8);
   let bA=0;while(bA<nb&&(a.rms[bA]<rB-30||a.rms[bA]<-50))bA++;if(bA>=nb)bA=0;
@@ -718,30 +740,51 @@ function computeCues(t){
   if(!ph.length){bG=nb;flags.push('Track zu kurz für Phrasen-Analyse');conf=0}
   else{const peak=Math.max(...ph.map(p=>p.e));let best=-1;
     for(let j=Math.max(1,Math.floor(ph.length*0.25));j<ph.length;j++){let after=-Infinity;for(let k=j;k<ph.length;k++)after=Math.max(after,ph[k].e);const d=ph[j-1].e-after;if(ph[j-1].e>=peak-6&&d>=S.sens&&d>drop){drop=d;best=j}}
-    if(best<0){bG=p0+ph.length*P;info.push('Kein Outro: Energie bleibt bis zum Ende – F/G liegen auf den letzten Bars')}
+    if(best<0){bG=p0+ph.length*P;info.push('Kein Outro: Energie bleibt bis zum Ende – G/H liegen auf den letzten Bars')}
     else{bG=ph[best].s;if(drop<S.sens*1.5){info.push(`Energieabfall eher schwach (${drop.toFixed(1)} dB)`);conf=Math.min(conf,1)}}}
-  let bF=bG-S.mixBars;if(bF<bA){bF=bA;flags.push('Track kürzer als Mix-out-Fenster – F liegt auf A');conf=0}
-  const LB=S.loopBars,kick=a.low.map(v=>v>=lB-8);let bL=-1;
-  for(let s=p0+Math.floor((nb-p0-LB)/P)*P;s>=Math.max(bA,bG-LB);s-=P){let ok=s+LB<=nb;for(let i=s;ok&&i<s+LB;i++)if(!kick[i])ok=false;if(ok){bL=s;break}}
-  if(bL<0){bL=Math.max(bA,bG-LB);info.push('Kein durchgehender Kick am Ende – Loop sitzt direkt vor G');conf=Math.min(conf,1)}
+  let bF=bG-S.mixBars;if(bF<bA){bF=bA;flags.push('Track kürzer als Mix-out-Fenster – G liegt auf A');conf=0}
+  let bL,LBt,lErr;{const r=pickLoop(a,Math.max(bA,bG-32),nb,rB);bL=r.bar;LBt=r.len;lErr=r.err;
+    if(r.err>LOOP_T){info.push(`Kein wirklich sauberer Loop gefunden (Ähnlichkeit ${Math.round(100-10*r.err)} %) – Loop anhören`);conf=Math.min(conf,1)}}
   const m=t.manual||{},fG=m.G??bG;
-  const c={p0,phase,flags,info,drop,conf:['low','mid','high'][conf],auto:{A:bA,F:bF,G:bG,L:bL},A:m.A??bA,F:m.F??(m.G!=null?Math.max(m.A??bA,fG-S.mixBars):bF),G:fG,L:m.L??bL,
+  if(m.L!=null){const r=loopAt(a,m.L*4,rB);LBt=r.len;lErr=r.err}
+  const c={p0,phase,flags,info,drop,LB:LBt,lErr,conf:['low','mid','high'][conf],auto:{A:bA,F:bF,G:bG,L:bL},A:m.A??bA,F:m.F??(m.G!=null?Math.max(m.A??bA,fG-S.mixBars):bF),G:fG,L:m.L??bL,
     manual:['A','F','G','L'].some(k=>m[k]!=null),ok:!!m.ok};
   cueCache.set(t,{sig,a,c});return c;
 }
-function cueTimes(t){const c=computeCues(t);if(!c)return null;const a=t.analysis,cap=x=>Math.min(x,a.dur-0.05);return{A:cap(barT(a,c.A)),F:cap(barT(a,c.F)),G:cap(barT(a,c.G)),L0:cap(barT(a,c.L)),L1:cap(barT(a,c.L+S.loopBars)),c}}
-function slotState(t,k){if(k==='L')return t.marks.some(m=>m.num===-1&&(m.name||'').startsWith(CUE.L.name))?'repl':'set';const ex=t.marks.find(m=>m.num===CUE[k].num);return ex?(S.overwrite?'repl':'kept'):'set'}
+const LOOP_T=1.5,LOOP_LENS=[16,8,4];
+function beatT(a,q){const b=Math.floor(q/4),f=(q-b*4)/4,t0=barT(a,b);return f?t0+(barT(a,b+1)-t0)*f:t0}
+const rowsCache=new WeakMap();function bRows(a){if(!a.bf||!(a.bf instanceof Int8Array))return null;let r=rowsCache.get(a);if(!r){r=[];for(let i=0;i*DIM<a.bf.length;i++)r.push(a.bf.subarray(i*DIM,(i+1)*DIM));rowsCache.set(a,r)}return r}
+function cosC(x,o,n,y){let mx=0,my=0;for(let j=0;j<n;j++){mx+=x[o+j];my+=y[o+j]}mx/=n;my/=n;let xy=0,xx=0,yy=0;for(let j=0;j<n;j++){const a=x[o+j]-mx,b=y[o+j]-my;xy+=a*b;xx+=a*a;yy+=b*b}return xy/(Math.sqrt(xx*yy)+1e-9)}
+function beatSim(x,y){let t=0;for(let q=0;q<SUB;q++){const o=q*FD;t+=0.5*cosC(x,o,NBD,y)+0.5*cosC(x,o+NBD,12,y)}return t/SUB}
+function loopErr(B,s,L){ // 0 = perfect seam. Seam: beats before the jump vs. beats that originally lead into the loop start; block: loop vs. what follows
+  if(!B||s<2||s+L>B.length||B[0].length!==DIM)return 99;const ref=s+2*L<=B.length?s+L:(s-L>=0?s-L:-1);if(ref<0)return 99;
+  let seam=0;for(let i=1;i<=2;i++)seam+=beatSim(B[s+L-i],B[s-i]);seam/=2;let blk=0;for(let i=0;i<L;i++)blk+=beatSim(B[s+i],B[ref+i]);blk/=L;
+  return Math.round(100*(1-Math.min(seam,blk)))/10}
+const kickCache=new WeakMap();function loopOk(a,s,L,rB,noKick){const B=bRows(a);if(!B)return false;const kv=r=>{let m=-200;for(let j=0;j<KICKB;j++)m=Math.max(m,r[j]);return m};let kr=kickCache.get(a);if(kr==null){kr=pct(B.map(kv),0.8);kickCache.set(a,kr)}
+  for(let i=s;i<s+L;i++)if(!B[i]||(!noKick&&kv(B[i])<kr-10))return false;for(let b=Math.floor(s/4);b<Math.ceil((s+L)/4);b++)if(a.rms[b]<rB-9)return false;return true}
+function loopAt(a,s,rB){let best=null;for(const L of LOOP_LENS){if(L>S.loopMax)continue;const e=loopOk(a,s,L,rB)?loopErr(bRows(a),s,L):99;if(!best||e<best.err)best={len:L,err:e};if(e<=LOOP_T&&(!best||e<=best.err+0.4))return{len:L,err:e}}return best||{len:4,err:99}}
+function pickLoop(a,fromBar,nb,rB){
+  if(!bRows(a))return{bar:Math.max(0,Math.min(fromBar,nb-2)),len:Math.min(16,S.loopMax),err:99};
+  const cand={};for(let b=Math.max(1,fromBar);b<nb;b++)for(const L of LOOP_LENS){if(L>S.loopMax)continue;const s=b*4;if(!loopOk(a,s,L,rB,pickLoop.nk))continue;(cand[L]=cand[L]||[]).push({bar:b,len:L,err:loopErr(bRows(a),s,L)})}
+  const best={};for(const L in cand){const mn=Math.min(...cand[L].map(x=>x.err));best[L]=cand[L].filter(x=>x.err<=mn+0.15).pop()} // latest of the near-best
+  if(!Object.keys(best).length&&!pickLoop.nk){pickLoop.nk=1;try{return pickLoop(a,fromBar,nb,rB)}finally{pickLoop.nk=0}}
+  const all=Object.values(best);if(!all.length)return{bar:Math.max(1,Math.min(fromBar,nb-2)),len:4,err:99};
+  const mn=Math.min(...all.map(x=>x.err));for(const L of LOOP_LENS)if(best[L]&&best[L].err<=LOOP_T&&best[L].err<=mn+0.4)return best[L];
+  return all.find(x=>x.err===mn)}
+function cueTimes(t){const c=computeCues(t);if(!c)return null;const a=t.analysis,cap=x=>Math.min(x,a.dur-0.05);return{A:cap(barT(a,c.A)),F:cap(barT(a,c.F)),G:cap(barT(a,c.G)),L0:cap(barT(a,c.L)),L1:cap(beatT(a,c.L*4+c.LB)),c}}
+function isOurLoop(n){n=n||'';return n.startsWith(CUE.L.name)||n.startsWith('Exit Loop')}
+function slotState(t,k){if(k==='L')return t.marks.some(m=>m.num===-1&&isOurLoop(m.name))?'repl':'set';const ex=t.marks.find(m=>m.num===CUE[k].num);return ex?(S.overwrite?'repl':'kept'):'set'}
 function pairBlocked(t,ct){ // F/G only make sense together and after A
-  if(slotState(t,'F')==='kept'||slotState(t,'G')==='kept')return'F oder G ist schon mit deinem eigenen Cue belegt';
+  if(slotState(t,'F')==='kept'||slotState(t,'G')==='kept')return'G oder H ist schon mit deinem eigenen Cue belegt';
   if(slotState(t,'A')==='kept'){const a=t.marks.find(m=>m.num===0);if(a&&ct&&a.start>=ct.F)return'dein Cue A liegt hinter dem Mix-Out-Fenster'}return''}
 function needsConfirm(t){const c=computeCues(t);return!!c&&c.conf==='low'&&!c.ok&&S.requireConfirm}
 function validate(t){
   const a=t.analysis;if(!a)return['nicht analysiert'];const ct=cueTimes(t),d=a.dur,e=[];
   const ok=x=>Number.isFinite(x)&&x>=0&&x<=d;
-  for(const k of['A','F','G'])if(!ok(ct[k]))e.push(`${k} liegt außerhalb des Tracks`);
-  if(!ok(ct.L0)||!ok(ct.L1))e.push('Exit Loop endet nach dem Track');
-  if(!(ct.L1>ct.L0))e.push('Exit Loop hat keine Länge');
-  if(!(ct.A<=ct.F))e.push('F liegt vor A');if(!(ct.F<ct.G))e.push('G liegt nicht nach F');
+  for(const k of['A','F','G'])if(!ok(ct[k]))e.push(`${LBL[k]} liegt außerhalb des Tracks`);
+  if(!ok(ct.L0)||!ok(ct.L1))e.push('Emergency Loop endet nach dem Track');
+  if(!(ct.L1>ct.L0))e.push('Emergency Loop hat keine Länge');
+  if(!(ct.A<=ct.F))e.push('G liegt vor A');if(!(ct.F<ct.G))e.push('H liegt nicht nach G');
   return e;
 }
 
@@ -823,7 +866,7 @@ const STI={busy:'<span class="st"><span class="spin"></span>läuft</span>',done:
 function gainCell(t){const g=gainOf(t);if(g==null)return'–';const ab=Math.abs(g);return`<span class="gn ${ab>=3?'bad':ab>=1.5?'mid':''}" title="Gain-Korrektur ggü. Playlist-Schnitt (${state.refLufs} LUFS)">${ab<0.5?'±0':(g>0?'+':'−')+ab.toFixed(1)}</span>`}
 function rowHtml(t,pos){
   const a=t.analysis,s=stars(t),ct=a?computeCues(t):null;
-  const cb=k=>{if(!ct)return`<span class="cb ${k}">${k}</span>`;const st=slotState(t,k);return`<span class="cb ${k} ${st==='kept'?'kept':'on'}" title="${k==='L'?'Exit Loop':CUE[k].name}${st==='kept'?' – vorhandener Cue bleibt':st==='repl'?' – ersetzt vorhandenen':''}">${k}</span>`};
+  const cb=k=>{if(!ct)return`<span class="cb ${k}">${LBL[k]}</span>`;const st=slotState(t,k);return`<span class="cb ${k} ${st==='kept'?'kept':'on'}" title="${k==='L'?'Emergency Loop':CUE[k].name}${st==='kept'?' – vorhandener Cue bleibt':st==='repl'?' – ersetzt vorhandenen':''}">${LBL[k]}</span>`};
   const cls=['r',state.sel.has(t.id)?'sel':'',state.focus===t.id?'focus':''].join(' ');
   return`<tr data-id="${esc(t.id)}" class="${cls}"><td class="num">${pos}</td><td class="tt" title="${esc(t.path)}"><div class="ttw">${artTag(t)}<div class="ttx"><div class="ti">${esc(t.title)}${hasMeta(t)?'<span class="edt" title="Infos bearbeitet">●</span>':''}</div><div class="ar">${esc(t.artist)||'&nbsp;'}</div></div></div></td>
   <td class="r">${t.bpm?t.bpm.toFixed(1):'–'}</td>
@@ -837,7 +880,7 @@ function pspark(t){const v=t.pwav,W=120,H=22,n=v.length;let d='M0 '+H;for(let i=
 function spark(t,c){
   const a=t.analysis,W=120,H=22,n=a.rms.length;if(n<2)return'';const top=pct(a.rms,0.95),lo=top-24;const x=i=>i/n*W,y=v=>H-1-clamp((v-lo)/24)*(H-3);
   let d='M0 '+H;for(let i=0;i<n;i++)d+=` L${x(i).toFixed(1)} ${y(a.rms[i]).toFixed(1)} L${x(i+1).toFixed(1)} ${y(a.rms[i]).toFixed(1)}`;d+=` L${W} ${H}Z`;
-  return`<svg class="spark" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" aria-hidden="true"><rect x="${x(c.F)}" y="0" width="${Math.max(1,x(c.G)-x(c.F))}" height="${H}" fill="#FF9A1F" opacity=".16"/><rect x="${x(c.L)}" y="0" width="${Math.max(1,x(c.L+S.loopBars)-x(c.L))}" height="${H}" fill="#3D9BFF" opacity=".28"/><path d="${d}" fill="#BDB6AA" opacity=".55"/><rect x="${x(c.A)}" y="0" width="1.5" height="${H}" fill="#28E214"/><rect x="${x(c.F)}" y="0" width="1.5" height="${H}" fill="#FF9A1F"/><rect x="${x(c.G)}" y="0" width="1.5" height="${H}" fill="#F0443A"/></svg>`;
+  return`<svg class="spark" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" aria-hidden="true"><rect x="${x(c.F)}" y="0" width="${Math.max(1,x(c.G)-x(c.F))}" height="${H}" fill="#FF9A1F" opacity=".16"/><rect x="${x(c.L)}" y="0" width="${Math.max(1,x(c.L+c.LB/4)-x(c.L))}" height="${H}" fill="#3D9BFF" opacity=".28"/><path d="${d}" fill="#BDB6AA" opacity=".55"/><rect x="${x(c.A)}" y="0" width="1.5" height="${H}" fill="#28E214"/><rect x="${x(c.F)}" y="0" width="1.5" height="${H}" fill="#FF9A1F"/><rect x="${x(c.G)}" y="0" width="1.5" height="${H}" fill="#F0443A"/></svg>`;
 }
 const isM=()=>matchMedia('(max-width:760px)').matches;let ROWH=52,HEADH=36;const rowDims=()=>{ROWH=isM()?66:52;HEADH=isM()?0:36};
 const ASSETS={hero:false,usb:false}; // set true once the Higgsfield images are in /assets
@@ -849,21 +892,21 @@ function heroDeck(){
     const col=p>=L0&&p<G?'#78B6FF':p>=F&&p<G?'#FFBE78':'#F4F0E8',op=p>=F&&p<G?.95:.42+v*.4;
     svg+=`<rect x="${x}" y="${(mid-hu).toFixed(1)}" width="${(bw-1.2).toFixed(1)}" height="${hu}" rx="1" fill="${col}" opacity="${op.toFixed(2)}"/><rect x="${x}" y="${mid+1}" width="${(bw-1.2).toFixed(1)}" height="${hd}" fill="#ABA499" opacity=".3"/>`});
   const mk=(p,c,l)=>`<g><rect x="${(p*W-1).toFixed(1)}" y="8" width="2" height="${H-8}" fill="${c}"/><rect x="${(p*W-1).toFixed(1)}" y="0" width="${l.length>1?30:16}" height="14" rx="3.5" fill="${c}"/><text x="${(p*W+(l.length>1?3:4)).toFixed(1)}" y="10.5" font-size="9.5" font-weight="700" fill="#11100F">${l}</text></g>`;
-  const pads=[['A','var(--cA)',1],['B','',0],['C','',0],['D','',0],['E','',0],['F','var(--cF)',2],['G','var(--cG)',3],['Loop','var(--cL)',4]];
+  const pads=[['A','var(--cA)',1],['B','',0],['C','',0],['D','',0],['E','',0],['F','',0],['G','var(--cF)',2],['H','var(--cG)',3]];
   return`<div class="deck" aria-hidden="true">${ASSETS.hero?'<img data-opt class="photo" src="assets/hero-960.webp" alt="">':''}<div class="deck-in">
     <div class="deck-head"><span class="art big"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="2"/></svg></span><div><b>Hermès</b><span>Vermeer</span></div><span class="chip-k">6A</span><span class="chip-b">150 BPM</span></div>
     <div class="padgrid">${pads.map(([l,c,o])=>`<i class="${o?'lit':''}" style="${c?`--c:${c};`:''}--d:${o*0.45}s">${o?l:''}</i>`).join('')}</div>
-    <svg class="wave" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none"><rect x="${F*W}" y="0" width="${(G-F)*W}" height="${H}" fill="rgba(255,154,31,.08)"/>${svg}${mk(0.012,'#2FD44E','A')}${mk(F,'#FF9A1F','F')}${mk(L0,'#3D9BFF','Loop')}${mk(G,'#F0443A','G')}<rect class="ph" x="0" y="4" width="1.5" height="${H-4}" fill="#fff"/></svg></div></div>`}
+    <svg class="wave" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none"><rect x="${F*W}" y="0" width="${(G-F)*W}" height="${H}" fill="rgba(255,154,31,.08)"/>${svg}${mk(0.012,'#2FD44E','A')}${mk(F,'#FF9A1F','G')}${mk(L0,'#3D9BFF','Loop')}${mk(G,'#F0443A','H')}<rect class="ph" x="0" y="4" width="1.5" height="${H-4}" fill="#fff"/></svg></div></div>`}
 function renderMain(){
   const m=$('#main');
   if(!state.source){
     const coarse=matchMedia('(pointer:coarse)').matches;
     m.innerHTML=`<div class="empty"><section class="hero"><div class="hero-txt"><h1>Jeder Track bereit für den Mix.</h1>
-    <p>Hot Cue A auf den Start, F und G als 32-Beat-Fenster vor dem Energieabfall, ein Exit Loop, Energie und Lautstärke. Für die ganze Playlist auf einmal, zurück nach rekordbox oder Serato. Alles läuft in deinem Browser, deine Musik verlässt nie den Rechner.</p>
+    <p>Hot Cue A auf den Start, G und H als 32-Beat-Fenster vor dem Energieabfall, ein Emergency Loop, der sauber loopt, Energie und Lautstärke. Für die ganze Playlist auf einmal, zurück nach rekordbox oder Serato. Alles läuft in deinem Browser, deine Musik verlässt nie den Rechner.</p>
     <div class="row"><button class="btn primary lg" data-act="xml">rekordbox XML laden</button><button class="btn lg" data-act="dir">${coarse?'Audiodateien wählen':'USB-Stick wählen'}</button></div></div>${heroDeck()}</section>
     <div class="steps"><div class="step"><b>Empfohlen</b><h3>rekordbox XML</h3><p>In rekordbox Datei → Collection im xml-Format exportieren, hier laden und den Musikordner verbinden. Die Cues gehen danach sauber in deine Library zurück.</p><div class="row"><button class="btn" data-act="xml">XML laden</button><button class="btn ghost" data-act="dir">Musikordner</button></div></div>
     <div class="step img">${ASSETS.usb?'<img data-opt class="cardimg" src="assets/usb-960.webp" alt="">':''}<b>Schneller Weg</b><h3>USB-Stick</h3><p>Den ganzen Stick mit PIONEER-Ordner wählen: Playlists, Beatgrids, Cover und Musik in einem Schritt. Chrome fragt nach „Hochladen“, es bleibt trotzdem alles lokal.</p><div class="row"><button class="btn" data-act="dir">Stick wählen</button></div></div>
-    <div class="step"><b>Danach</b><h3>Prüfen und exportieren</h3><p>Analysieren, Cues anhören und mit Maus, Pfeiltasten oder Finger verschieben. Jeder Export wird vorher geprüft und zeigt dir, was sich ändert.</p><div class="row"><button class="btn" data-act="help">Anleitung</button></div></div></div>
+    <div class="step"><b>Danach</b><h3>Prüfen und exportieren</h3><p>Analysieren, Cues anhören und mit Maus, Pfeiltasten oder Finger verschieben. Jeder Export wird vorher geprüft und zeigt dir, was sich ändert.</p><div class="row"><button class="btn" data-act="tour">Tutorial starten</button><button class="btn ghost" data-act="help">Kurzanleitung</button></div></div></div>
     <p class="foot-tip">${coarse?'Am Handy lassen sich XML und einzelne Audiodateien wählen, ganze Ordner und Sticks nur am Rechner.':'Tipp: XML, Musikordner oder Stick einfach ins Fenster ziehen.'}</p></div>`;
     $$('#main img[data-opt]').forEach(i=>{i.addEventListener('error',()=>i.remove());i.addEventListener('load',()=>i.classList.add('on'));if(i.complete&&i.naturalWidth)i.classList.add('on')});return}
   computeView();
@@ -892,7 +935,7 @@ function renderDetail(){
   $('#dFacts').innerHTML=`<span><b>${t.bpm?t.bpm.toFixed(1):'–'}</b> BPM</span><span>${t.key?`<span class="kc" style="--h:${(t.key.n-1)*30}">${t.cam}</span>`:'–'} ${esc(t.keyName||'')}</span>`
     +(a?`<span title="Klick auf die Balken = eigene Bewertung">Energie <span class="estars">${[1,2,3,4,5].map(i=>`<button data-e="${i}" class="${i<=es?'on':''}" aria-label="Energie ${i}"></button>`).join('')}</span> <b>${es}</b>${t.manual&&t.manual.E?` <button class="lnk" data-e="0">auto ${autoStars(t)}</button>`:''}</span><span><b>${a.lufs.toFixed(1)}</b> LUFS</span><span>Gain ${gainCell(t)}</span>`:'')
     +(t.kbps?`<span><b>${t.kbps}</b> kbps</span>`:'');
-  $('#dJumps').innerHTML=ct?[['A',ct.A,CUE.A.col],['F',ct.F,CUE.F.col],['G',ct.G,CUE.G.col],['L',ct.L0,CUE.L.col]].map(([k,tm,col])=>`<button class="jb ${TL.sel===k?'sel':''}" style="--c:${col}" data-jump="${k}" title="${k==='L'?'Exit Loop anspielen (loopt)':CUE[k].name+' anspielen'} – Taste ${k}, dann ←/→ verschieben">${k==='L'?'Loop':k}<span class="t">${fmtT(tm)}</span></button>`).join(''):'';
+  $('#dJumps').innerHTML=ct?[['A',ct.A,CUE.A.col],['F',ct.F,CUE.F.col],['G',ct.G,CUE.G.col],['L',ct.L0,CUE.L.col]].map(([k,tm,col])=>`<button class="jb ${TL.sel===k?'sel':''}" style="--c:${col}" data-jump="${k}" title="${k==='L'?'Emergency Loop anspielen (loopt)':CUE[k].name+' anspielen'} – Taste ${LBL[k]}, dann ←/→ verschieben">${LBL[k]}<span class="t">${fmtT(tm)}</span></button>`).join(''):'';
   let acts='';
   if(ct&&!ct.c.ok&&(ct.c.conf!=='high'||ct.c.flags.length))acts+=`<button class="btn sm okb" data-act="confirm" title="Cues geprüft und ok (C)">✓ Bestätigen</button>`;
   if(ct&&ct.c.ok)acts+=`<button class="btn sm ghost" data-act="unconfirm" title="Bestätigung zurücknehmen">Bestätigt ✓</button>`;
@@ -901,9 +944,9 @@ function renderDetail(){
   if(t.file&&(a||t.status==='error'))acts+=`<button class="btn sm ghost" data-act="reanalyze">${t.status==='error'?'Erneut versuchen':'Neu analysieren'}</button>`;
   $('#dActs').innerHTML=acts;
   let foot='';
-  if(a){const c=ct.c;foot+=`<span class="tag">Sicherheit <b style="color:${c.conf==='high'?'var(--ok)':c.conf==='mid'?'var(--warn)':'var(--err)'}">${{high:'hoch',mid:'mittel',low:'niedrig'}[c.conf]}</b></span><span class="tag" title="Bar-Nummern der Cues">Bars A ${c.A+1}, F ${c.F+1}, G ${c.G+1}, Loop ${c.L+1}–${c.L+S.loopBars}</span><span class="tag" title="Anteile am Energie-Score (0–100), gesamt ${a.score}">Tempo ${a.parts[0]}, Dichte ${a.parts[1]}, Drive ${a.parts[2]}, Bass ${a.parts[3]}, Höhen ${a.parts[4]}</span><span class="tag">Peak <b>${a.peak}</b> dBFS</span>`;
-    for(const k of['A','F','G'])if(slotState(t,k)==='kept')foot+=`<span>Hot Cue ${k} ist schon belegt und bleibt</span>`;
-    {const pb=pairBlocked(t,ct);if(pb)foot+=`<span class="flag">F/G werden nicht gesetzt: ${esc(pb)}</span>`}
+  if(a){const c=ct.c;foot+=`<span class="tag">Sicherheit <b style="color:${c.conf==='high'?'var(--ok)':c.conf==='mid'?'var(--warn)':'var(--err)'}">${{high:'hoch',mid:'mittel',low:'niedrig'}[c.conf]}</b></span><span class="tag" title="Bar-Nummern der Cues">Bars A ${c.A+1}, G ${c.F+1}, H ${c.G+1}, Loop ab ${c.L+1} (${c.LB} Beats)</span><span class="tag" title="Anteile am Energie-Score (0–100), gesamt ${a.score}">Tempo ${a.parts[0]}, Dichte ${a.parts[1]}, Drive ${a.parts[2]}, Bass ${a.parts[3]}, Höhen ${a.parts[4]}</span><span class="tag">Peak <b>${a.peak}</b> dBFS</span>`;
+    for(const k of['A','F','G'])if(slotState(t,k)==='kept')foot+=`<span>Hot Cue ${LBL[k]} ist schon belegt und bleibt</span>`;
+    {const pb=pairBlocked(t,ct);if(pb)foot+=`<span class="flag">G/H werden nicht gesetzt: ${esc(pb)}</span>`}
     for(const f of[...c.flags,...qFlags(t)])foot+=`<span class="flag">⚠ ${esc(f)}</span>`;for(const f of c.info)foot+=`<span>ℹ ${esc(f)}</span>`;
     for(const v of validate(t))foot+=`<span class="flag e">✕ ${esc(v)} – wird nicht exportiert</span>`;
     if(needsConfirm(t))foot+='<span class="flag">Wird erst nach Bestätigung exportiert</span>';
@@ -933,13 +976,13 @@ function drawTL(){
   c.fillStyle='#11100F';c.fillRect(0,mid,w,1);
   const mk=(k,tm,col)=>{const X=Math.round(x(tm));c.fillStyle=col;c.fillRect(X-1,TOP-2,2,BOT-TOP+2);const lw=k==='L'?34:20,lx=Math.min(Math.max(0,X-1),w-lw);
     c.beginPath();c.roundRect?c.roundRect(lx,2,lw,18,5):c.rect(lx,2,lw,18);c.fill();if(TL.sel===k){c.strokeStyle='#F4F0E8';c.lineWidth=1.5;c.beginPath();c.roundRect?c.roundRect(lx-1.5,0.5,lw+3,21,6):c.rect(lx-1.5,0.5,lw+3,21);c.stroke()}
-    c.fillStyle='#11100F';c.font=`700 11px ${F}`;c.fillText(k==='L'?'Loop':k,lx+(k==='L'?5:6),15)};
+    c.fillStyle='#11100F';c.font=`700 11px ${F}`;c.fillText(LBL[k],lx+(k==='L'?5:6),15)};
   mk('L',ct.L0,CUE.L.col);mk('A',ct.A,CUE.A.col);mk('F',ct.F,CUE.F.col);mk('G',ct.G,CUE.G.col);
   if(TL.hover>=0){c.fillStyle='rgba(244,240,232,.4)';c.fillRect(x(barT(a,TL.hover)),TOP,1,BOT-TOP)}
   if(PB.id===t.id&&PB.src){const X=x(PB.pos());c.fillStyle='#fff';c.fillRect(X-0.75,TOP-2,1.5,BOT-TOP+2);c.beginPath();c.moveTo(X-5,TOP-6);c.lineTo(X+5,TOP-6);c.lineTo(X,TOP);c.fill()}
 }
 function nearestBar(a,s){let best=0,bd=1e9;for(let b=0;b<a.db.length;b++){const d=Math.abs(a.db[b]-s);if(d<bd){bd=d;best=b}}return best}
-function moveMarker(k,delta){const t=state.tracks.get(state.focus);if(!t||!t.analysis)return;const c=computeCues(t);const nb=t.analysis.rms.length;const nv=clamp(c[k]+delta,0,k==='L'?nb-S.loopBars:nb);if(nv===c[k])return;const p={[k]:nv,ok:true};if(k==='G'&&(t.manual?.F==null))p.F=null;setManual(t,p)}
+function moveMarker(k,delta){const t=state.tracks.get(state.focus);if(!t||!t.analysis)return;const c=computeCues(t);const nb=t.analysis.rms.length;const nv=clamp(c[k]+delta,0,k==='L'?nb-1:nb);if(nv===c[k])return;const p={[k]:nv,ok:true};if(k==='G'&&(t.manual?.F==null))p.F=null;setManual(t,p)}
 
 /* ================= playback ================= */
 const PB={src:null,id:null,buf:new Map(),t0:0,off:0,loop:null,raf:0,
@@ -996,10 +1039,10 @@ function buildTrackEl(doc,t,plan,locOverride){
   if(locOverride)el.setAttribute('Location',locOverride);
   if(hasMeta(t)){const map={title:'Name',artist:'Artist',album:'Album',genre:'Genre',keyRaw:'Tonality',comments:'Comments'};for(const[k,attr]of Object.entries(map))if(t.manual.meta[k]!=null)el.setAttribute(attr,t.manual.meta[k])}
   if(plan&&plan.changed){const ct=plan.ct;
-    for(const pm of[...el.querySelectorAll('POSITION_MARK')]){const num=+pm.getAttribute('Num'),nm=pm.getAttribute('Name')||'';if((num===-1&&nm.startsWith(CUE.L.name))||(S.overwrite&&[0,5,6].includes(num)))pm.remove()}
+    for(const pm of[...el.querySelectorAll('POSITION_MARK')]){const num=+pm.getAttribute('Num'),nm=pm.getAttribute('Name')||'';if((num===-1&&isOurLoop(nm))||(S.overwrite&&[0,6,7].includes(num)))pm.remove()}
     const add=attrs=>{const pm=doc.createElement('POSITION_MARK');for(const[k,v]of Object.entries(attrs))pm.setAttribute(k,String(v));el.appendChild(pm)};
     for(const r of plan.rows)if(r.k!=='L'&&r.act!=='bleibt'&&r.act!=='übersprungen'){const C=CUE[r.k];add({Name:C.name,Type:0,Start:ct[r.k].toFixed(3),Num:C.num,Red:C.rgb[0],Green:C.rgb[1],Blue:C.rgb[2]})}
-    add({Name:`${CUE.L.name} ${S.loopBars} Bars`,Type:4,Start:ct.L0.toFixed(3),End:ct.L1.toFixed(3),Num:-1});
+    add({Name:`${CUE.L.name} ${ct.c.LB} Beats`,Type:4,Start:ct.L0.toFixed(3),End:ct.L1.toFixed(3),Num:-1});
     const st=stars(t);if(S.writeRating)el.setAttribute('Rating',String(RATING_VAL[st]));
     if(S.writeComment){const g=gainOf(t);const tag=`[E${st} ${t.analysis.score} | ${t.analysis.lufs.toFixed(1)} LUFS${g!=null&&Math.abs(g)>=1.5?` | Gain ${g>0?'+':''}${g.toFixed(1)}`:''}]`;const old=(el.getAttribute('Comments')||'').replace(/\s*\[E\d[^\]]*\]\s*/g,' ').trim();el.setAttribute('Comments',(old?old+' ':'')+tag)}}
   return el;
@@ -1031,8 +1074,8 @@ function buildXmlDoc(cx){
 function selfCheckXml(xml,cx){ // parse what we produced and verify it before download
   const d=new DOMParser().parseFromString(xml,'application/xml');if(d.querySelector('parsererror'))return['XML nicht wohlgeformt'];
   const e=[];const trs=d.querySelectorAll('COLLECTION > TRACK');if(trs.length!==cx.plans.length)e.push('Track-Anzahl stimmt nicht');
-  trs.forEach(tr=>{const dur=+tr.getAttribute('TotalTime')||1e9;const m={};tr.querySelectorAll('POSITION_MARK').forEach(p=>{const s=+p.getAttribute('Start');if(!(s>=0&&s<=dur+1))e.push(`${tr.getAttribute('Name')}: Cue außerhalb`);if(p.hasAttribute('End')&&!(+p.getAttribute('End')>s))e.push(`${tr.getAttribute('Name')}: Loop ohne Länge`);m[p.getAttribute('Num')]=s});
-    if(m['0']!=null&&m['5']!=null&&m['6']!=null&&!(m['0']<=m['5']&&m['5']<m['6']))e.push(`${tr.getAttribute('Name')}: Reihenfolge A/F/G`)});
+  trs.forEach(tr=>{const dur=+tr.getAttribute('TotalTime')||1e9;const m={};tr.querySelectorAll('POSITION_MARK').forEach(p=>{const s=+p.getAttribute('Start');if(!(s>=0&&s<=dur+1))e.push(`${tr.getAttribute('Name')}: Cue außerhalb`);if(p.hasAttribute('End')&&!(+p.getAttribute('End')>s))e.push(`${tr.getAttribute('Name')}: Loop ohne Länge`);m[p.getAttribute('Num')+'|'+(p.getAttribute('Name')||'')]=s});
+    const g=m['6|Mix-Out Start'],h=m['7|Mix-Out Ende'];if(g!=null&&h!=null&&!(g<h))e.push(`${tr.getAttribute('Name')}: Reihenfolge G/H`)});
   return e;
 }
 function exportXml(){
@@ -1093,8 +1136,8 @@ function seratoEntries(t,existing){
   for(const m of t.marks)if(m.type===0&&m.num>=0&&m.num<8&&!cues.has(m.num))cues.set(m.num,cueEntry(m.num,m.start*1000,SER_COL.X,m.name||''));
   let wrote=0;
   if(ct){const pb=pairBlocked(t,ct);for(const k of['A','F','G']){const idx=CUE[k].num;if(slotState(t,k)==='kept'||(pb&&k!=='A'))continue;if(cues.has(idx)&&!S.overwrite&&!t.marks.some(m=>m.num===idx))continue;cues.set(idx,cueEntry(idx,ct[k]*1000,SER_COL[k],CUE[k].name));wrote++}
-    let li=[...loops.entries()].find(([,e])=>new TextDecoder().decode(e.data.subarray(20)).startsWith(CUE.L.name));li=li?li[0]:0;while(loops.has(li)&&!new TextDecoder().decode(loops.get(li).data.subarray(20)).startsWith(CUE.L.name))li++;
-    if(li<8){loops.set(li,loopEntry(li,ct.L0*1000,ct.L1*1000,`${CUE.L.name} ${S.loopBars} Bars`));wrote++}}
+    let li=[...loops.entries()].find(([,e])=>isOurLoop(new TextDecoder().decode(e.data.subarray(20))));li=li?li[0]:0;while(loops.has(li)&&!isOurLoop(new TextDecoder().decode(loops.get(li).data.subarray(20))))li++;
+    if(li<8){loops.set(li,loopEntry(li,ct.L0*1000,ct.L1*1000,`${CUE.L.name} ${ct.c.LB} Beats`));wrote++}}
   const col=keep.find(e=>e.name==='COLOR')||{name:'COLOR',data:new Uint8Array([0,0xff,0xff,0xff])};
   const rest=keep.filter(e=>e.name!=='COLOR');
   return{entries:[col,...[...cues.keys()].sort((a,b)=>a-b).map(k=>cues.get(k)),...[...loops.keys()].sort((a,b)=>a-b).map(k=>loops.get(k)),...rest],wrote,count:cues.size+loops.size};
@@ -1186,25 +1229,61 @@ function renderXmlDiff(){
   const cx=exportCtx(),ch=cx.plans.filter(p=>p.changed),sk=cx.plans.filter(p=>!p.changed);let nNew=0,nRep=0,nKeep=0;
   for(const p of ch)for(const r of p.rows){if(r.act==='neu')nNew++;else if(r.act==='ersetzt')nRep++;else nKeep++}
   const fmt=x=>x==null?'–':fmtT(x);
-  const rows=cx.plans.map(p=>p.changed?`<tr><td>${esc(p.t.title)}</td>${p.rows.map(r=>`<td><span class="${r.act==='neu'?'neu':r.act==='ersetzt'?'ers':'blb'}" ${r.act==='übersprungen'?`title="${esc(p.pairNote)}"`:''}>${r.k} ${r.act==='bleibt'?'bleibt '+fmt(r.old):r.act==='übersprungen'?'übersprungen':r.act==='ersetzt'&&r.old!=null?fmt(r.old)+'→'+fmt(r.nw):fmt(r.nw)}</span></td>`).join('')}<td>${p.ratingNew!=null?`${p.ratingOld}★→${p.ratingNew}★`:'–'}</td></tr>`
+  const rows=cx.plans.map(p=>p.changed?`<tr><td>${esc(p.t.title)}</td>${p.rows.map(r=>`<td><span class="${r.act==='neu'?'neu':r.act==='ersetzt'?'ers':'blb'}" ${r.act==='übersprungen'?`title="${esc(p.pairNote)}"`:''}>${LBL[r.k]} ${r.act==='bleibt'?'bleibt '+fmt(r.old):r.act==='übersprungen'?'übersprungen':r.act==='ersetzt'&&r.old!=null?fmt(r.old)+'→'+fmt(r.nw):fmt(r.nw)}</span></td>`).join('')}<td>${p.ratingNew!=null?`${p.ratingOld}★→${p.ratingNew}★`:'–'}</td></tr>`
     :`<tr><td>${esc(p.t.title)}</td><td colspan="5">${hasMeta(p.t)?'<span class="ers">nur Infos geändert</span>, ':''}<span class="skip">keine neuen Cues – ${esc(p.reason)}</span></td></tr>`).join('');
   $('#xDiff').innerHTML=`<div class="sum"><div><b>${ch.length}</b><span>Tracks mit Cues</span></div><div><b>${sk.length}</b><span>unverändert</span></div><div><b>${nNew}</b><span>neue Cues</span></div><div><b>${nRep}</b><span>ersetzte Cues</span></div></div>
     ${nKeep?`<div class="note">${nKeep} vorhandene Hot Cues bleiben unangetastet (Einstellung „überschreiben“ ist aus).</div>`:''}
     ${sk.length?`<div class="note warn">${sk.length} Tracks bekommen keine neuen Cues (Fehler, nicht analysiert oder unbestätigt). Sie sind trotzdem in der Playlist, damit sie vollständig bleibt – mit ihrem bisherigen Stand.</div>`:''}
-    <div class="diff"><table><thead><tr><th>Track</th><th>A</th><th>F</th><th>G</th><th>Loop</th><th>Rating</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+    <div class="diff"><table><thead><tr><th>Track</th><th>A</th><th>G</th><th>H</th><th>Loop</th><th>Rating</th></tr></thead><tbody>${rows}</tbody></table></div>`;
   const nm=cx.plans.filter(p=>hasMeta(p.t)).length;$('#xGo').disabled=!ch.length&&!nm;$('#xInfo').textContent=ch.length||nm?(nm?`${nm} Tracks mit geänderten Infos`:''):'Nichts zu exportieren';
 }
+let tourDj='rb';
+const TOUR=[
+ {t:'Was die App für dich macht',b:`<p>Du gibst ihr eine Playlist, sie bereitet jeden Track für den Mix vor und schreibt alles zurück in dein DJ-Programm.</p>
+  <div class="cuemap"><span class="on" style="background:var(--cA)">A<small>Start</small></span><span>B</span><span>C</span><span>D</span><span>E</span><span>F</span><span class="on" style="background:var(--cF)">G<small>Mix-Out</small></span><span class="on" style="background:var(--cG)">H<small>Energie fällt</small></span></div>
+  <ol class="guide"><li><b>Hot Cue A</b> auf dem ersten Beat.</li><li><b>Hot Cue G und H</b>: 32 Beats Mix-Out-Fenster. H liegt dort, wo die Energie am Ende abfällt.</li>
+  <li><b>Emergency Loop</b> als Memory Cue: 16, 8 oder 4 Beats, je nachdem, was nahtlos loopt. Rettet dich, wenn der Track ausläuft.</li>
+  <li><b>Energie 1–5</b> im Rating-Feld, dazu Lautheit, Gain-Hinweise und schlechte Bitraten.</li></ol>
+  <div class="note">Deine Musik verlässt nie deinen Rechner. Alles läuft im Browser. Deine eigenen Hot Cues bleiben, solange „überschreiben“ aus ist.</div>`},
+ {t:'Playlists laden',b:`<p>Die App braucht deine Playlists und ein Beatgrid. Beides kommt aus rekordbox.</p>
+  <ol class="guide"><li><b>Empfohlen:</b> in rekordbox <b>Datei → Exportieren → Collection im xml-Format exportieren</b>. Die Datei hier mit „rekordbox XML laden“ öffnen.</li>
+  <li>Danach den <b>Musikordner</b> verbinden, in dem deine Tracks liegen (z. B. Musik). Die App findet die Dateien selbst, auch bei gekürzten Namen.</li>
+  <li><b>Alternative:</b> den ganzen <b>USB-Stick</b> mit dem PIONEER-Ordner wählen. Gut zum Testen, für den Rückweg nach rekordbox ist die XML aber sicherer.</li></ol>
+  <div class="note warn">Nur Serato und kein rekordbox? Dann fehlt das Beatgrid, und die App kann die Tracks nicht analysieren. Einmal in rekordbox analysieren reicht.</div>`},
+ {t:'Analysieren',b:`<p>Links eine Playlist wählen und oben auf <b>Analysieren</b> klicken (oder <kbd>Enter</kbd>). Pro Track dauert das ein paar Sekunden.</p>
+  <ol class="guide"><li><b>Grün</b>: fertig, Cues sind sicher.</li><li><b>Gelb</b>: kurz anhören. Die App sagt dir, warum (z. B. schwacher Energieabfall oder kein ganz sauberer Loop).</li>
+  <li><b>„Bestätigen“</b>: Sicherheit niedrig. Diese Tracks bekommen erst Cues, wenn du sie geprüft und mit <kbd>C</kbd> bestätigt hast.</li><li><b>Rot</b>: Datei fehlt oder ist kaputt. Diese Tracks werden nie verändert.</li></ol>`},
+ {t:'Prüfen und anpassen',b:`<p>Klick auf einen Track öffnet die Detailansicht mit Wellenform und allen Markern.</p>
+  <ol class="guide"><li>Tasten <kbd>A</kbd> <kbd>G</kbd> <kbd>H</kbd> <kbd>L</kbd> springen zum Marker und spielen ab. <kbd>L</kbd> spielt den Emergency Loop in Dauerschleife, damit du hörst, ob er sauber ist.</li>
+  <li>Marker mit der Maus ziehen oder mit <kbd>←</kbd> <kbd>→</kbd> um einen Takt verschieben.</li><li>Energie passt nicht? Auf die Balken klicken und deinen Wert setzen.</li>
+  <li>Spalte <b>Gain</b>: so viel solltest du am Gain-Regler drehen, damit der Track so laut ist wie der Rest der Playlist.</li></ol>`},
+ {t:'Exportieren',b:`<p>Oben auf <b>Export</b> und dein Ziel wählen.</p>
+  <ol class="guide"><li><b>rekordbox XML</b>: Du entscheidest, ob eine <b>neue Playlist</b> („Name Edited“) entsteht oder die bestehende <b>überschrieben</b> wird.</li>
+  <li>Vor dem Download zeigt dir die App jede Änderung: neue, ersetzte und behaltene Cues pro Track.</li><li><b>Serato</b>: Crates und Cues direkt auf Stick oder Festplatte schreiben, oder nur die Crates als ZIP.</li></ol>
+  <div class="note">Tipp für rekordbox: Speicher die XML immer unter demselben Namen am selben Ort. Dann musst du rekordbox nur einmal einrichten.</div>`},
+ {t:'Zurück in dein DJ-Programm',b:()=>`<div class="seg"><button data-dj="rb" class="${tourDj==='rb'?'on':''}">rekordbox</button><button data-dj="se" class="${tourDj==='se'?'on':''}">Serato</button></div>`+(tourDj==='rb'?`
+  <p><b>Einmal einrichten</b></p><ol class="guide"><li><b>rekordbox → Voreinstellungen → Betrachten → Layout</b>: „rekordbox xml“ anhaken.</li>
+  <li><b>Voreinstellungen → Erweitert → Datenbank → rekordbox xml</b>: bei „Importierte Bibliothek“ deine exportierte XML wählen.</li></ol>
+  <p><b>Jedes Mal</b></p><ol class="guide"><li>Library sichern (Datei → Library → Sichern).</li><li>Links auf das <b>&lt;/&gt;-Symbol</b> (rekordbox xml) und auf <b>↻</b> klicken. Wichtig, sonst liest rekordbox die alte Datei.</li>
+  <li>Playlist öffnen, alle Tracks markieren (<kbd>⌘A</kbd> / <kbd>Strg+A</kbd>) → Rechtsklick → <b>In Sammlung importieren</b> → Ja. Den Haken „Diese Frage nicht mehr stellen“ setzen, dann gilt das für alle Tracks.</li>
+  <li>Rechtsklick auf die Playlist → <b>Wiedergabeliste importieren</b>. Gibt es sie schon, die alte vorher löschen.</li></ol>
+  <div class="note warn">Lade die XML aus rekordbox (Schritt 1), nicht vom Stick. Nur dann stimmen die Dateipfade, und rekordbox aktualisiert deine Tracks, statt sie doppelt anzulegen.</div>`:`
+  <ol class="guide"><li>In der App <b>Export → Serato</b>, Playlists wählen und <b>„Mit Cues“</b> einstellen.</li><li><b>Stick oder Musik-Festplatte wählen.</b> Die App schreibt die Crates in den _Serato_-Ordner und die Cues direkt in die MP3-Dateien.</li>
+  <li><b>Serato DJ öffnen.</b> Die Crates erscheinen links unter dem Laufwerk. A liegt auf Cue 1, G und H auf Cue 7 und 8, der Emergency Loop als gespeicherter Loop.</li>
+  <li>Fehlen Cues bei schon geladenen Tracks: Track neu laden oder in den Serato-Einstellungen die ID3-Tags neu einlesen.</li></ol>
+  <div class="note warn">Cues können nur in MP3-Dateien geschrieben werden. WAV/AIFF/FLAC bekommen Crates, aber keine Cues. Ohne „Mit Cues“ bekommst du nur ein ZIP mit Crates.</div>`)}
+];
 function openModal(kind,ctx){
   lastFocus=document.activeElement;const m=$('#modal');let h='';const pl=state.cur>=0?state.playlists[state.cur]:null;
   const sw=(id,on)=>`<label class="switch"><input type="checkbox" id="${id}" ${on?'checked':''}><span></span></label>`;
   if(kind==='settings'){
     h=`<h2>Einstellungen</h2><p class="sub">Gilt sofort. Manuell verschobene Cues und eigene Energie-Werte bleiben.</p><div class="body">
-    <div class="field"><label>Mix-Out-Fenster F → G<small>G sitzt am Ende der letzten Energiephase.</small></label><select id="sMix">${[4,8,16,32].map(v=>`<option ${S.mixBars===v?'selected':''} value="${v}">${v*4} Beats (${v} Takte)</option>`).join('')}</select></div>
-    <div class="field"><label>Exit-Loop-Länge<small>Memory Cue mit Loop auf der letzten Phrase mit Kick.</small></label><select id="sLoop">${[4,8,16].map(v=>`<option ${S.loopBars===v?'selected':''} value="${v}">${v} Bars</option>`).join('')}</select></div>
+    <div class="field"><label>Mix-Out-Fenster G → H<small>H sitzt am Ende der letzten Energiephase.</small></label><select id="sMix">${[4,8,16,32].map(v=>`<option ${S.mixBars===v?'selected':''} value="${v}">${v*4} Beats (${v} Takte)</option>`).join('')}</select></div>
+    <div class="field"><label>Emergency Loop: maximale Länge<small>Die App nimmt die längste Länge, die sauber loopt (16, 8 oder 4 Beats).</small></label><select id="sLoop">${[16,8,4].map(v=>`<option ${S.loopMax===v?'selected':''} value="${v}">${v} Beats</option>`).join('')}</select></div>
     <div class="field"><label>Mindest-Energieabfall für G<small>dB. Kleiner = auch sanfte Outros zählen. Standard 3.</small></label><input type="number" id="sSens" min="1" max="12" step="0.5" value="${S.sens}"></div>
     <div class="field"><label>Energie-Skala<small>Fest: gleicher Maßstab für alle Tracks (empfohlen fürs Rating). Relativ: 1–5 gleichmäßig verteilt in der aktuellen Playlist.</small></label><select id="sMode"><option value="abs" ${S.energyMode==='abs'?'selected':''}>Fest</option><option value="rel" ${S.energyMode==='rel'?'selected':''}>Relativ zur Playlist</option></select></div>
     <div class="field"><label>Unsichere Tracks nur nach Bestätigung exportieren<small>Empfohlen. Betrifft Tracks mit Sicherheit „niedrig“.</small></label>${sw('sConf',S.requireConfirm)}</div>
-    <div class="field"><label>Vorhandene Hot Cues A/F/G überschreiben<small>Aus: bestehende Cues auf A, F oder G bleiben.</small></label>${sw('sOver',S.overwrite)}</div>
+    <div class="field"><label>Vorhandene Hot Cues A/G/H überschreiben<small>Aus: bestehende Cues auf A, G oder H bleiben.</small></label>${sw('sOver',S.overwrite)}</div>
     <div class="field"><label>Energie als Rating (1–5 ★) schreiben</label>${sw('sRate',S.writeRating)}</div>
     <div class="field"><label>Energie, LUFS und Gain in Kommentar<small>Hängt z.B. „[E4 68 | -7.9 LUFS]“ an, dein Kommentar bleibt.</small></label>${sw('sCom',S.writeComment)}</div>
     <div class="field"><label>Maximale Tracklänge<small>Längere Dateien (Mixe) werden übersprungen, damit der Browser nicht abstürzt.</small></label><select id="sMax">${[10,20,30].map(v=>`<option ${S.maxMin===v?'selected':''} value="${v}">${v} Minuten</option>`).join('')}</select></div>
@@ -1221,20 +1300,26 @@ function openModal(kind,ctx){
       <div class="note err"><b>Achtung bei Stick-Quelle:</b> Die XML zeigt auf die Dateien auf dem Stick. Liegen die Tracks in deiner rekordbox-Library woanders (z.B. im Musik-Ordner), legt rekordbox sie beim Import <b>doppelt</b> an. Für deine Haupt-Library besser: Collection als XML exportieren und Weg 1 nutzen.</div>`:''}
     <h3>Vorschau der Änderungen</h3><div id="xDiff"></div>
     </div><div class="foot"><span class="info" id="xInfo"></span><button class="btn ghost" data-close>Abbrechen</button><button class="btn primary" id="xGo" data-act="doXml">Prüfen &amp; herunterladen</button></div>`;
+  }else if(kind==='tour'){
+    const i=clamp(ctx?.i||0,0,TOUR.length-1),st=TOUR[i];TOUR.cur=i;
+    h=`<div class="tour"><div class="kick">Tutorial · Schritt ${i+1} von ${TOUR.length}</div><h2>${st.t}</h2><div class="dots">${TOUR.map((_,k)=>`<i class="${k<=i?'on':''}"></i>`).join('')}</div>
+    <div class="body slide">${typeof st.b==='function'?st.b():st.b}</div>
+    <div class="foot"><label>Jederzeit oben über „Tutorial“ wieder aufrufbar</label>
+    ${i?`<button class="btn ghost" data-tour="${i-1}">Zurück</button>`:''}${i<TOUR.length-1?`<button class="btn primary" data-tour="${i+1}">Weiter</button>`:`<button class="btn primary" data-close>Los geht's</button>`}</div></div>`;
   }else if(kind==='guide'){
     h=`<h2>${ctx?`Export fertig: ${ctx.n} von ${ctx.total} Tracks mit neuen Cues`:'Anleitung'}</h2><p class="sub">${ctx?`Playlist „${esc(ctx.name)}“. So kommt sie in rekordbox:`:'Einmal einrichten, danach dauert der Import 20 Sekunden.'}</p><div class="body">
     <div class="note warn"><b>Vorher:</b> rekordbox → Datei → Library → Library sichern. Der Import ersetzt bei den betroffenen Tracks die Cues durch den Stand aus der XML.</div>
-    <ol class="guide"><li>rekordbox → <b>Einstellungen → Ansicht → Layout</b>: „rekordbox xml“ anhaken.</li>
-    <li><b>Einstellungen → Erweitert → Datenbank → rekordbox xml</b>: unter „Importierte Library“ die heruntergeladene Datei wählen.</li>
-    <li>Links im Baum <b>rekordbox xml</b> aufklappen (ggf. Reload-Pfeil) → ${ctx&&ctx.mode==='over'?'deine Playlist':'<b>JAILR Prep</b>'} → „${esc(ctx?ctx.name:'Playlist')}“.</li>
-    <li>In der Playlist <b>alle Tracks markieren</b> (⌘A / Strg+A) → Rechtsklick → <b>In Collection importieren</b> → bestätigen.</li>
-    <li>Dann die Playlist selbst per Rechtsklick → <b>Playlist importieren</b>.${ctx&&ctx.mode==='over'?' Falls danach zwei gleichnamige existieren: die alte löschen.':''}</li></ol>
+    <ol class="guide"><li>rekordbox → <b>Voreinstellungen → Betrachten → Layout</b>: „rekordbox xml“ anhaken.</li>
+    <li><b>Voreinstellungen → Erweitert → Datenbank → rekordbox xml</b>: bei „Importierte Bibliothek“ die heruntergeladene Datei wählen. Immer gleicher Name und Ort, dann nur einmal nötig.</li>
+    <li>Links auf das <b>&lt;/&gt;-Symbol</b> (rekordbox xml) und auf <b>↻</b> klicken, sonst liest rekordbox die alte Datei → ${ctx&&ctx.mode==='over'?'deine Playlist':'<b>JAILR Prep</b>'} → „${esc(ctx?ctx.name:'Playlist')}“.</li>
+    <li>In der Playlist <b>alle Tracks markieren</b> (⌘A / Strg+A) → Rechtsklick → <b>In Sammlung importieren</b> → Ja („Diese Frage nicht mehr stellen“ anhaken).</li>
+    <li>Dann die Playlist selbst per Rechtsklick → <b>Wiedergabeliste importieren</b>.${ctx&&ctx.mode==='over'?' Falls danach zwei gleichnamige existieren: die alte löschen.':''}</li></ol>
     <div class="note">Schritt 4 mit markierten Tracks ist wichtig – nur so aktualisiert rekordbox bereits vorhandene Tracks zuverlässig.<br>Teste beim ersten Mal mit 2–3 Tracks und prüfe die Cues am Gerät.</div>
     <h3>Wenn etwas nicht klappt</h3><div style="color:var(--fg2);font-size:12px;line-height:1.6">Tracks mit <b>Fehler</b> (keine Datei, nicht lesbar, kein Beatgrid, zu lang) werden nie verändert – Filter „Fehler“ zeigt sie, Export → Problemliste sagt, was zu tun ist. Tracks mit <b>niedriger Sicherheit</b> erst anhören, ggf. Marker verschieben und mit <kbd>C</kbd> bestätigen.</div>
     <h3>Energie (1–5)</h3><div style="color:var(--fg2);font-size:12px;line-height:1.6">Tempo 30 % · Dichte (Percussion pro Beat) 25 % · Drive (Anteil voller Energie) 20 % · Bass/Kick-Druck 15 % · Höhen 10 %. Lautstärke zählt bewusst nicht – die regelst du mit dem Gain. Klick auf die Balken im Detail setzt deinen eigenen Wert.</div>
     <h3>Shortcuts</h3><div style="display:grid;grid-template-columns:auto 1fr;gap:6px 12px;color:var(--fg2);font-size:12px">
     <span><kbd>↑</kbd> <kbd>↓</kbd></span><span>Track wechseln (Shift: Auswahl erweitern)</span><span><kbd>Enter</kbd></span><span>Auswahl bzw. Playlist analysieren</span>
-    <span><kbd>Leertaste</kbd></span><span>Abspielen / Stopp</span><span><kbd>A</kbd> <kbd>F</kbd> <kbd>G</kbd> <kbd>L</kbd></span><span>Marker wählen + anhören (L loopt)</span>
+    <span><kbd>Leertaste</kbd></span><span>Abspielen / Stopp</span><span><kbd>A</kbd> <kbd>G</kbd> <kbd>H</kbd> <kbd>L</kbd></span><span>Marker wählen + anhören (L loopt)</span>
     <span><kbd>←</kbd> <kbd>→</kbd></span><span>Gewählten Marker 1 Bar verschieben (Shift: 8 Bars)</span><span><kbd>C</kbd></span><span>Cues bestätigen</span>
     <span><kbd>R</kbd></span><span>Cues auf Automatik</span><span><kbd>⌘Z</kbd> / <kbd>Strg+Z</kbd></span><span>Rückgängig</span><span><kbd>/</kbd></span><span>Suche</span></div>
     </div><div class="foot"><button class="btn primary" data-close>Verstanden</button></div>`;
@@ -1252,14 +1337,16 @@ function openModal(kind,ctx){
       <label><input type="radio" name="scue" value="none" checked> Ohne Cues – nur Crates als ZIP</label>
       <label><input type="radio" name="scue" value="copy" ${window.showDirectoryPicker?'':'disabled'}> Mit Cues, als Kopie<span class="c">Originale bleiben unverändert · Ordner „_JAILR Serato“</span></label>
       <label><input type="radio" name="scue" value="inplace" ${window.showDirectoryPicker?'':'disabled'}> Mit Cues, in die Originaldateien<span class="c">nur Serato-Daten werden ergänzt</span></label></div>
-    <div class="note" id="scueNote">${window.showDirectoryPicker?'Mit Cues: Du wählst den Stick, die App schreibt Crates und Cues direkt darauf. Übertragen werden A/F/G, Exit Loop und deine vorhandenen rekordbox-Hot-Cues (nur MP3). Vorhandene Serato-Cues bleiben, außer „überschreiben“ ist an.':'Cues schreiben geht nur in Chrome oder Edge am Desktop.'}</div>
+    <div class="note" id="scueNote">${window.showDirectoryPicker?'Mit Cues: Du wählst den Stick, die App schreibt Crates und Cues direkt darauf. Übertragen werden A/G/H, Emergency Loop und deine vorhandenen rekordbox-Hot-Cues (nur MP3). Vorhandene Serato-Cues bleiben, außer „überschreiben“ ist an.':'Cues schreiben geht nur in Chrome oder Edge am Desktop.'}</div>
     <div class="note warn" id="scueWarn" hidden>Originaldateien werden verändert (nur der Serato-Tag, der Ton bleibt identisch). Vorher ein Backup des Sticks machen. rekordbox und CDJs spielen die Dateien weiter normal.</div>
     </div><div class="foot"><button class="btn ghost" data-close>Abbrechen</button><button class="btn primary" data-act="doSerato" id="sGo">ZIP herunterladen</button></div>`;
   }
   m.innerHTML=h;$('#modalBg').classList.add('on');
   if(kind==='settings'){const on=(id,fn)=>$('#'+id).addEventListener('change',e=>{fn(e.target);saveS();relCache=null;renderMain();renderBar();renderDetail()});
-    on('sMix',e=>S.mixBars=+e.value);on('sLoop',e=>S.loopBars=+e.value);on('sSens',e=>S.sens=clamp(+e.value||3,1,12));on('sMode',e=>S.energyMode=e.value);on('sConf',e=>S.requireConfirm=e.checked);
+    on('sMix',e=>S.mixBars=+e.value);on('sLoop',e=>S.loopMax=+e.value);on('sSens',e=>S.sens=clamp(+e.value||3,1,12));on('sMode',e=>S.energyMode=e.value);on('sConf',e=>S.requireConfirm=e.checked);
     on('sOver',e=>S.overwrite=e.checked);on('sRate',e=>S.writeRating=e.checked);on('sCom',e=>S.writeComment=e.checked);on('sMax',e=>S.maxMin=+e.value)}
+  if(kind==='tour'){m.onclick=e=>{const b=e.target.closest('[data-tour]');if(b){openModal('tour',{i:+b.dataset.tour});return}const d=e.target.closest('[data-dj]');if(d){tourDj=d.dataset.dj;openModal('tour',{i:TOUR.cur})}};
+  }else{m.onclick=null}
   if(kind==='serato')m.addEventListener('change',e=>{if(e.target.name==='scue'){$('#scueWarn').hidden=e.target.value!=='inplace';$('#sGo').textContent=e.target.value==='none'?'ZIP herunterladen':'Stick wählen & schreiben'}});
   if(kind==='xml'){renderXmlDiff();m.addEventListener('change',e=>{if(e.target.name==='xmode'){$('#xOverNote').hidden=e.target.value!=='over';$('#xScope').hidden=e.target.value==='over'}if(['xmode','xscope'].includes(e.target.name)||e.target.id==='xRoot')renderXmlDiff()});m.addEventListener('input',e=>{if(e.target.id==='xName'){$('input[name=xmode][value=new]').checked=true;$('#xOverNote').hidden=true;$('#xScope').hidden=false}})}
   const f=m.querySelector('input,select,button.primary');if(f)f.focus();
@@ -1277,7 +1364,7 @@ $('#curPl').onclick=()=>{if(isM())document.body.classList.add('showside')};
 $('#dClose').onclick=()=>{stop();state.focus=null;renderDetail();updateSel()};
 function pickMusic(){matchMedia('(pointer:coarse)').matches?$('#inFiles').click():$('#inDir').click()}
 $('#inFiles').addEventListener('change',async e=>{const fs=[...e.target.files];e.target.value='';await handleFiles(fs)});
-$('#btnSettings').onclick=()=>openModal('settings');$('#btnHelp').onclick=()=>openModal('guide');$('#btnCancel').onclick=()=>{state.cancel=true};
+$('#btnSettings').onclick=()=>openModal('settings');$('#btnHelp').onclick=()=>openModal('guide');$('#btnTour').onclick=()=>openModal('tour',{i:0});$('#btnCancel').onclick=()=>{state.cancel=true};
 $('#btnAnalyze').onclick=()=>analyzeIds(state.sel.size>1?[...state.sel]:state.view);
 $('#btnExport').onclick=e=>{e.stopPropagation();$('#exportMenu').classList.toggle('open')};
 document.addEventListener('click',e=>{if(!e.target.closest('.menu-wrap'))$('#exportMenu').classList.remove('open')});
@@ -1290,7 +1377,7 @@ function saveMeta(reset){const t=state.tracks.get(state.focus);if(!t)return;appl
 
 let rowsRaf=0;$('#main').addEventListener('scroll',()=>{if(!rowsRaf)rowsRaf=requestAnimationFrame(()=>{rowsRaf=0;renderRows()})},{passive:true});
 $('#main').addEventListener('click',e=>{
-  const a=e.target.closest('[data-act]');if(a){if(a.dataset.act==='xml')$('#inXml').click();if(a.dataset.act==='dir')pickMusic();if(a.dataset.act==='help')openModal('guide');return}
+  const a=e.target.closest('[data-act]');if(a){if(a.dataset.act==='xml')$('#inXml').click();if(a.dataset.act==='dir')pickMusic();if(a.dataset.act==='help')openModal('guide');if(a.dataset.act==='tour')openModal('tour',{i:0});return}
   const th=e.target.closest('th[data-sort]');if(th){const k=th.dataset.sort,i=state.sort.findIndex(s=>s.k===k);
     if(e.shiftKey){if(i>=0)state.sort[i].d*=-1;else state.sort.push({k,d:k==='energy'?-1:1})}else{if(i===0&&state.sort.length===1)state.sort[0].d*=-1;else state.sort=[{k,d:1}]}
     state.sort=state.sort.filter((s,j,arr)=>!(s.k==='idx'&&arr.length>1));renderBar();renderMain();return}
@@ -1327,7 +1414,7 @@ cv.addEventListener('pointerdown',e=>{const g=tlGeom();if(!g.a)return;const r=cv
 cv.addEventListener('pointerup',e=>{const g=tlGeom();if(TL.drag){TL.drag=null;$('#tlTip').style.display='none';IDB.put('manual',mKey(g.t),g.t.manual);refreshTrack(g.t);return}
   if(tlDown&&g.a){const mx=e.clientX-cv.getBoundingClientRect().left;if(Math.abs(mx-tlDown.x)<6)play(mx>3?barT(g.a,nearestBar(g.a,g.s(mx))):0)}tlDown=null});
 cv.addEventListener('pointermove',e=>{const g=tlGeom();if(!g.a)return;const r=cv.getBoundingClientRect(),mx=e.clientX-r.left,tip=$('#tlTip');
-  if(TL.drag){const k=TL.drag,nb=g.a.rms.length;const b=clamp(nearestBar(g.a,g.s(mx)),0,k==='L'?nb-S.loopBars:nb);const c=computeCues(g.t);if(c[k]!==b){const p={[k]:b,ok:true};if(k==='G'&&g.t.manual?.F==null)p.F=null;t_set(g.t,p)}
+  if(TL.drag){const k=TL.drag,nb=g.a.rms.length;const b=clamp(nearestBar(g.a,g.s(mx)),0,k==='L'?nb-1:nb);const c=computeCues(g.t);if(c[k]!==b){const p={[k]:b,ok:true};if(k==='G'&&g.t.manual?.F==null)p.F=null;t_set(g.t,p)}
     tip.style.display='block';tip.style.left=Math.min(r.width-120,g.x(barT(g.a,b))+24)+'px';tip.textContent=`${k} → Bar ${b+1} · ${fmtT(barT(g.a,b))}`;return}
   if(e.pointerType==='mouse'){TL.hover=nearestBar(g.a,g.s(mx));const ct=cueTimes(g.t);cv.style.cursor=['G','F','A','L'].some(k=>Math.abs(g.x(k==='L'?ct.L0:ct[k])-mx)<HIT())?'ew-resize':'crosshair';
     tip.style.display='block';tip.style.left=Math.min(r.width-120,mx+28)+'px';tip.textContent=`Bar ${TL.hover+1} · ${fmtT(barT(g.a,TL.hover))}`;drawTL()}});
@@ -1346,7 +1433,7 @@ document.addEventListener('keydown',e=>{
   if(e.key==='Enter'){if(e.target.closest('button'))return;analyzeIds(state.sel.size?[...state.sel]:v);return}
   if(e.key===' '){if(e.target.closest('button'))return;e.preventDefault();$('#btnPlay').click();return}
   if(e.metaKey||e.ctrlKey||e.altKey)return;const k=e.key.toUpperCase();
-  if(['A','F','G','L'].includes(k)){jump(k);return}
+  if(KEY2CUE[k]){jump(KEY2CUE[k]);return}
   if(k==='C'){const t=state.tracks.get(state.focus);if(t&&t.analysis){setManual(t,{ok:true});toast('Bestätigt: '+t.title)}return}
   if(k==='R'){const t=state.tracks.get(state.focus);if(t&&t.manual)setManual(t,{A:null,F:null,G:null,L:null});return}
   if(e.key==='/'){e.preventDefault();$('#q').focus();return}if(e.key==='?'){openModal('guide');return}if(e.key==='Escape'){state.sel.clear();updateSel()}});
@@ -1359,6 +1446,7 @@ window.addEventListener('error',e=>{toast('Unerwarteter Fehler: '+(e.message||'u
 window.addEventListener('unhandledrejection',e=>{toast('Unerwarteter Fehler: '+((e.reason&&e.reason.message)||e.reason)+' – Deine Daten bleiben unverändert.',1)});
 window.addEventListener('beforeunload',e=>{if(state.busy){e.preventDefault();e.returnValue=''}});
 renderAll();
+try{if(!localStorage.getItem('jailr-tour')&&!/[?&]notour/.test(location.search)){localStorage.setItem('jailr-tour','seen');setTimeout(()=>{if(!$('#modalBg').classList.contains('on'))openModal('tour',{i:0})},700)}}catch(e){}
 </script>
 </body>
 </html>

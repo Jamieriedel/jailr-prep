@@ -9,7 +9,7 @@ Läuft komplett lokal im Browser. Es wird nichts hochgeladen – die Seite ist p
 ## Was es macht
 
 - **Hot Cue A** auf den ersten Downbeat
-- **Hot Cue F + G** als 32-Beat-Mix-Out-Fenster (8 Takte, einstellbar) vor dem Energieabfall am Ende
+- **Hot Cue G + H** als 32-Beat-Mix-Out-Fenster (8 Takte, einstellbar) vor dem Energieabfall am Ende
 - **Exit Loop** (8 Bars) als Memory Cue, damit der Track nicht ausläuft
 - **Energie 1–5** als Rating (Tempo, Dichte, Drive, Bass, Höhen – unabhängig von der Master-Lautstärke), per Klick überschreibbar
 - **Lautstärke (LUFS) & Gain-Empfehlung** relativ zur Playlist, Hinweise zu niedriger Bitrate und Übersteuerung

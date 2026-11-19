@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>JAILR Prep – Cue & Energy Lab</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%2311100F'/%3E%3Cpath d='M8 22V10M13 22V14M18 22V8M23 22V16' stroke='%23F4F0E8' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#11100F;--bg2:#171614;--bg3:#1E1C1A;--bg4:#262320;--line:#2B2825;--line2:#3B3732;
+  --fg:#F4F0E8;--fg2:#BDB6AA;--fg3:#7F786E;
+  --cA:#28E214;--cF:#FF9A1F;--cG:#F0443A;--cL:#3D9BFF;
+  --ok:#4CD07D;--warn:#FFB224;--err:#F0443A;
+  --r:10px;
+  font-family:"Space Grotesk",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--fg);font-size:13px;-webkit-font-smoothing:antialiased}
+button,input,select{font:inherit;color:inherit}
+body{display:grid;height:100vh;overflow:hidden;
+  grid-template-columns:var(--side,240px) 1fr;
+  grid-template-rows:56px auto 1fr auto;
+  grid-template-areas:"top top" "side bar" "side main" "side detail"}
+body.noside{--side:0px}
+/* top */
+header{grid-area:top;display:flex;align-items:center;gap:10px;padding:0 14px;border-bottom:1px solid var(--line);background:var(--bg)}
+.logo{display:flex;align-items:center;gap:10px;font-weight:700;letter-spacing:.14em;font-size:14px;white-space:nowrap}
+.logo small{font-weight:500;letter-spacing:.08em;color:var(--fg3);font-size:11px}
+.logo .mark{width:26px;height:26px;border-radius:7px;background:var(--fg);display:grid;place-items:center}
+.pills{display:flex;gap:6px;margin-left:8px;min-width:0;overflow:hidden}
+.pill{display:flex;align-items:center;gap:6px;padding:4px 10px;border-radius:99px;background:var(--bg3);border:1px solid var(--line);color:var(--fg2);font-size:12px;white-space:nowrap;cursor:pointer}
+.pill:hover{border-color:var(--line2);color:var(--fg)}
+.pill .dot{width:7px;height:7px;border-radius:50%;background:var(--fg3)}
+.pill.ok .dot{background:var(--ok)}.pill.warn .dot{background:var(--warn)}
+.spacer{flex:1}
+.btn{display:inline-flex;align-items:center;gap:7px;height:32px;padding:0 12px;border-radius:8px;border:1px solid var(--line2);background:var(--bg3);cursor:pointer;white-space:nowrap;font-weight:500;transition:background .12s,border-color .12s}
+.btn:hover{background:var(--bg4);border-color:#4a453f}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn.primary{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.btn.primary:hover{background:#fff}
+.btn.ghost{background:transparent;border-color:transparent}
+.btn.ghost:hover{background:var(--bg3)}
+.btn.icon{width:32px;padding:0;justify-content:center}
+.btn kbd{font-size:10px;opacity:.6}
+svg.i{width:16px;height:16px;flex:none;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+kbd{font-family:inherit;font-size:11px;padding:1px 5px;border-radius:4px;border:1px solid var(--line2);background:var(--bg3);color:var(--fg2)}
+.menu-wrap{position:relative}
+.menu{position:absolute;right:0;top:38px;min-width:250px;background:var(--bg3);border:1px solid var(--line2);border-radius:10px;padding:6px;z-index:40;box-shadow:0 12px 40px rgba(0,0,0,.5);display:none}
+.menu.open{display:block}
+.menu button{display:flex;width:100%;gap:10px;align-items:flex-start;text-align:left;padding:8px 10px;border:0;background:none;border-radius:7px;cursor:pointer}
+.menu button:hover{background:var(--bg4)}
+.menu button small{display:block;color:var(--fg3);font-size:11px;margin-top:2px}
+/* sidebar */
+aside{grid-area:side;border-right:1px solid var(--line);overflow:auto;padding:10px 8px;background:var(--bg)}
+body.noside aside{display:none}
+.side-h{font-size:10px;letter-spacing:.14em;color:var(--fg3);padding:8px 8px 6px;text-transform:uppercase}
+.pl{display:flex;align-items:center;gap:6px;padding:6px 8px;border-radius:7px;cursor:pointer;color:var(--fg2);user-select:none}
+.pl:hover{background:var(--bg3);color:var(--fg)}
+.pl.active{background:var(--bg4);color:var(--fg)}
+.pl .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pl .ct{font-size:11px;color:var(--fg3);font-variant-numeric:tabular-nums}
+.pl .prog{width:22px;height:3px;border-radius:2px;background:var(--line2);overflow:hidden;flex:none}
+.pl .prog i{display:block;height:100%;background:var(--ok)}
+.pl.folder{color:var(--fg3);font-size:12px}
+.pl .chev{width:12px;transition:transform .15s}
+.pl.collapsed .chev{transform:rotate(-90deg)}
+/* toolbar */
+.bar{grid-area:bar;display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid var(--line)}
+.search{display:flex;align-items:center;gap:6px;height:32px;padding:0 10px;border-radius:8px;background:var(--bg3);border:1px solid var(--line);min-width:200px;flex:0 1 260px}
+.search input{border:0;background:none;outline:none;width:100%}
+.search:focus-within{border-color:var(--fg3)}
+.seg{display:flex;background:var(--bg3);border:1px solid var(--line);border-radius:8px;padding:2px}
+.seg button{border:0;background:none;padding:5px 10px;border-radius:6px;cursor:pointer;color:var(--fg2);font-size:12px}
+.seg button.on{background:var(--bg4);color:var(--fg)}
+.seg button .n{color:var(--fg3);margin-left:4px;font-variant-numeric:tabular-nums}
+.sorts{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.sorts .lbl{color:var(--fg3);font-size:12px}
+.chip{display:inline-flex;align-items:center;gap:5px;height:28px;padding:0 4px 0 9px;border-radius:7px;background:var(--bg3);border:1px solid var(--line2);cursor:grab;font-size:12px;user-select:none}
+.chip .lv{font-size:10px;color:var(--fg3)}
+.chip .dir{border:0;background:none;cursor:pointer;padding:2px 4px;border-radius:4px;color:var(--fg)}
+.chip .dir:hover,.chip .x:hover{background:var(--bg4)}
+.chip .x{border:0;background:none;cursor:pointer;color:var(--fg3);padding:2px 5px;border-radius:4px}
+.chip.drag{opacity:.4}
+.chip.over{border-color:var(--fg)}
+select.add{height:28px;border-radius:7px;background:var(--bg2);border:1px dashed var(--line2);padding:0 6px;color:var(--fg2);font-size:12px;cursor:pointer}
+/* main table */
+main{grid-area:main;overflow:auto;position:relative}
+table{width:100%;border-collapse:separate;border-spacing:0;font-variant-numeric:tabular-nums}
+thead th{position:sticky;top:0;background:var(--bg);z-index:2;text-align:left;font-weight:500;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--fg3);padding:9px 8px;border-bottom:1px solid var(--line);white-space:nowrap;cursor:pointer;user-select:none}
+thead th:hover{color:var(--fg)}
+thead th .si{font-size:10px;color:var(--fg);margin-left:3px}
+tbody td{padding:7px 8px;border-bottom:1px solid #1c1a18;white-space:nowrap;vertical-align:middle}
+tbody tr{cursor:default}
+tbody tr:hover td{background:#191816}
+tbody tr.sel td{background:#24211d}
+tbody tr.focus td{box-shadow:inset 0 1px 0 var(--line2),inset 0 -1px 0 var(--line2)}
+tbody tr.focus td:first-child{box-shadow:inset 2px 0 0 var(--fg),inset 0 1px 0 var(--line2),inset 0 -1px 0 var(--line2)}
+td.num{color:var(--fg3);width:36px;text-align:right}
+td.tt{max-width:340px;min-width:180px}
+td.tt .ti{font-weight:600;overflow:hidden;text-overflow:ellipsis}
+td.tt .ar{color:var(--fg3);font-size:12px;overflow:hidden;text-overflow:ellipsis}
+td.r{text-align:right}
+.kc{display:inline-block;min-width:34px;text-align:center;padding:2px 6px;border-radius:5px;font-weight:600;font-size:12px;background:hsl(var(--h) 55% 22%);color:hsl(var(--h) 85% 78%)}
+.kn{color:var(--fg3);font-size:11px;margin-left:5px}
+.meter{display:inline-flex;gap:2px;align-items:flex-end;height:14px;vertical-align:middle}
+.meter i{width:4px;border-radius:1px;background:var(--line2)}
+.meter i:nth-child(1){height:5px}.meter i:nth-child(2){height:7px}.meter i:nth-child(3){height:9px}.meter i:nth-child(4){height:11px}.meter i:nth-child(5){height:14px}
+.meter[data-s="1"] i:nth-child(-n+1){background:#5B8CFF}
+.meter[data-s="2"] i:nth-child(-n+2){background:#45C2D8}
+.meter[data-s="3"] i:nth-child(-n+3){background:#7BD65A}
+.meter[data-s="4"] i:nth-child(-n+4){background:#FFB224}
+.meter[data-s="5"] i:nth-child(-n+5){background:#F0443A}
+.esc{color:var(--fg3);font-size:11px;margin-left:6px}
+.gn,.kb{font-size:12px;color:var(--fg3)}.gn.mid,.kb.mid{color:var(--warn)}.gn.bad,.kb.bad{color:var(--err);font-weight:600}
+.cues{display:inline-flex;gap:3px}
+.cb{width:18px;height:18px;border-radius:4px;display:inline-grid;place-items:center;font-size:10px;font-weight:700;background:var(--bg3);color:var(--fg3);border:1px solid var(--line)}
+.cb.on{color:#111;border-color:transparent}
+.cb.A.on{background:var(--cA)}.cb.F.on{background:var(--cF)}.cb.G.on{background:var(--cG)}.cb.L.on{background:var(--cL)}
+.cb.kept{background:transparent;border:1px solid var(--fg3);color:var(--fg2)}
+.st{display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--fg3)}
+.st.ok{color:var(--ok)}.st.warn{color:var(--warn)}.st.err{color:var(--err)}
+.spin{width:12px;height:12px;border-radius:50%;border:2px solid var(--line2);border-top-color:var(--fg);animation:sp .7s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+svg.spark{display:block}
+/* empty */
+.empty{max-width:720px;margin:7vh auto;padding:0 24px}
+.empty h1{font-size:28px;letter-spacing:-.01em;margin:0 0 6px}
+.empty p{color:var(--fg2);line-height:1.55;margin:0 0 22px}
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.step{background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:16px}
+.step b{display:block;font-size:11px;letter-spacing:.12em;color:var(--fg3);margin-bottom:8px}
+.step h3{margin:0 0 6px;font-size:15px}
+.step p{font-size:12px;margin:0 0 12px;color:var(--fg2)}
+.step.done{border-color:#2f5a3e}
+.step.done b{color:var(--ok)}
+.drop{position:fixed;inset:0;background:rgba(17,16,15,.86);border:2px dashed var(--fg);display:none;place-items:center;z-index:60;font-size:20px;font-weight:600}
+.drop.on{display:grid}
+/* detail */
+.detail{grid-area:detail;border-top:1px solid var(--line);background:var(--bg2);min-height:0}
+.detail.hidden{display:none}
+.dh{display:flex;align-items:center;gap:10px;padding:10px 14px 6px;flex-wrap:wrap}
+.dh .tn{font-weight:700;font-size:15px;max-width:40vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dh .ta{color:var(--fg3)}
+.facts{display:flex;gap:14px;color:var(--fg2);font-size:12px;margin-left:6px}
+.facts b{color:var(--fg);font-weight:600}
+.jumps{display:flex;gap:6px}
+.jb{display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 9px;border-radius:7px;border:1px solid var(--line2);background:var(--bg3);cursor:pointer;font-size:12px}
+.jb:hover{background:var(--bg4)}
+.jb i{width:8px;height:8px;border-radius:2px;display:block}
+.jb .t{color:var(--fg3);font-variant-numeric:tabular-nums}
+.tl-wrap{padding:4px 14px 6px;position:relative}
+canvas#tl{width:100%;height:132px;display:block;border-radius:8px;background:var(--bg);cursor:crosshair}
+.tl-tip{position:absolute;top:0;pointer-events:none;background:var(--bg4);border:1px solid var(--line2);padding:2px 6px;border-radius:5px;font-size:11px;display:none;white-space:nowrap}
+.dfoot{display:flex;gap:14px;padding:0 14px 10px;color:var(--fg3);font-size:12px;flex-wrap:wrap}
+.flag{color:var(--warn)}
+/* progress */
+.progress{display:none;align-items:center;gap:10px;font-size:12px;color:var(--fg2)}
+.progress.on{display:flex}
+.pbar{width:140px;height:4px;border-radius:2px;background:var(--line2);overflow:hidden}
+.pbar i{display:block;height:100%;background:var(--fg);width:0;transition:width .2s}
+/* modal */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;place-items:center;z-index:50;padding:20px}
+.modal-bg.on{display:grid}
+.modal{background:var(--bg2);border:1px solid var(--line2);border-radius:14px;width:min(620px,100%);max-height:88vh;overflow:auto;box-shadow:0 20px 60px rgba(0,0,0,.6)}
+.modal h2{margin:0;font-size:17px;padding:18px 20px 4px}
+.modal .sub{color:var(--fg3);padding:0 20px 10px;margin:0;font-size:12px}
+.modal .body{padding:8px 20px 16px}
+.modal .foot{display:flex;justify-content:flex-end;gap:8px;padding:12px 20px;border-top:1px solid var(--line)}
+.field{display:grid;grid-template-columns:1fr 170px;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
+.field:last-child{border-bottom:0}
+.field label{font-weight:600}
+.field small{display:block;color:var(--fg3);font-weight:400;margin-top:2px;line-height:1.4}
+.field select,.field input[type=number]{height:32px;border-radius:7px;background:var(--bg3);border:1px solid var(--line2);padding:0 8px;width:100%}
+.switch{justify-self:end;position:relative;width:38px;height:22px}
+.switch input{opacity:0;width:0;height:0}
+.switch span{position:absolute;inset:0;border-radius:99px;background:var(--line2);cursor:pointer;transition:.15s}
+.switch span:before{content:"";position:absolute;width:16px;height:16px;left:3px;top:3px;border-radius:50%;background:var(--fg);transition:.15s}
+.switch input:checked+span{background:var(--ok)}
+.switch input:checked+span:before{transform:translateX(16px)}
+ol.guide{padding-left:20px;line-height:1.6;color:var(--fg2)}
+ol.guide b{color:var(--fg)}
+.note{background:var(--bg3);border:1px solid var(--line);border-radius:9px;padding:10px 12px;color:var(--fg2);font-size:12px;line-height:1.5;margin:10px 0}
+.note.warn{border-color:#5a4520}
+.plsel{max-height:260px;overflow:auto;border:1px solid var(--line);border-radius:9px;padding:4px}
+.plsel label{display:flex;gap:8px;align-items:center;padding:6px 8px;border-radius:6px;cursor:pointer}
+.plsel label:hover{background:var(--bg3)}
+.plsel .c{margin-left:auto;color:var(--fg3);font-size:11px}
+/* toast */
+.toasts{position:fixed;right:16px;bottom:16px;display:flex;flex-direction:column;gap:8px;z-index:70}
+.toast{background:var(--bg4);border:1px solid var(--line2);padding:10px 14px;border-radius:9px;max-width:360px;box-shadow:0 8px 30px rgba(0,0,0,.5);animation:ti .2s ease-out}
+.toast.err{border-color:#6b2a25}
+@keyframes ti{from{transform:translateY(8px);opacity:0}}
+.hidden-input{display:none}
+@media (max-width:900px){
+  body{--side:0px}
+  aside{display:none}
+  body.showside{--side:220px}
+  body.showside aside{display:block}
+  td.sp,th.sp,td.lu,th.lu,td.du,th.du{display:none}
+  .steps{grid-template-columns:1fr}
+  .facts{display:none}
+}
+</style>
+</head>
+<body>
+<header>
+  <button class="btn ghost icon" id="btnSide" title="Playlists ein/aus"><svg class="i" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
+  <div class="logo"><div class="mark"><svg viewBox="0 0 24 24" width="16" height="16"><path d="M6 17V8M10 17V11M14 17V6M18 17V12" stroke="#11100F" stroke-width="2.6" stroke-linecap="round"/></svg></div>JAILR PREP <small>CUE &amp; ENERGY LAB</small></div>
+  <div class="pills">
+    <div class="pill" id="pillXml" title="rekordbox XML laden"><span class="dot"></span><span>Keine XML</span></div>
+    <div class="pill" id="pillMusic" title="Musikordner verbinden"><span class="dot"></span><span>Kein Musikordner</span></div>
+  </div>
+  <div class="spacer"></div>
+  <div class="progress" id="progress"><span id="progTxt"></span><div class="pbar"><i id="progBar"></i></div><button class="btn ghost" id="btnCancel">Stopp</button></div>
+  <button class="btn primary" id="btnAnalyze" disabled title="Auswahl oder ganze Playlist analysieren (Enter)"><svg class="i" viewBox="0 0 24 24"><path d="M3 12h3l3-8 4 16 3-8h5"/></svg><span id="btnAnalyzeTxt">Analysieren</span></button>
+  <div class="menu-wrap">
+    <button class="btn" id="btnExport" disabled><svg class="i" viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>Export</button>
+    <div class="menu" id="exportMenu">
+      <button data-act="xml"><svg class="i" viewBox="0 0 24 24"><path d="M4 4h16v16H4zM8 9h8M8 13h8M8 17h5"/></svg><div>rekordbox XML<small>Cues, Rating &amp; Energie-Kommentar zurück in die Collection</small></div></button>
+      <button data-act="serato"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="2"/></svg><div>Serato Crates<small>Playlists als _Serato_-Ordner (ZIP)</small></div></button>
+    </div>
+  </div>
+  <button class="btn ghost icon" id="btnSettings" title="Einstellungen"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
+  <button class="btn ghost icon" id="btnHelp" title="Anleitung & Shortcuts (?)"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.7.3-1 .9-1 1.7M12 17h.01"/></svg></button>
+</header>
+
+<aside id="side"></aside>
+
+<div class="bar" id="bar">
+  <label class="search"><svg class="i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><input id="q" placeholder="Suchen…  ( / )" autocomplete="off"></label>
+  <div class="seg" id="filt"></div>
+  <div class="sorts" id="sorts"></div>
+</div>
+
+<main id="main"></main>
+
+<section class="detail hidden" id="detail">
+  <div class="dh">
+    <button class="btn icon" id="btnPlay" title="Abspielen / Stopp (Leertaste)"><svg class="i" viewBox="0 0 24 24" id="playIco"><path d="M7 5l12 7-12 7z"/></svg></button>
+    <div style="min-width:0"><div class="tn" id="dTitle"></div><div class="ta" id="dArtist"></div></div>
+    <div class="facts" id="dFacts"></div>
+    <div class="spacer"></div>
+    <div class="jumps" id="dJumps"></div>
+    <button class="btn ghost" id="btnReset" title="Manuelle Änderungen verwerfen (R)">Auto</button>
+    <button class="btn ghost" id="btnReanalyze" title="Track neu analysieren">Neu analysieren</button>
+  </div>
+  <div class="tl-wrap"><canvas id="tl"></canvas><div class="tl-tip" id="tlTip"></div></div>
+  <div class="dfoot" id="dFoot"></div>
+</section>
+
+<div class="drop" id="drop">XML oder Musikordner hier ablegen</div>
+<div class="modal-bg" id="modalBg"><div class="modal" id="modal"></div></div>
+<div class="toasts" id="toasts"></div>
+<input type="file" id="inXml" class="hidden-input" accept=".xml,text/xml">
+<input type="file" id="inDir" class="hidden-input" webkitdirectory directory multiple>
+
+<script>
+'use strict';
+/* ============ utils ============ */
+const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const clamp=(x,a=0,b=1)=>Math.min(b,Math.max(a,x));
+const fmtT=s=>{if(!isFinite(s))return '–';s=Math.max(0,s);const m=Math.floor(s/60),r=Math.floor(s%60);return m+':'+String(r).padStart(2,'0')};
+const r1=x=>Math.round(x*10)/10;
+const pct=(arr,p)=>{const a=arr.filter(Number.isFinite).sort((x,y)=>x-y);if(!a.length)return 0;return a[Math.min(a.length-1,Math.floor(p*(a.length-1)))]};
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+function toast(msg,err){const d=document.createElement('div');d.className='toast'+(err?' err':'');d.textContent=msg;$('#toasts').append(d);setTimeout(()=>d.remove(),err?7000:3800)}
+function download(name,data,type){const b=data instanceof Blob?data:new Blob([data],{type:type||'application/octet-stream'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=name;document.body.append(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},2000)}
+const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
+
+const ALG_V=5;
+const RATING_VAL=[0,51,102,153,204,255];
+const DEFAULTS={mixBars:32,loopBars:8,sens:3,overwrite:false,energyMode:'abs',writeRating:true,writeComment:true,phrase:8};
+const CUE={A:{num:0,name:'Start',rgb:[40,226,20],col:'#28E214'},F:{num:5,name:'Mix-Out Start',rgb:[255,154,31],col:'#FF9A1F'},G:{num:6,name:'Mix-Out Ende',rgb:[240,68,58],col:'#F0443A'},L:{name:'Exit Loop',col:'#3D9BFF'}};
+
+/* ============ keys ============ */
+const KEY2CAM={'Abm':'1A','G#m':'1A','Ebm':'2A','D#m':'2A','Bbm':'3A','A#m':'3A','Fm':'4A','Cm':'5A','Gm':'6A','Dm':'7A','Am':'8A','Em':'9A','Bm':'10A','F#m':'11A','Gbm':'11A','Dbm':'12A','C#m':'12A',
+'B':'1B','Cb':'1B','F#':'2B','Gb':'2B','Db':'3B','C#':'3B','Ab':'4B','G#':'4B','Eb':'5B','D#':'5B','Bb':'6B','A#':'6B','F':'7B','C':'8B','G':'9B','D':'10B','A':'11B','E':'12B'};
+const CAM2KEY={};for(const[k,v]of Object.entries(KEY2CAM))if(!CAM2KEY[v])CAM2KEY[v]=k;
+CAM2KEY['1A']='Abm';CAM2KEY['2A']='Ebm';CAM2KEY['3A']='Bbm';CAM2KEY['11A']='F#m';CAM2KEY['12A']='Dbm';CAM2KEY['2B']='F#';CAM2KEY['3B']='Db';CAM2KEY['4B']='Ab';CAM2KEY['5B']='Eb';CAM2KEY['6B']='Bb';
+function parseKey(raw){
+  if(!raw)return null;let s=String(raw).trim().replace('♯','#').replace('♭','b');
+  let m=s.match(/^(\d{1,2})\s*([AB])$/i);if(m){const n=+m[1];if(n>=1&&n<=12)return{n,l:m[2].toUpperCase()}}
+  m=s.match(/^(\d{1,2})\s*([dm])$/i);if(m){const o=+m[1];if(o>=1&&o<=12)return{n:((o+6)%12)+1,l:m[2].toLowerCase()==='d'?'B':'A'}}
+  s=s.replace(/\s*(minor|min)$/i,'m').replace(/\s*(major|maj)$/i,'');
+  s=s.charAt(0).toUpperCase()+s.slice(1);
+  const c=KEY2CAM[s];if(c){return{n:parseInt(c),l:c.slice(-1)}}
+  return null;
+}
+
+/* ============ settings ============ */
+let S={...DEFAULTS};
+try{Object.assign(S,JSON.parse(localStorage.getItem('jailr-prep-settings')||'{}'))}catch(e){}
+function saveS(){try{localStorage.setItem('jailr-prep-settings',JSON.stringify(S))}catch(e){}}
+
+/* ============ IndexedDB cache ============ */
+const IDB={db:undefined,
+  open(){if(this.db!==undefined)return Promise.resolve(this.db);return new Promise(res=>{try{const r=indexedDB.open('jailr-prep',1);r.onupgradeneeded=()=>{r.result.createObjectStore('analysis');r.result.createObjectStore('manual')};r.onsuccess=()=>{this.db=r.result;res(this.db)};r.onerror=()=>{this.db=null;res(null)}}catch(e){this.db=null;res(null)}})},
+  async get(st,k){const db=await this.open();if(!db)return null;return new Promise(res=>{try{const q=db.transaction(st).objectStore(st).get(k);q.onsuccess=()=>res(q.result||null);q.onerror=()=>res(null)}catch(e){res(null)}})},
+  async put(st,k,v){const db=await this.open();if(!db)return;return new Promise(res=>{try{const tx=db.transaction(st,'readwrite');v===null?tx.objectStore(st).delete(k):tx.objectStore(st).put(v,k);tx.oncomplete=()=>res();tx.onerror=()=>res()}catch(e){res()}})}
+};
+
+/* ============ state ============ */
+const state={doc:null,xmlName:'',tracks:new Map(),order:[],playlists:[],tree:[],cur:-1,collapsed:new Set(),
+  sort:[{k:'idx',d:1}],filter:'all',q:'',view:[],sel:new Set(),focus:null,anchor:null,
+  files:new Map(),fileCount:0,busy:false,cancel:false};
+window.APP=state;
+
+/* ============ XML import ============ */
+function locToPath(loc){
+  let s=loc||'';s=s.replace(/^file:\/\/localhost/i,'').replace(/^file:\/\//i,'');
+  try{s=decodeURIComponent(s)}catch(e){}
+  if(/^\/[A-Za-z]:\//.test(s))s=s.slice(1);
+  return s.normalize('NFC');
+}
+function loadXml(text,name){
+  const doc=new DOMParser().parseFromString(text,'application/xml');
+  if(doc.querySelector('parsererror')||!doc.querySelector('DJ_PLAYLISTS'))throw new Error('Das ist keine gültige rekordbox-XML-Datei.');
+  state.doc=doc;state.xmlName=name;state.tracks.clear();state.order=[];
+  const byLoc=new Map();
+  for(const el of doc.querySelectorAll('COLLECTION > TRACK')){
+    const g=a=>el.getAttribute(a)||'';
+    const id=g('TrackID');const path=locToPath(g('Location'));
+    const tempos=[...el.querySelectorAll('TEMPO')].map(x=>({t:+x.getAttribute('Inizio'),bpm:+x.getAttribute('Bpm'),beat:+(x.getAttribute('Battito')||1)})).filter(x=>x.bpm>0&&isFinite(x.t));
+    const marks=[...el.querySelectorAll('POSITION_MARK')].map(x=>({num:+x.getAttribute('Num'),type:+x.getAttribute('Type'),start:+x.getAttribute('Start'),end:x.hasAttribute('End')?+x.getAttribute('End'):null,name:x.getAttribute('Name')||''}));
+    const t={id,el,title:g('Name')||path.split('/').pop(),artist:g('Artist'),album:g('Album'),genre:g('Genre'),bpm:+g('AverageBpm')||0,keyRaw:g('Tonality'),
+      dur:+g('TotalTime')||0,size:+g('Size')||0,rating:+g('Rating')||0,comments:g('Comments'),loc:g('Location'),path,fname:path.split('/').pop(),kind:g('Kind'),kbps:+g('BitRate')||0,srate:+g('SampleRate')||0,
+      tempos,marks,analysis:null,manual:null,file:null,status:'idle',error:''};
+    t.key=parseKey(t.keyRaw);t.cam=t.key?t.key.n+t.key.l:'';t.keyName=t.key?(CAM2KEY[t.cam]||t.keyRaw):t.keyRaw;
+    state.tracks.set(id,t);state.order.push(id);byLoc.set(g('Location'),id);
+  }
+  // playlists
+  state.playlists=[];state.tree=[];
+  const root=doc.querySelector('PLAYLISTS > NODE');
+  const walk=(node,depth,path)=>{
+    for(const ch of [...node.children].filter(c=>c.tagName==='NODE')){
+      const nm=ch.getAttribute('Name');
+      if(ch.getAttribute('Type')==='0'){
+        const fpath=[...path,nm];state.tree.push({type:'folder',name:nm,depth,key:fpath.join('/')});walk(ch,depth+1,fpath);
+      }else{
+        const kt=ch.getAttribute('KeyType');
+        const ids=[...ch.children].filter(c=>c.tagName==='TRACK').map(c=>kt==='1'?byLoc.get(c.getAttribute('Key')):c.getAttribute('Key')).filter(id=>state.tracks.has(id));
+        const idx=state.playlists.length;state.playlists.push({name:nm,folder:path,ids});
+        state.tree.push({type:'list',name:nm,depth,idx,parent:path.join('/')});
+      }
+    }
+  };
+  if(root)walk(root,0,[]);
+  state.cur=state.playlists.length?0:-1;state.sel.clear();state.focus=null;
+  matchFiles();restoreCache();
+  renderAll();
+  toast(`${state.tracks.size} Tracks · ${state.playlists.length} Playlists geladen`);
+}
+async function restoreCache(){
+  let n=0;
+  for(const t of state.tracks.values()){
+    const a=await IDB.get('analysis',ALG_V+'|'+t.loc+'|'+t.size);
+    const m=await IDB.get('manual',t.loc);
+    if(m)t.manual=m;
+    if(a&&a.v===ALG_V){t.analysis=a;t.status='done';n++}
+  }
+  if(n){renderAll();toast(`${n} frühere Analysen wiederhergestellt`)}
+}
+
+/* ============ music files ============ */
+const AUDIO_RE=/\.(mp3|wav|aiff?|flac|m4a|aac|mp4|ogg|alac)$/i;
+function addFiles(list){
+  let n=0;
+  for(const f of list){
+    if(!AUDIO_RE.test(f.name))continue;
+    const k=f.name.normalize('NFC').toLowerCase();
+    if(!state.files.has(k))state.files.set(k,[]);
+    const arr=state.files.get(k);
+    const rp=(f.webkitRelativePath||f._rel||f.name).normalize('NFC');
+    if(!arr.some(x=>x.rp===rp&&x.f.size===f.size)){arr.push({f,rp});n++}
+  }
+  state.fileCount+=n;matchFiles();renderAll();
+  toast(`${n} Audiodateien verbunden`);
+}
+function matchFiles(){
+  for(const t of state.tracks.values()){
+    const c=state.files.get(t.fname.toLowerCase());
+    if(!c||!c.length){t.file=null;continue}
+    if(c.length===1){t.file=c[0].f;continue}
+    const tp=t.path.toLowerCase();let best=null,bs=-1;
+    for(const x of c){const rp=x.rp.toLowerCase();let i=0;while(i<rp.length&&i<tp.length&&rp[rp.length-1-i]===tp[tp.length-1-i])i++;const sc=i+(t.size&&x.f.size===t.size?1000:0);if(sc>bs){bs=sc;best=x.f}}
+    t.file=best;
+  }
+}
+async function readDropEntries(items){
+  const out=[];
+  const walk=async(entry,path)=>{
+    if(entry.isFile){const f=await new Promise((res,rej)=>entry.file(res,rej));f._rel=path+f.name;out.push(f)}
+    else if(entry.isDirectory){const rd=entry.createReader();let batch;do{batch=await new Promise((res,rej)=>rd.readEntries(res,rej));for(const e of batch)await walk(e,path+entry.name+'/')}while(batch.length)}
+  };
+  for(const it of items){const e=it.webkitGetAsEntry&&it.webkitGetAsEntry();if(e)await walk(e,'')}
+  return out;
+}
+
+/* ============ audio decoding ============ */
+function parseAiff(ab){
+  const dv=new DataView(ab);const id=s=>String.fromCharCode(dv.getUint8(s),dv.getUint8(s+1),dv.getUint8(s+2),dv.getUint8(s+3));
+  if(id(0)!=='FORM')throw new Error('Kein AIFF');const form=id(8);let p=12,ch=0,frames=0,bits=0,sr=0,comp='NONE',data=-1;
+  while(p+8<=dv.byteLength){const cid=id(p),sz=dv.getUint32(p+4);const b=p+8;
+    if(cid==='COMM'){ch=dv.getUint16(b);frames=dv.getUint32(b+2);bits=dv.getUint16(b+6);
+      const e=dv.getUint16(b+8)&0x7fff;const hi=dv.getUint32(b+10),lo=dv.getUint32(b+14);sr=(hi*4294967296+lo)*Math.pow(2,e-16383-63);
+      if(form==='AIFC'&&sz>=22)comp=id(b+18);}
+    else if(cid==='SSND'){data=b+8+dv.getUint32(b)}
+    p=b+sz+(sz&1);}
+  if(data<0||!ch)throw new Error('AIFF unvollständig');
+  const le=comp==='sowt',fl=/^fl32$/i.test(comp);const bps=fl?4:Math.ceil(bits/8);
+  frames=Math.min(frames,Math.floor((dv.byteLength-data)/(bps*ch)));
+  const out=[];for(let c=0;c<ch;c++)out.push(new Float32Array(frames));
+  let o=data;
+  for(let i=0;i<frames;i++)for(let c=0;c<ch;c++){let v;
+    if(fl)v=dv.getFloat32(o,le);
+    else if(bps===2)v=dv.getInt16(o,le)/32768;
+    else if(bps===3){const b0=dv.getUint8(o),b1=dv.getUint8(o+1),b2=dv.getUint8(o+2);let x=le?(b2<<16|b1<<8|b0):(b0<<16|b1<<8|b2);if(x&0x800000)x-=0x1000000;v=x/8388608}
+    else if(bps===4)v=dv.getInt32(o,le)/2147483648;
+    else v=dv.getInt8(o)/128;
+    out[c][i]=v;o+=bps;}
+  return{ch:out,sr:Math.round(sr),frames};
+}
+async function decodeFile(file,targetSr){
+  const ab=await file.arrayBuffer();
+  const mk=(c,len,sr)=>targetSr?new OfflineAudioContext(c,Math.max(1,len),sr):getCtx();
+  try{const ctx=targetSr?new OfflineAudioContext(2,1,targetSr):getCtx();return await ctx.decodeAudioData(ab.slice(0))}
+  catch(e){
+    if(!/\.aif/i.test(file.name))throw new Error('Format nicht dekodierbar ('+file.name.split('.').pop()+')');
+    const a=parseAiff(ab);const ctx0=getCtx();const buf=ctx0.createBuffer(a.ch.length,a.frames,a.sr);a.ch.forEach((d,i)=>buf.copyToChannel(d,i));
+    if(!targetSr||a.sr===targetSr)return buf;
+    const len=Math.ceil(a.frames*targetSr/a.sr);const oc=new OfflineAudioContext(Math.min(2,a.ch.length),len,targetSr);
+    const src=oc.createBufferSource();src.buffer=buf;src.connect(oc.destination);src.start();return await oc.startRendering();
+  }
+}
+let _ctx=null;function getCtx(){if(!_ctx)_ctx=new (window.AudioContext||window.webkitAudioContext)();return _ctx}
+
+/* ============ analysis ============ */
+function biq(type,fc,Q,G,sr){
+  const w=2*Math.PI*fc/sr,cs=Math.cos(w),al=Math.sin(w)/(2*Q);let b0,b1,b2,a0,a1,a2;
+  if(type==='shelf'){const A=Math.pow(10,G/40),sA=2*Math.sqrt(A)*al;
+    b0=A*((A+1)+(A-1)*cs+sA);b1=-2*A*((A-1)+(A+1)*cs);b2=A*((A+1)+(A-1)*cs-sA);a0=(A+1)-(A-1)*cs+sA;a1=2*((A-1)-(A+1)*cs);a2=(A+1)-(A-1)*cs-sA;}
+  else{b0=(1+cs)/2;b1=-(1+cs);b2=(1+cs)/2;a0=1+al;a1=-2*cs;a2=1-al;}
+  return{b0:b0/a0,b1:b1/a0,b2:b2/a0,a1:a1/a0,a2:a2/a0};
+}
+function filt(inp,out,c){let x1=0,x2=0,y1=0,y2=0;for(let i=0;i<inp.length;i++){const x=inp[i];const y=c.b0*x+c.b1*x1+c.b2*x2-c.a1*y1-c.a2*y2;x2=x1;x1=x;y2=y1;y1=y;out[i]=y}return out}
+function lufs(chs,sr){
+  const sh=biq('shelf',1500,Math.SQRT1_2,4,sr),hp=biq('hp',38,0.5,0,sr);
+  const step=Math.round(sr*0.1);const nSteps=Math.floor(chs[0].length/step);const sums=new Float64Array(nSteps);
+  for(const ch of chs){const y=filt(ch,new Float32Array(ch.length),sh);filt(y,y,hp);
+    for(let s=0;s<nSteps;s++){let a=0;const o=s*step;for(let i=0;i<step;i++){const v=y[o+i];a+=v*v}sums[s]+=a}}
+  const z=[];for(let s=0;s+4<=nSteps;s++)z.push((sums[s]+sums[s+1]+sums[s+2]+sums[s+3])/(4*step));
+  const L=v=>-0.691+10*Math.log10(v+1e-20);
+  const g1=z.filter(v=>L(v)>-70);if(!g1.length)return -70;
+  const thr=L(g1.reduce((a,b)=>a+b,0)/g1.length)-10;const g2=g1.filter(v=>L(v)>thr);
+  return L(g2.reduce((a,b)=>a+b,0)/g2.length);
+}
+function downbeats(t,dur){
+  const T=t.tempos;if(!T.length)return null;
+  const beats=[];const f=T[0];const bl0=60/f.bpm;
+  let x=f.t-bl0,n=((f.beat+2)%4)+1;const pre=[];while(x>=-0.02){pre.push([Math.max(0,x),n]);x-=bl0;n=((n+2)%4)+1}
+  beats.push(...pre.reverse());
+  for(let i=0;i<T.length;i++){const s=T[i],e=i+1<T.length?T[i+1].t:dur;const bl=60/s.bpm;let tt=s.t,nb=s.beat;while(tt<e-1e-4){beats.push([tt,nb]);tt+=bl;nb=nb%4+1}}
+  const db=beats.filter(b=>b[1]===1).map(b=>b[0]);if(!db.length)return null;
+  const bar=240/T[T.length-1].bpm;
+  if(db[db.length-1]+bar<=dur+0.05)db.push(db[db.length-1]+bar);
+  return db;
+}
+async function analyzeTrack(t){
+  if(!t.tempos.length)throw new Error('Kein Beatgrid – Track zuerst in rekordbox analysieren');
+  const SR=22050;const buf=await decodeFile(t.file,SR);const sr=buf.sampleRate;
+  const nc=Math.min(2,buf.numberOfChannels);const chs=[];for(let c=0;c<nc;c++)chs.push(buf.getChannelData(c));
+  const L=chs[0],R=chs[1]||chs[0];const n=L.length;const dur=n/sr;
+  const loud=lufs(chs,sr);await sleep(0);
+  let pk=0,clip=0;for(const ch of chs)for(let i=0;i<ch.length;i++){const v=Math.abs(ch[i]);if(v>pk)pk=v;if(v>=0.995)clip++}
+  const HOP=1024,nh=Math.floor(n/HOP);
+  const eA=new Float32Array(nh),eL=new Float32Array(nh),eM=new Float32Array(nh),eH=new Float32Array(nh);
+  const aLo=1-Math.exp(-2*Math.PI*150/sr),aHi=1-Math.exp(-2*Math.PI*4000/sr);
+  let l1=0,l2=0,h1=0,h2=0;
+  for(let k=0,i=0;k<nh;k++){let sa=0,sl=0,sm=0,shh=0;
+    for(let j=0;j<HOP;j++,i++){const x=(L[i]+R[i])*0.5;l1+=aLo*(x-l1);l2+=aLo*(l1-l2);h1+=aHi*(x-h1);h2+=aHi*(h1-h2);const m=h2-l2,h=x-h2;sa+=x*x;sl+=l2*l2;sm+=m*m;shh+=h*h}
+    eA[k]=sa/HOP;eL[k]=sl/HOP;eM[k]=sm/HOP;eH[k]=shh/HOP}
+  const db=downbeats(t,dur);if(!db||db.length<3)throw new Error('Beatgrid unbrauchbar');
+  const nb=db.length-1;const dB=v=>r1(10*Math.log10(v+1e-12));
+  const rms=[],low=[],mid=[],hi=[];
+  for(let b=0;b<nb;b++){const h0=Math.floor(db[b]*sr/HOP),h1_=Math.max(h0+1,Math.min(nh,Math.floor(db[b+1]*sr/HOP)));let a=0,l=0,m=0,h=0,c=0;
+    for(let k=h0;k<h1_;k++){a+=eA[k];l+=eL[k];m+=eM[k];h+=eH[k];c++}c=c||1;rms.push(dB(a/c));low.push(dB(l/c));mid.push(dB(m/c));hi.push(dB(h/c))}
+  // body = main sections
+  const rB=pct(rms,0.8);const body=rms.map(v=>v>=rB-6);
+  let on=0,beatsBody=0,eHb=0,eAb=0;let prev=-200,prev2=-200;
+  for(let b=0;b<nb;b++){if(!body[b])continue;beatsBody+=4;const h0=Math.floor(db[b]*sr/HOP),h1_=Math.min(nh-1,Math.floor(db[b+1]*sr/HOP));prev=-200;prev2=-200;
+    for(let k=h0;k<h1_;k++){eHb+=eH[k];eAb+=eA[k];const v=10*Math.log10(eH[k]+1e-12),fl=v-prev;if(fl>4&&v-prev2>3)on++;prev2=prev;prev=v}}
+  const opb=beatsBody?on/beatsBody:0;const hiRatio=10*Math.log10((eHb+1e-12)/(eAb+1e-12));
+  const bpm=t.bpm||t.tempos[0].bpm;
+  // level-independent: gain is reported separately, so mastering loudness must not drive the energy score
+  const full=rms.filter(v=>v>=rB-4).length/Math.max(1,nb);const bassRel=pct(low,0.8)-rB;
+  const sT=clamp((bpm-120)/55),sD=clamp((opb-0.4)/2.2),sA=clamp((full-0.4)/0.5),sB=clamp((bassRel+7)/6),sH=clamp((hiRatio+30)/22);
+  const score=Math.round(100*(0.3*sT+0.25*sD+0.2*sA+0.15*sB+0.1*sH));
+  return{v:ALG_V,dur:r1(dur),db:db.map(x=>Math.round(x*1000)/1000),rms,low,mid,hi,lufs:r1(loud),peak:r1(20*Math.log10(pk+1e-9)),clip:Math.round(clip/(n*nc)*1e5)/1e5,opb:Math.round(opb*100)/100,hiRatio:r1(hiRatio),score,parts:[sT,sD,sA,sB,sH].map(x=>Math.round(x*100)),full:Math.round(full*100),bassRel:r1(bassRel)};
+}
+
+/* ============ cue logic ============ */
+function barT(a,b){const d=a.db;if(b<d.length)return d[Math.max(0,b)];const bar=d[d.length-1]-d[d.length-2];return d[d.length-1]+(b-d.length+1)*bar}
+function computeCues(t){
+  const a=t.analysis;if(!a)return null;
+  const nb=a.rms.length,P=S.phrase,flags=[],info=[];
+  const rB=pct(a.rms,0.8),lB=pct(a.low,0.8);
+  let bA=0;while(bA<nb&&(a.rms[bA]<rB-30||a.rms[bA]<-50))bA++;if(bA>=nb)bA=0;
+  // phrase energy = loudness + mid band (synths/bass); G = boundary with the biggest drop after which energy never comes back
+  const E=a.rms.map((r,i)=>r+a.mid[i]);
+  // phrase phase: rekordbox bar 1 is the phrase start unless section changes clearly sit elsewhere
+  const hh=new Array(P).fill(0);for(let b=4;b<nb-4;b++){let x=0,y=0;for(let i=0;i<4;i++){x+=E[b+i];y+=E[b-4+i]}const d=Math.abs(x-y)/4;if(d>3)hh[b%P]+=d}
+  let phase=0;const hp=hh.indexOf(Math.max(...hh));if(hp!==0&&hp!==P/2&&hh[hp]>0&&hh[hp]>=1.5*hh[0]){phase=hp;flags.push(`Phrasen starten eher auf Bar ${hp+1} als auf Bar 1 – Downbeat im rekordbox-Grid prüfen`)}
+  let p0=bA;while(((p0-phase)%P+P)%P!==0)p0++;
+  const ph=[];for(let s=p0;s+P<=nb;s+=P){let m=0;for(let i=s;i<s+P;i++)m+=E[i];ph.push({s,e:m/P})}
+  const peak=Math.max(...ph.map(p=>p.e));let best=-1,bd=0;
+  for(let j=Math.max(1,Math.floor(ph.length*0.25));j<ph.length;j++){
+    let after=-Infinity;for(let k=j;k<ph.length;k++)after=Math.max(after,ph[k].e);
+    const drop=ph[j-1].e-after;if(ph[j-1].e>=peak-6&&drop>=S.sens&&drop>bd){bd=drop;best=j}}
+  let bG;
+  if(best<0){bG=p0+ph.length*P;info.push('Kein Outro: Energie bleibt bis zum Ende – F/G liegen auf den letzten 32 Bars')}
+  else bG=ph[best].s;
+  let bF=bG-S.mixBars;if(bF<bA){bF=bA;flags.push('Track kürzer als Mix-out-Fenster')}
+  const LB=S.loopBars;const kick=a.low.map(v=>v>=lB-8);let bL=-1;
+  for(let s=p0+Math.floor((nb-p0-LB)/P)*P;s>=Math.max(bA,bG-LB);s-=P){let ok=true;for(let i=s;i<s+LB;i++)if(!kick[i]){ok=false;break}if(ok){bL=s;break}}
+  if(bL<0){bL=Math.max(bA,bG-LB);info.push('Kein durchgehender Kick am Ende – Loop sitzt direkt vor G')}
+  const auto={A:bA,F:bF,G:bG,L:bL};const m=t.manual||{};
+  const fG=m.G??bG;
+  const c={p0,phase,info,A:m.A??bA,F:m.F??(m.G!=null?Math.max(m.A??bA,fG-S.mixBars):bF),G:fG,L:m.L??bL,auto,flags,manual:!!(t.manual&&Object.keys(t.manual).length)};
+  return c;
+}
+function cueTimes(t){const c=computeCues(t);if(!c)return null;const a=t.analysis;
+  return{A:barT(a,c.A),F:barT(a,c.F),G:barT(a,c.G),L0:barT(a,c.L),L1:barT(a,c.L+S.loopBars),c};}
+function slotState(t,k){ // 'set' | 'kept' (existing user cue stays)
+  if(k==='L')return 'set';const num=CUE[k].num;const ex=t.marks.some(m=>m.num===num);return ex&&!S.overwrite?'kept':'set'}
+
+/* ============ energy rating ============ */
+let relCache=null;
+function stars(t){
+  const a=t.analysis;if(!a)return 0;
+  if(S.energyMode==='rel'){
+    if(!relCache){const sc=listIds().map(id=>state.tracks.get(id)).filter(x=>x&&x.analysis).map(x=>x.analysis.score).sort((x,y)=>x-y);relCache=sc}
+    const sc=relCache;if(sc.length<5)return absStars(a.score);
+    let i=0;while(i<sc.length&&sc[i]<a.score)i++;return 1+Math.min(4,Math.floor(i/sc.length*5));
+  }
+  return absStars(a.score);
+}
+function absStars(s){return s<35?1:s<50?2:s<62?3:s<75?4:5}
+
+/* ============ views ============ */
+function listIds(){return state.cur<0?state.order:(state.playlists[state.cur]?.ids||[])}
+const SORTS={idx:{l:'#'},title:{l:'Titel'},artist:{l:'Artist'},bpm:{l:'BPM'},key:{l:'Key'},energy:{l:'Energy'},lufs:{l:'LUFS'},gain:{l:'Gain'},kbps:{l:'kbps'},dur:{l:'Länge'}};
+function sortVal(t,k,i){
+  switch(k){case'idx':return i;case'title':return t.title.toLowerCase();case'artist':return t.artist.toLowerCase();case'bpm':return t.bpm||null;
+    case'key':return t.key?t.key.n*2+(t.key.l==='B'?1:0):null;case'energy':return t.analysis?t.analysis.score:null;case'lufs':return t.analysis?t.analysis.lufs:null;case'gain':return t.analysis?gainOf(t):null;case'kbps':return t.kbps||null;case'dur':return t.dur}
+}
+function qFlags(t){const f=[];if(t.kbps&&t.kbps<160)f.push(`Niedrige Bitrate: ${t.kbps} kbps${t.kbps<128?' – deutlich hörbar, besser neu besorgen':' – auf großer Anlage hörbar'}`);const a=t.analysis;if(a){const g=gainOf(t);if(g!=null&&Math.abs(g)>=3)f.push(`Lautstärke weicht ${g>0?'+':''}${g.toFixed(1)} dB vom Playlist-Schnitt ab – Gain-Knob anpassen`);if(a.clip>0.0005)f.push(`Clipping: ${(a.clip*100).toFixed(2)} % der Samples am Anschlag`)}return f}
+function gainOf(t){if(!t.analysis||state.refLufs==null)return null;return Math.round((state.refLufs-t.analysis.lufs)*10)/10}
+function statusOf(t){if(t.status==='busy')return'busy';if(t.status==='error')return'err';if(t.analysis){const c=computeCues(t);return c.flags.length||qFlags(t).length?'warn':'done'}return t.file?'open':'nofile'}
+function computeView(){
+  relCache=null;
+  const ids=listIds();{const L=ids.map(id=>state.tracks.get(id)).filter(t=>t&&t.analysis).map(t=>t.analysis.lufs).sort((a,b)=>a-b);state.refLufs=L.length?L[Math.floor(L.length/2)]:null}const q=state.q.trim().toLowerCase();
+  let rows=ids.map((id,i)=>({t:state.tracks.get(id),i})).filter(r=>r.t);
+  if(q)rows=rows.filter(r=>(r.t.title+' '+r.t.artist+' '+r.t.genre+' '+r.t.cam+' '+r.t.keyName).toLowerCase().includes(q));
+  const f=state.filter;
+  if(f!=='all')rows=rows.filter(r=>{const s=statusOf(r.t);return f==='open'?(s==='open'||s==='nofile'||s==='err'):f==='done'?s==='done':s==='warn'});
+  const keys=state.sort.map(s=>({k:s.k,d:s.d,v:new Map(rows.map(r=>[r,sortVal(r.t,s.k,r.i)]))}));
+  rows.sort((x,y)=>{for(const s of keys){const a=s.v.get(x),b=s.v.get(y);if(a===b)continue;if(a==null)return 1;if(b==null)return -1;return(a<b?-1:1)*s.d}return x.i-y.i});
+  state.view=rows.map(r=>r.t.id);state.idxOf=new Map(rows.map(r=>[r.t.id,r.i]));
+}
+
+/* ============ render ============ */
+function renderAll(){renderTop();renderSide();renderBar();renderMain();renderDetail()}
+function renderTop(){
+  const px=$('#pillXml'),pm=$('#pillMusic');
+  px.className='pill'+(state.doc?' ok':'');px.querySelector('span:last-child').textContent=state.doc?`${state.xmlName} · ${state.tracks.size} Tracks`:'XML laden';
+  const all=[...state.tracks.values()];const found=all.filter(t=>t.file).length;
+  pm.className='pill'+(state.fileCount?(found===all.length?' ok':' warn'):'');
+  pm.querySelector('span:last-child').textContent=state.fileCount?(all.length?`Musik: ${found}/${all.length} gefunden`:`${state.fileCount} Dateien`):'Musikordner verbinden';
+  $('#btnAnalyze').disabled=!state.doc||state.busy;$('#btnExport').disabled=!state.doc;
+  const n=state.sel.size>1?state.sel.size:0;$('#btnAnalyzeTxt').textContent=n?`${n} analysieren`:'Playlist analysieren';
+}
+function renderSide(){
+  const el=$('#side');if(!state.doc){el.innerHTML='<div class="side-h">Playlists</div><div class="pl" style="color:var(--fg3)">Noch keine XML geladen</div>';return}
+  const prog=ids=>{const n=ids.length;const d=ids.filter(id=>state.tracks.get(id)?.analysis).length;return`<span class="prog" title="${d}/${n} analysiert"><i style="width:${n?d/n*100:0}%"></i></span>`};
+  let h=`<div class="side-h">Library</div><div class="pl ${state.cur<0?'active':''}" data-pl="-1"><svg class="i" viewBox="0 0 24 24"><path d="M4 5h16M4 12h16M4 19h10"/></svg><span class="nm">Collection</span>${prog(state.order)}<span class="ct">${state.order.length}</span></div><div class="side-h">Playlists</div>`;
+  const hidden=p=>{for(const c of state.collapsed)if(p===c||p.startsWith(c+'/'))return true;return false};
+  for(const n of state.tree){
+    if(n.type==='folder'){const par=n.key.split('/').slice(0,-1).join('/');if(par&&hidden(par))continue;
+      h+=`<div class="pl folder ${state.collapsed.has(n.key)?'collapsed':''}" data-folder="${esc(n.key)}" style="padding-left:${8+n.depth*14}px"><svg class="i chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg><span class="nm">${esc(n.name)}</span></div>`}
+    else{if(n.parent&&hidden(n.parent))continue;const p=state.playlists[n.idx];
+      h+=`<div class="pl ${state.cur===n.idx?'active':''}" data-pl="${n.idx}" style="padding-left:${8+n.depth*14+(n.depth?4:0)}px"><svg class="i" viewBox="0 0 24 24"><path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/></svg><span class="nm">${esc(p.name)}</span>${prog(p.ids)}<span class="ct">${p.ids.length}</span></div>`}
+  }
+  el.innerHTML=h;
+}
+function renderBar(){
+  const bar=$('#bar');bar.style.display=state.doc?'':'none';if(!state.doc)return;
+  const ids=listIds().map(id=>state.tracks.get(id)).filter(Boolean);const cnt={all:ids.length,open:0,done:0,warn:0};
+  for(const t of ids){const s=statusOf(t);if(s==='done')cnt.done++;else if(s==='warn')cnt.warn++;else if(s!=='busy')cnt.open++}
+  $('#filt').innerHTML=[['all','Alle'],['open','Offen'],['done','Fertig'],['warn','Prüfen']].map(([k,l])=>`<button data-f="${k}" class="${state.filter===k?'on':''}">${l}<span class="n">${cnt[k]}</span></button>`).join('');
+  const used=new Set(state.sort.map(s=>s.k));
+  $('#sorts').innerHTML=`<span class="lbl">Sortierung</span>`+state.sort.map((s,i)=>`<span class="chip" draggable="true" data-i="${i}" title="Ziehen zum Umsortieren · Klick auf Pfeil dreht Richtung"><span class="lv">${i+1}</span>${SORTS[s.k].l}<button class="dir" data-dir="${i}">${s.d>0?'↑':'↓'}</button>${state.sort.length>1||s.k!=='idx'?`<button class="x" data-rm="${i}" title="Entfernen">×</button>`:''}</span>`).join('')
+   +`<select class="add" id="addSort"><option value="">+ Ebene</option>${Object.entries(SORTS).filter(([k])=>!used.has(k)).map(([k,v])=>`<option value="${k}">${v.l}</option>`).join('')}<option disabled>──────</option><option value="p:harm">Preset: Harmonisch</option><option value="p:build">Preset: Energie-Aufbau</option><option value="p:peak">Preset: Peak zuerst</option></select>`;
+}
+const STI={busy:'<span class="st"><span class="spin"></span>läuft</span>',done:'<span class="st ok">✓ fertig</span>',warn:'<span class="st warn">⚠ prüfen</span>',open:'<span class="st">offen</span>',nofile:'<span class="st" title="Datei im Musikordner nicht gefunden">– keine Datei</span>',err:'<span class="st err">✕ Fehler</span>'};
+function rowHtml(t,pos){
+  const a=t.analysis,s=stars(t);const ct=a?computeCues(t):null;
+  const cb=k=>{if(!ct)return`<span class="cb ${k}">${k}</span>`;const st=slotState(t,k);return`<span class="cb ${k} ${st==='kept'?'kept':'on'}" title="${k==='L'?'Exit Loop':CUE[k].name}${st==='kept'?' – vorhandener Cue bleibt':''}">${k}</span>`};
+  const cls=[state.sel.has(t.id)?'sel':'',state.focus===t.id?'focus':''].join(' ');
+  return`<tr data-id="${esc(t.id)}" class="${cls}"><td class="num">${pos}</td><td class="tt"><div class="ti">${esc(t.title)}</div><div class="ar">${esc(t.artist)||'&nbsp;'}</div></td>
+  <td class="r">${t.bpm?t.bpm.toFixed(1):'–'}</td>
+  <td>${t.key?`<span class="kc" style="--h:${(t.key.n-1)*30}">${t.cam}</span><span class="kn">${esc(t.keyName)}</span>`:`<span class="kn">${esc(t.keyRaw)||'–'}</span>`}</td>
+  <td>${a?`<span class="meter" data-s="${s}"><i></i><i></i><i></i><i></i><i></i></span><span class="esc">${a.score}</span>`:'<span class="meter"><i></i><i></i><i></i><i></i><i></i></span>'}</td>
+  <td class="r lu">${a?a.lufs.toFixed(1):'–'}</td><td class="r">${gainCell(t)}</td><td class="r lu">${t.kbps?`<span class="kb ${t.kbps<128?'bad':t.kbps<160?'mid':''}">${t.kbps}</span>`:'–'}</td><td class="r du">${fmtT(t.dur)}</td>
+  <td><span class="cues">${['A','F','G','L'].map(cb).join('')}</span></td>
+  <td class="sp">${a?spark(t,ct):''}</td><td>${STI[t.error&&t.status==='error'?'err':statusOf(t)]}</td></tr>`;
+}
+function gainCell(t){const g=gainOf(t);if(g==null)return'–';const ab=Math.abs(g);return`<span class="gn ${ab>=3?'bad':ab>=1.5?'mid':''}" title="Empfohlene Gain-Korrektur ggü. Playlist-Schnitt (${state.refLufs} LUFS)">${ab<0.5?'±0':(g>0?'+':'−')+ab.toFixed(1)}</span>`}
+function spark(t,c){
+  const a=t.analysis,W=120,H=22,n=a.rms.length;if(n<2)return'';const top=pct(a.rms,0.95),lo=top-24;
+  const x=i=>i/(n)*W,y=v=>H-1-clamp((v-lo)/24)*(H-3);
+  let d='M0 '+H;for(let i=0;i<n;i++)d+=` L${x(i).toFixed(1)} ${y(a.rms[i]).toFixed(1)} L${x(i+1).toFixed(1)} ${y(a.rms[i]).toFixed(1)}`;d+=` L${W} ${H}Z`;
+  return`<svg class="spark" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}"><rect x="${x(c.F)}" y="0" width="${Math.max(1,x(c.G)-x(c.F))}" height="${H}" fill="#FF9A1F" opacity=".16"/><rect x="${x(c.L)}" y="0" width="${Math.max(1,x(c.L+S.loopBars)-x(c.L))}" height="${H}" fill="#3D9BFF" opacity=".28"/><path d="${d}" fill="#BDB6AA" opacity=".55"/><rect x="${x(c.A)}" y="0" width="1.5" height="${H}" fill="#28E214"/><rect x="${x(c.F)}" y="0" width="1.5" height="${H}" fill="#FF9A1F"/><rect x="${x(c.G)}" y="0" width="1.5" height="${H}" fill="#F0443A"/></svg>`;
+}
+function renderMain(){
+  const m=$('#main');
+  if(!state.doc){
+    const s2=state.fileCount>0;
+    m.innerHTML=`<div class="empty"><h1>Tracks sauber vorbereiten.</h1><p>Lädt deine rekordbox-Playlists, analysiert Energie und Lautstärke und setzt Hot Cue A (Start), F/G (32-Bar Mix-Out vor dem Energieabfall) und einen Exit Loop als Memory Cue. Ergebnis geht als XML zurück in rekordbox oder als Crates nach Serato. Alles läuft lokal im Browser, nichts wird hochgeladen.</p>
+    <div class="steps"><div class="step"><b>SCHRITT 1</b><h3>rekordbox XML</h3><p>In rekordbox: Datei → Collection im xml-Format exportieren.</p><button class="btn primary" data-act="xml">XML laden</button></div>
+    <div class="step ${s2?'done':''}"><b>SCHRITT 2 ${s2?'✓':''}</b><h3>Musikordner</h3><p>Ordner mit deinen Tracks wählen (z.B. Musik-Ordner oder USB-Stick). Wird nur gelesen.</p><button class="btn" data-act="dir">Ordner wählen</button></div>
+    <div class="step"><b>SCHRITT 3</b><h3>Analysieren &amp; exportieren</h3><p>Playlist wählen, analysieren, prüfen, als XML exportieren und in rekordbox importieren.</p><button class="btn" data-act="help">So geht der Import</button></div></div>
+    <p style="margin-top:18px;font-size:12px;color:var(--fg3)">Tipp: Du kannst XML und Musikordner auch einfach ins Fenster ziehen.</p></div>`;return;
+  }
+  computeView();
+  const th=(k,l,cls='')=>{const i=state.sort.findIndex(s=>s.k===k);return`<th class="${cls}" data-sort="${k}" title="Klick: sortieren · Shift+Klick: weitere Ebene">${l}${i>=0?`<span class="si">${state.sort[i].d>0?'↑':'↓'}${state.sort.length>1?i+1:''}</span>`:''}</th>`};
+  const rows=state.view.map(id=>rowHtml(state.tracks.get(id),state.idxOf.get(id)+1)).join('');
+  m.innerHTML=`<table><thead><tr>${th('idx','#')}${th('title','Track')}${th('bpm','BPM','r')}${th('key','Key')}${th('energy','Energy')}${th('lufs','LUFS','r lu')}${th('gain','Gain','r')}${th('kbps','kbps','r lu')}${th('dur','Zeit','r du')}<th>Cues</th><th class="sp">Verlauf</th><th>Status</th></tr></thead><tbody>${rows}</tbody></table>${state.view.length?'':'<div class="empty" style="margin-top:40px"><p>Keine Tracks in dieser Ansicht.</p></div>'}`;
+}
+function updateRow(t){const tr=$(`tr[data-id="${CSS.escape(t.id)}"]`);if(!tr)return;const tmp=document.createElement('tbody');tmp.innerHTML=rowHtml(t,state.idxOf.get(t.id)+1);tr.replaceWith(tmp.firstElementChild)}
+function updateSel(){for(const tr of $$('#main tbody tr')){const id=tr.dataset.id;tr.classList.toggle('sel',state.sel.has(id));tr.classList.toggle('focus',state.focus===id)}renderTop()}
+
+/* ============ detail ============ */
+function renderDetail(){
+  const d=$('#detail');const t=state.focus&&state.tracks.get(state.focus);
+  if(!t){d.classList.add('hidden');return}d.classList.remove('hidden');
+  $('#dTitle').textContent=t.title;$('#dArtist').textContent=t.artist;
+  const a=t.analysis;
+  $('#dFacts').innerHTML=`<span><b>${t.bpm?t.bpm.toFixed(1):'–'}</b> BPM</span><span><b>${t.cam||'–'}</b> ${esc(t.keyName||'')}</span>`+(a?`<span>Energy <b>${stars(t)}/5</b> (${a.score})</span><span><b>${a.lufs.toFixed(1)}</b> LUFS</span><span>Gain <b>${gainCell(t)}</b> dB</span><span>Peak <b>${a.peak}</b> dBFS</span>`:'')+(t.kbps?`<span><b>${t.kbps}</b> kbps</span>`:'');
+  const ct=a?cueTimes(t):null;
+  $('#dJumps').innerHTML=ct?[['A',ct.A,CUE.A.col],['F',ct.F,CUE.F.col],['G',ct.G,CUE.G.col],['L',ct.L0,CUE.L.col]].map(([k,tm,col])=>`<button class="jb" data-jump="${k}" title="${k==='L'?'Exit Loop anspielen (loopt)':CUE[k].name+' anspielen'} – Taste ${k}"><i style="background:${col}"></i>${k==='L'?'Loop':k}<span class="t">${fmtT(tm)}</span></button>`).join(''):'';
+  $('#btnReset').style.display=ct&&ct.c.manual?'':'none';$('#btnReanalyze').style.display=t.file?'':'none';
+  let foot='';
+  if(a){const c=ct.c;foot+=`<span>Bar ${c.A+1} · ${c.F+1} · ${c.G+1} · Loop ${c.L+1}–${c.L+S.loopBars}</span><span title="Anteile am Energie-Score (0–100)">Tempo ${a.parts[0]} · Dichte ${a.parts[1]} · Drive ${a.parts[2]} · Bass ${a.parts[3]} · Höhen ${a.parts[4]}</span>`;
+    for(const k of['A','F','G'])if(slotState(t,k)==='kept')foot+=`<span>Hot Cue ${k} ist schon belegt und bleibt</span>`;
+    if(c.manual)foot+='<span>Manuell angepasst</span>';
+    for(const f of [...c.flags,...qFlags(t)])foot+=`<span class="flag">⚠ ${esc(f)}</span>`;
+    for(const f of c.info)foot+=`<span>ℹ ${esc(f)}</span>`;
+    foot+='<span style="margin-left:auto">Marker ziehen = verschieben · Klick = ab da hören</span>';}
+  else if(t.error)foot=`<span class="flag">✕ ${esc(t.error)}</span>`;
+  else foot=t.file?'<span>Noch nicht analysiert – Enter drücken</span>':'<span>Audiodatei nicht gefunden – Musikordner verbinden</span>';
+  $('#dFoot').innerHTML=foot;
+  drawTL();
+}
+const TL={drag:null,hover:-1};
+function tlGeom(){const cv=$('#tl');const w=cv.clientWidth,h=cv.clientHeight;const t=state.tracks.get(state.focus);const a=t&&t.analysis;
+  const dur=a?a.dur:(t?t.dur:1);return{cv,w,h,t,a,dur,x:s=>s/dur*w,s:x=>x/w*dur}}
+function drawTL(){
+  const g=tlGeom();const{cv,w,h,t,a,x}=g;if(!t)return;const dpr=window.devicePixelRatio||1;
+  if(cv.width!==Math.round(w*dpr)||cv.height!==Math.round(h*dpr)){cv.width=Math.round(w*dpr);cv.height=Math.round(h*dpr)}
+  const c=cv.getContext('2d');c.setTransform(dpr,0,0,dpr,0,0);c.clearRect(0,0,w,h);
+  if(!a){c.fillStyle='#7F786E';c.font='12px "Space Grotesk",sans-serif';c.fillText(t.file?'Noch keine Analyse':'Keine Audiodatei verbunden',12,h/2);return}
+  const top=pct(a.rms,0.97),rng=30,H0=18,HH=h-H0-4;const yv=v=>H0+HH-clamp((v-(top-rng))/rng)*HH;
+  const ct=cueTimes(t),cc=ct.c;
+  // regions
+  c.fillStyle='rgba(255,154,31,.13)';c.fillRect(x(ct.F),H0,x(ct.G)-x(ct.F),HH);
+  c.fillStyle='rgba(61,155,255,.22)';c.fillRect(x(ct.L0),H0,x(ct.L1)-x(ct.L0),HH);
+  // phrase grid
+  const n=a.rms.length;
+  for(let b=0;b<=n;b++){const rel=b-cc.p0;if(rel%S.phrase)continue;const X=x(barT(a,b));c.fillStyle=rel%32===0?'#3B3732':'#24211e';c.fillRect(X,H0,1,HH);
+    if(rel%32===0&&rel>=0){c.fillStyle='#7F786E';c.font='10px "Space Grotesk",sans-serif';c.fillText(String(b+1),X+3,H0+11)}}
+  // bars
+  for(let b=0;b<n;b++){const x0=x(a.db[b]),x1=x(a.db[b+1]);const midN=clamp((a.mid[b]-(pct(a.mid,0.9)-24))/24);
+    c.fillStyle=`rgba(244,240,232,${0.18+0.5*midN})`;const y=yv(a.rms[b]);c.fillRect(x0,y,Math.max(1,x1-x0-0.6),H0+HH-y);
+    const yl=yv(a.low[b]+ (pct(a.rms,0.8)-pct(a.low,0.8)));c.fillStyle='rgba(61,155,255,.75)';c.fillRect(x0,yl,Math.max(1,x1-x0-0.6),1.5)}
+  // markers
+  const mk=(k,tm,col,lab)=>{const X=x(tm);c.fillStyle=col;c.fillRect(X-1,0,2,h);c.beginPath();c.moveTo(X-1,0);c.lineTo(X+15,0);c.lineTo(X+15,14);c.lineTo(X-1,14);c.fill();c.fillStyle='#111';c.font='bold 10px "Space Grotesk",sans-serif';c.fillText(lab,X+3,10.5)};
+  mk('L',ct.L0,CUE.L.col,'L');mk('A',ct.A,CUE.A.col,'A');mk('F',ct.F,CUE.F.col,'F');mk('G',ct.G,CUE.G.col,'G');
+  if(TL.hover>=0){c.fillStyle='rgba(244,240,232,.35)';c.fillRect(x(barT(a,TL.hover)),H0,1,HH)}
+  if(PB.id===t.id&&PB.src){const X=x(PB.pos());c.fillStyle='#fff';c.fillRect(X-0.5,0,1.5,h)}
+}
+function nearestBar(a,s){let best=0,bd=1e9;for(let b=0;b<a.db.length;b++){const d=Math.abs(a.db[b]-s);if(d<bd){bd=d;best=b}}return best}
+function setManual(t,k,b){t.manual=t.manual||{};t.manual[k]=b;IDB.put('manual',t.loc,t.manual);}
+
+/* ============ playback ============ */
+const PB={src:null,id:null,buf:new Map(),t0:0,off:0,loop:null,raf:0,
+  pos(){if(!this.src)return 0;const el=getCtx().currentTime-this.t0+this.off;if(this.loop){const[ls,le]=this.loop;if(el>le)return ls+((el-ls)%(le-ls))}return el}};
+async function getPreview(t){if(PB.buf.has(t.id))return PB.buf.get(t.id);const b=await decodeFile(t.file,0);PB.buf.set(t.id,b);if(PB.buf.size>3)PB.buf.delete(PB.buf.keys().next().value);return b}
+function stop(){if(PB.src){try{PB.src.stop()}catch(e){}PB.src=null}cancelAnimationFrame(PB.raf);$('#playIco').innerHTML='<path d="M7 5l12 7-12 7z"/>';drawTL()}
+async function play(at,loop){
+  const t=state.tracks.get(state.focus);if(!t||!t.file){toast('Keine Audiodatei verbunden',1);return}
+  stop();const ctx=getCtx();if(ctx.state==='suspended')await ctx.resume();
+  let buf;try{buf=await getPreview(t)}catch(e){toast(e.message,1);return}
+  const s=ctx.createBufferSource();s.buffer=buf;s.connect(ctx.destination);
+  if(loop){s.loop=true;s.loopStart=loop[0];s.loopEnd=loop[1]}
+  s.start(0,Math.max(0,at));PB.src=s;PB.id=t.id;PB.t0=ctx.currentTime;PB.off=Math.max(0,at);PB.loop=loop||null;
+  s.onended=()=>{if(PB.src===s)stop()};
+  $('#playIco').innerHTML='<path d="M7 5h4v14H7zM13 5h4v14h-4z"/>';
+  const tick=()=>{drawTL();PB.raf=requestAnimationFrame(tick)};tick();
+}
+function jump(k){const t=state.tracks.get(state.focus);if(!t||!t.analysis)return;const ct=cueTimes(t);if(k==='L')play(ct.L0,[ct.L0,ct.L1]);else play(ct[k])}
+
+/* ============ batch analysis ============ */
+async function analyzeIds(ids,force){
+  const q=ids.map(id=>state.tracks.get(id)).filter(t=>t&&t.file&&(force||!t.analysis));
+  const missing=ids.filter(id=>!state.tracks.get(id)?.file).length;
+  if(!q.length){toast(missing?`${missing} Tracks ohne Audiodatei – Musikordner verbinden`:'Alles schon analysiert',!!missing);return}
+  state.busy=true;state.cancel=false;renderTop();$('#progress').classList.add('on');
+  let done=0,err=0;const t0=performance.now();
+  const upd=()=>{const el=(performance.now()-t0)/1000,eta=done?el/done*(q.length-done):0;$('#progTxt').textContent=`${done}/${q.length}${done?` · noch ~${fmtT(eta)}`:''}`;$('#progBar').style.width=(done/q.length*100)+'%'};upd();
+  const worker=async()=>{while(q.length&&!state.cancel){const t=q.shift();t.status='busy';t.error='';updateRow(t);
+    try{t.analysis=await analyzeTrack(t);t.status='done';IDB.put('analysis',ALG_V+'|'+t.loc+'|'+t.size,t.analysis)}
+    catch(e){t.status='error';t.error=e.message||String(e);err++}
+    done++;upd();relCache=null;updateRow(t);if(t.id===state.focus)renderDetail();await sleep(0)}};
+  await Promise.all([worker(),worker()]);
+  q.length=0;state.busy=false;$('#progress').classList.remove('on');
+  for(const t of state.tracks.values())if(t.status==='busy')t.status=t.analysis?'done':'idle';
+  renderAll();toast(state.cancel?'Analyse gestoppt':`${done-err} Tracks analysiert${err?` · ${err} Fehler`:''}${missing?` · ${missing} ohne Datei`:''}`,err>0);
+}
+
+/* ============ export: rekordbox XML ============ */
+function buildXml(ids,plNameIn){
+  const ser=new XMLSerializer();const out=[];let n=0;
+  for(const id of ids){const t=state.tracks.get(id);if(!t||!t.analysis)continue;n++;
+    const el=t.el.cloneNode(true);const ct=cueTimes(t);const doc=el.ownerDocument;
+    for(const pm of [...el.querySelectorAll('POSITION_MARK')]){
+      const num=+pm.getAttribute('Num'),nm=pm.getAttribute('Name')||'';
+      const ours=(num===-1&&nm.startsWith(CUE.L.name))||(S.overwrite&&[0,5,6].includes(num));
+      if(ours)pm.remove();
+    }
+    const add=(attrs)=>{const pm=doc.createElement('POSITION_MARK');for(const[k,v]of Object.entries(attrs))pm.setAttribute(k,v);el.appendChild(doc.createTextNode('\n'));el.appendChild(pm)};
+    const f3=x=>x.toFixed(3);
+    for(const k of['A','F','G'])if(slotState(t,k)==='set'){const C=CUE[k];add({Name:C.name,Type:'0',Start:f3(ct[k]),Num:String(C.num),Red:C.rgb[0],Green:C.rgb[1],Blue:C.rgb[2]})}
+    add({Name:`${CUE.L.name} ${S.loopBars} Bars`,Type:'4',Start:f3(ct.L0),End:f3(ct.L1),Num:'-1'});
+    const st=stars(t);
+    if(S.writeRating)el.setAttribute('Rating',String(RATING_VAL[st]));
+    if(S.writeComment){const g=gainOf(t);const tag=`[E${st} ${t.analysis.score} | ${t.analysis.lufs.toFixed(1)} LUFS${g!=null&&Math.abs(g)>=1.5?` | Gain ${g>0?'+':''}${g.toFixed(1)}`:''}]`;const old=(el.getAttribute('Comments')||'').replace(/\s*\[E\d[^\]]*\]\s*/g,' ').trim();el.setAttribute('Comments',(old?old+' ':'')+tag)}
+    out.push('    '+ser.serializeToString(el).replace(/ xmlns="[^"]*"/,''));
+  }
+  const ver=state.doc.querySelector('PRODUCT')?.getAttribute('Version')||'7.0.0';
+  const plName=plNameIn||((state.cur>=0?state.playlists[state.cur].name:'Collection')+' Edited');
+  const ordered=ids.filter(id=>state.tracks.get(id)?.analysis);
+  const xa=s=>s.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+  const xml=`<?xml version="1.0" encoding="UTF-8"?>\n<DJ_PLAYLISTS Version="1.0.0">\n  <PRODUCT Name="rekordbox" Version="${xa(ver)}" Company="AlphaTheta"/>\n  <COLLECTION Entries="${n}">\n${out.join('\n')}\n  </COLLECTION>\n  <PLAYLISTS>\n    <NODE Type="0" Name="ROOT" Count="1">\n      <NODE Name="JAILR Prep" Type="0" Count="1">\n        <NODE Name="${xa(plName)}" Type="1" KeyType="0" Entries="${ordered.length}">\n${ordered.map(id=>`          <TRACK Key="${xa(id)}"/>`).join('\n')}\n        </NODE>\n      </NODE>\n    </NODE>\n  </PLAYLISTS>\n</DJ_PLAYLISTS>\n`;
+  return{xml,n,plName};
+}
+function exportXml(){
+  const scope=$('input[name=xscope]:checked')?.value||'view';
+  const ids=scope==='view'?state.view:state.order.filter(id=>state.tracks.get(id).analysis);
+  const nm=($('#xName')?.value||'').trim();const{xml,n,plName}=buildXml(ids,nm);if(!n){toast('Keine analysierten Tracks im Export',1);return}
+  download(`${plName.replace(/[\/\\:*?"<>|]/g,'-')}.xml`,xml,'application/xml');closeModal();
+  setTimeout(()=>openModal('guide',{n,plName}),300);
+}
+
+/* ============ export: Serato ============ */
+const enc16=s=>{const b=new Uint8Array(s.length*2);for(let i=0;i<s.length;i++){const c=s.charCodeAt(i);b[2*i]=c>>8;b[2*i+1]=c&255}return b};
+function tag(name,payload){const p=payload instanceof Uint8Array?payload:enc16(String(payload));const b=new Uint8Array(8+p.length);for(let i=0;i<4;i++)b[i]=name.charCodeAt(i);new DataView(b.buffer).setUint32(4,p.length);b.set(p,8);return b}
+const cat=arrs=>{const n=arrs.reduce((a,b)=>a+b.length,0);const o=new Uint8Array(n);let p=0;for(const a of arrs){o.set(a,p);p+=a.length}return o};
+const u32=v=>{const b=new Uint8Array(4);new DataView(b.buffer).setUint32(0,v>>>0);return b};
+function seratoLoc(path){
+  let m=path.match(/^\/Volumes\/([^/]+)\/(.*)$/);if(m)return{vol:m[1],rel:m[2]};
+  m=path.match(/^([A-Za-z]):\/(.*)$/);if(m)return{vol:m[1].toUpperCase()+'-Laufwerk',rel:m[2]};
+  return{vol:'Systemlaufwerk',rel:path.replace(/^\//,'')};
+}
+function crateBytes(rels){
+  const cols=['song','artist','bpm','key'];
+  return cat([tag('vrsn','1.0/Serato ScratchLive Crate'),tag('osrt',cat([tag('tvcn','song'),tag('brev',new Uint8Array([0]))])),
+    ...cols.map(c=>tag('ovct',cat([tag('tvcn',c),tag('tvcw','0')]))),...rels.map(r=>tag('otrk',tag('ptrk',r)))]);
+}
+function dbBytes(tracks){
+  const parts=[tag('vrsn','2.0/Serato Scratch LIVE Database')];
+  for(const t of tracks){const L=seratoLoc(t.path);const f=[tag('ttyp',(t.fname.split('.').pop()||'').toLowerCase()),tag('pfil',L.rel),tag('tsng',t.title)];
+    if(t.artist)f.push(tag('tart',t.artist));if(t.album)f.push(tag('talb',t.album));if(t.genre)f.push(tag('tgen',t.genre));
+    if(t.bpm)f.push(tag('tbpm',t.bpm.toFixed(2)));if(t.key)f.push(tag('tkey',CAM2KEY[t.cam]||t.keyRaw));
+    if(t.dur)f.push(tag('tlen',`${String(Math.floor(t.dur/60)).padStart(2,'0')}:${String(Math.floor(t.dur%60)).padStart(2,'0')}.00`));
+    const now=Math.floor(Date.now()/1000);f.push(tag('tadd',String(now)),tag('uadd',u32(now)),tag('bmis',new Uint8Array([0])));
+    parts.push(tag('otrk',cat(f)));}
+  return cat(parts);
+}
+const CRC=(()=>{const t=new Uint32Array(256);for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;t[n]=c>>>0}return t})();
+const crc32=b=>{let c=0xFFFFFFFF;for(let i=0;i<b.length;i++)c=CRC[(c^b[i])&255]^(c>>>8);return(c^0xFFFFFFFF)>>>0};
+function zip(files){
+  const te=new TextEncoder();const loc=[],cen=[];let off=0;
+  for(const f of files){const nm=te.encode(f.name),d=f.data instanceof Uint8Array?f.data:te.encode(f.data),crc=crc32(d);
+    const h=new Uint8Array(30+nm.length),v=new DataView(h.buffer);v.setUint32(0,0x04034b50,true);v.setUint16(4,20,true);v.setUint16(6,0x0800,true);v.setUint32(14,crc,true);v.setUint32(18,d.length,true);v.setUint32(22,d.length,true);v.setUint16(26,nm.length,true);h.set(nm,30);
+    const c=new Uint8Array(46+nm.length),w=new DataView(c.buffer);w.setUint32(0,0x02014b50,true);w.setUint16(4,20,true);w.setUint16(6,20,true);w.setUint16(8,0x0800,true);w.setUint32(16,crc,true);w.setUint32(20,d.length,true);w.setUint32(24,d.length,true);w.setUint16(28,nm.length,true);w.setUint32(42,off,true);c.set(nm,46);
+    loc.push(h,d);cen.push(c);off+=h.length+d.length}
+  const cs=cen.reduce((a,b)=>a+b.length,0);const e=new Uint8Array(22),ev=new DataView(e.buffer);ev.setUint32(0,0x06054b50,true);ev.setUint16(8,files.length,true);ev.setUint16(10,files.length,true);ev.setUint32(12,cs,true);ev.setUint32(16,off,true);
+  return new Blob([...loc,...cen,e],{type:'application/zip'});
+}
+function exportSerato(){
+  const chosen=$$('#modal .plsel input:checked').map(i=>+i.value);if(!chosen.length){toast('Keine Playlist gewählt',1);return}
+  const useSort=$('#srtSort')?.checked,withDb=$('#srtDb')?.checked;
+  const groups=new Map();const files=[];
+  for(const idx of chosen){const p=state.playlists[idx];let ids=p.ids;
+    if(useSort&&idx===state.cur){const set=new Set(ids);const sv=[...state.view].filter(id=>set.has(id));ids=[...sv,...ids.filter(id=>!sv.includes(id))]}
+    const byVol=new Map();for(const id of ids){const t=state.tracks.get(id);const L=seratoLoc(t.path);if(!byVol.has(L.vol))byVol.set(L.vol,[]);byVol.get(L.vol).push(L.rel);
+      if(!groups.has(L.vol))groups.set(L.vol,new Map());groups.get(L.vol).set(id,t)}
+    const cname=[...p.folder,p.name].map(s=>s.replace(/[\/\\:*?"<>|%]/g,'-')).join('%%');
+    for(const[vol,rels]of byVol)files.push({vol,name:`_Serato_/Subcrates/${cname}.crate`,data:crateBytes(rels)});
+  }
+  const multi=groups.size>1;
+  if(withDb)for(const[vol,m]of groups)files.push({vol,name:'_Serato_/database V2',data:dbBytes([...m.values()])});
+  const vols=[...groups.keys()];
+  const readme=`JAILR Prep – Serato Export (${today()})\n\n`+vols.map(v=>v==='Systemlaufwerk'?`• "${multi?v+'/':''}_Serato_" → in deinen Musik-Ordner (Mac: ~/Music/_Serato_) kopieren.`:`• "${multi?v+'/':''}_Serato_" → ins Hauptverzeichnis von "${v}" kopieren (neben PIONEER und Contents).`).join('\n')+
+   `\n\nVorher einen vorhandenen _Serato_-Ordner sichern. Bestehende Crates mit gleichem Namen werden ersetzt${withDb?', die "database V2" ebenfalls':''}.\nHot Cues werden nicht übertragen – Serato liest Cues aus den Audiodateien.\n`;
+  const zf=files.map(f=>({name:(multi?f.vol+'/':'')+f.name,data:f.data}));zf.push({name:'LIESMICH.txt',data:readme});
+  download(`JAILR_Serato_${today()}.zip`,zip(zf));closeModal();
+  toast(`${chosen.length} Crates exportiert → ${vols.join(', ')}`);
+}
+
+/* ============ modals ============ */
+function openModal(kind,ctx){
+  const m=$('#modal');let h='';
+  if(kind==='settings'){
+    const sw=(id,on)=>`<label class="switch"><input type="checkbox" id="${id}" ${on?'checked':''}><span></span></label>`;
+    h=`<h2>Einstellungen</h2><p class="sub">Gilt sofort für alle analysierten Tracks. Manuell verschobene Cues bleiben.</p><div class="body">
+    <div class="field"><label>Mix-Out-Fenster F → G<small>Abstand zwischen Hot Cue F und G. G sitzt am Ende der letzten Energiephase.</small></label><select id="sMix">${[16,32,64].map(v=>`<option ${S.mixBars===v?'selected':''} value="${v}">${v} Bars</option>`).join('')}</select></div>
+    <div class="field"><label>Exit-Loop-Länge<small>Memory Cue mit Loop auf der letzten Phrase mit Kick.</small></label><select id="sLoop">${[4,8,16].map(v=>`<option ${S.loopBars===v?'selected':''} value="${v}">${v} Bars</option>`).join('')}</select></div>
+    <div class="field"><label>Mindest-Energieabfall für G<small>Wie stark die Energie am Outro fallen muss (dB). Kleiner = auch sanfte Outros zählen. Standard 3.</small></label><input type="number" id="sSens" min="1" max="12" step="0.5" value="${S.sens}"></div>
+    <div class="field"><label>Energie-Skala<small>Absolut: fester Maßstab über alle Tracks. Relativ: 1–5 gleichmäßig verteilt innerhalb der aktuellen Playlist.</small></label><select id="sMode"><option value="abs" ${S.energyMode==='abs'?'selected':''}>Absolut</option><option value="rel" ${S.energyMode==='rel'?'selected':''}>Relativ zur Playlist</option></select></div>
+    <div class="field"><label>Vorhandene Hot Cues A/F/G überschreiben<small>Aus: deine bestehenden Cues auf A, F oder G bleiben unangetastet.</small></label>${sw('sOver',S.overwrite)}</div>
+    <div class="field"><label>Energie als Rating (1–5 ★) schreiben</label>${sw('sRate',S.writeRating)}</div>
+    <div class="field"><label>Energie + LUFS in Kommentar<small>Hängt z.B. „[E4 68 | -7.9 LUFS]“ an, ohne deinen Kommentar zu löschen.</small></label>${sw('sCom',S.writeComment)}</div>
+    </div><div class="foot"><button class="btn ghost" data-close>Schließen</button></div>`;
+  }else if(kind==='xml'){
+    const nv=state.view.filter(id=>state.tracks.get(id)?.analysis).length,na=state.order.filter(id=>state.tracks.get(id).analysis).length;
+    h=`<h2>rekordbox XML exportieren</h2><p class="sub">Erzeugt eine kleine XML nur mit den bearbeiteten Tracks plus Playlist „JAILR Prep“.</p><div class="body">
+    <div class="field"><label>Name der neuen Playlist<small>Landet in rekordbox unter rekordbox xml → JAILR Prep. Nichts Bestehendes wird umbenannt.</small></label><input type="text" id="xName" value="${esc((state.cur>=0?state.playlists[state.cur].name:'Collection')+' Edited')}" style="height:32px;border-radius:7px;background:var(--bg3);border:1px solid var(--line2);padding:0 8px;width:100%"></div>
+    <div class="plsel"><label><input type="radio" name="xscope" value="view" checked> Aktuelle Ansicht (in dieser Sortierung)<span class="c">${nv} Tracks</span></label><label><input type="radio" name="xscope" value="all"> Alle analysierten Tracks<span class="c">${na} Tracks</span></label></div>
+    <div class="note">Geschrieben wird: Hot Cue A, F, G${S.overwrite?' (überschreibt vorhandene)':' (nur freie Slots)'}, Exit Loop als Memory Cue (${S.loopBars} Bars)${S.writeRating?', Rating = Energie':''}${S.writeComment?', Energie/LUFS im Kommentar':''}. Alle anderen Cues bleiben erhalten.</div>
+    </div><div class="foot"><button class="btn ghost" data-close>Abbrechen</button><button class="btn primary" data-act="doXml">XML herunterladen</button></div>`;
+  }else if(kind==='guide'){
+    h=`<h2>${ctx?`${ctx.n} Tracks exportiert – jetzt in rekordbox importieren`:'So kommen die Cues in rekordbox'}</h2><p class="sub">Einmalig einrichten, danach dauert es 20 Sekunden.</p><div class="body">
+    <div class="note warn"><b>Vorher:</b> rekordbox → Datei → Library → Library sichern. Der Import überschreibt bei den betroffenen Tracks alle Cues mit dem Stand aus der XML.</div>
+    <ol class="guide"><li>rekordbox → <b>Einstellungen → Ansicht → Layout</b>: „rekordbox xml“ anhaken.</li>
+    <li><b>Einstellungen → Erweitert → Datenbank → rekordbox xml</b>: unter „Importierte Library“ die heruntergeladene Datei wählen.</li>
+    <li>Links im Baum <b>rekordbox xml</b> aufklappen (ggf. Reload-Pfeil klicken) → <b>JAILR Prep</b> → ${ctx?`„${esc(ctx.plName)}“`:'deine Playlist'}.</li>
+    <li>In der Playlist <b>alle Tracks markieren</b> (⌘A) → Rechtsklick → <b>In Collection importieren</b> → bestätigen.</li>
+    <li>Optional: Playlist selbst per Rechtsklick → „Playlist importieren“, um die sortierte Reihenfolge zu übernehmen.</li></ol>
+    <div class="note">Wichtig ist Schritt 4 mit markierten Tracks. Nur die Playlist zu importieren aktualisiert bereits vorhandene Tracks in manchen rekordbox-Versionen nicht.</div>
+    <h3 style="font-size:13px;margin:16px 0 6px">Shortcuts</h3><div style="display:grid;grid-template-columns:auto 1fr;gap:6px 12px;color:var(--fg2);font-size:12px">
+    <span><kbd>↑</kbd> <kbd>↓</kbd></span><span>Track wechseln (mit Shift: Auswahl erweitern)</span><span><kbd>Enter</kbd></span><span>Auswahl bzw. Playlist analysieren</span>
+    <span><kbd>Leertaste</kbd></span><span>Abspielen / Stopp</span><span><kbd>A</kbd> <kbd>F</kbd> <kbd>G</kbd> <kbd>L</kbd></span><span>Ab Cue hören, L loopt den Exit Loop</span>
+    <span><kbd>R</kbd></span><span>Manuelle Cue-Änderungen verwerfen</span><span><kbd>/</kbd></span><span>Suche</span><span><kbd>⌘A</kbd></span><span>Alle markieren</span></div>
+    </div><div class="foot"><button class="btn primary" data-close>Verstanden</button></div>`;
+  }else if(kind==='serato'){
+    h=`<h2>Serato Crates exportieren</h2><p class="sub">Wandelt rekordbox-Playlists in Serato-Crates um (ZIP mit _Serato_-Ordner).</p><div class="body">
+    <div class="plsel">${state.playlists.map((p,i)=>`<label><input type="checkbox" value="${i}" ${i===state.cur?'checked':''}> ${esc([...p.folder,p.name].join(' / '))}<span class="c">${p.ids.length}</span></label>`).join('')}</div>
+    <div class="field"><label>Aktuelle Sortierung übernehmen<small>Gilt für die gerade geöffnete Playlist.</small></label><label class="switch"><input type="checkbox" id="srtSort" checked><span></span></label></div>
+    <div class="field"><label>Serato-Datenbank mitschreiben<small>Für einen frischen Stick sinnvoll. Ersetzt eine vorhandene „database V2“ auf dem Ziel.</small></label><label class="switch"><input type="checkbox" id="srtDb" checked><span></span></label></div>
+    <div class="note">Pfade werden automatisch dem Laufwerk zugeordnet (z.B. dein USB-Stick). Wohin der Ordner gehört, steht in der LIESMICH.txt im ZIP. Hot Cues überträgt dieser Weg nicht.</div>
+    </div><div class="foot"><button class="btn ghost" data-close>Abbrechen</button><button class="btn primary" data-act="doSerato">ZIP herunterladen</button></div>`;
+  }
+  m.innerHTML=h;$('#modalBg').classList.add('on');
+  if(kind==='settings'){
+    const on=(id,fn)=>$('#'+id).addEventListener('change',e=>{fn(e.target);saveS();relCache=null;renderMain();renderBar();renderDetail()});
+    on('sMix',e=>S.mixBars=+e.value);on('sLoop',e=>S.loopBars=+e.value);on('sSens',e=>S.sens=clamp(+e.value||3,1,12));on('sMode',e=>S.energyMode=e.value);
+    on('sOver',e=>S.overwrite=e.checked);on('sRate',e=>S.writeRating=e.checked);on('sCom',e=>S.writeComment=e.checked);
+  }
+}
+function closeModal(){$('#modalBg').classList.remove('on')}
+
+/* ============ events ============ */
+async function readXmlFile(f){try{loadXml(await f.text(),f.name)}catch(e){toast(e.message,1)}}
+$('#inXml').addEventListener('change',e=>{const f=e.target.files[0];if(f)readXmlFile(f);e.target.value=''});
+$('#inDir').addEventListener('change',e=>{addFiles([...e.target.files]);e.target.value=''});
+$('#pillXml').onclick=()=>$('#inXml').click();$('#pillMusic').onclick=()=>$('#inDir').click();
+$('#btnSide').onclick=()=>{if(matchMedia('(max-width:900px)').matches)document.body.classList.toggle('showside');else document.body.classList.toggle('noside');setTimeout(drawTL,50)};
+$('#btnSettings').onclick=()=>openModal('settings');$('#btnHelp').onclick=()=>openModal('guide');
+$('#btnCancel').onclick=()=>{state.cancel=true};
+$('#btnAnalyze').onclick=()=>analyzeIds(state.sel.size>1?[...state.sel]:state.view);
+$('#btnExport').onclick=e=>{e.stopPropagation();$('#exportMenu').classList.toggle('open')};
+document.addEventListener('click',e=>{if(!e.target.closest('.menu-wrap'))$('#exportMenu').classList.remove('open')});
+$('#exportMenu').onclick=e=>{const b=e.target.closest('button');if(!b)return;$('#exportMenu').classList.remove('open');openModal(b.dataset.act)};
+$('#modalBg').addEventListener('click',e=>{if(e.target.id==='modalBg'||e.target.closest('[data-close]'))closeModal();const a=e.target.closest('[data-act]');if(a){if(a.dataset.act==='doXml')exportXml();if(a.dataset.act==='doSerato')exportSerato()}});
+$('#main').addEventListener('click',e=>{
+  const a=e.target.closest('[data-act]');if(a){if(a.dataset.act==='xml')$('#inXml').click();if(a.dataset.act==='dir')$('#inDir').click();if(a.dataset.act==='help')openModal('guide');return}
+  const th=e.target.closest('th[data-sort]');if(th){const k=th.dataset.sort;const i=state.sort.findIndex(s=>s.k===k);
+    if(e.shiftKey){if(i>=0)state.sort[i].d*=-1;else state.sort.push({k,d:k==='energy'?-1:1})}
+    else{if(i===0&&state.sort.length===1)state.sort[0].d*=-1;else state.sort=[{k,d:1}]}
+    state.sort=state.sort.filter((s,j,arr)=>!(s.k==='idx'&&arr.length>1));renderBar();renderMain();return}
+  const tr=e.target.closest('tbody tr');if(!tr)return;const id=tr.dataset.id;
+  if(e.shiftKey&&state.anchor){const i0=state.view.indexOf(state.anchor),i1=state.view.indexOf(id);state.sel=new Set(state.view.slice(Math.min(i0,i1),Math.max(i0,i1)+1))}
+  else if(e.metaKey||e.ctrlKey){state.sel.has(id)?state.sel.delete(id):state.sel.add(id);state.anchor=id}
+  else{state.sel=new Set([id]);state.anchor=id}
+  if(state.focus!==id){stop();state.focus=id;renderDetail()}updateSel();
+});
+$('#main').addEventListener('dblclick',e=>{const tr=e.target.closest('tbody tr');if(!tr)return;const t=state.tracks.get(tr.dataset.id);if(t.analysis)jump('A');else analyzeIds([t.id])});
+$('#side').addEventListener('click',e=>{const f=e.target.closest('[data-folder]');if(f){const k=f.dataset.folder;state.collapsed.has(k)?state.collapsed.delete(k):state.collapsed.add(k);renderSide();return}
+  const p=e.target.closest('[data-pl]');if(!p)return;state.cur=+p.dataset.pl;state.sel.clear();state.focus=null;stop();document.body.classList.remove('showside');renderAll();$('#main').scrollTop=0});
+$('#q').addEventListener('input',e=>{state.q=e.target.value;renderMain()});
+$('#filt').addEventListener('click',e=>{const b=e.target.closest('[data-f]');if(!b)return;state.filter=b.dataset.f;renderBar();renderMain()});
+$('#sorts').addEventListener('click',e=>{const d=e.target.closest('[data-dir]'),r=e.target.closest('[data-rm]');
+  if(d){state.sort[+d.dataset.dir].d*=-1}else if(r){state.sort.splice(+r.dataset.rm,1);if(!state.sort.length)state.sort=[{k:'idx',d:1}]}else return;renderBar();renderMain()});
+$('#sorts').addEventListener('change',e=>{if(e.target.id!=='addSort')return;const v=e.target.value;if(!v)return;
+  if(v.startsWith('p:'))state.sort={harm:[{k:'key',d:1},{k:'bpm',d:1},{k:'energy',d:1}],build:[{k:'energy',d:1},{k:'bpm',d:1},{k:'key',d:1}],peak:[{k:'energy',d:-1},{k:'bpm',d:-1}]}[v.slice(2)];
+  else{state.sort=state.sort.filter(s=>s.k!=='idx');state.sort.push({k:v,d:v==='energy'?-1:1})}renderBar();renderMain()});
+let dragI=null;
+$('#sorts').addEventListener('dragstart',e=>{const c=e.target.closest('.chip');if(!c)return;dragI=+c.dataset.i;c.classList.add('drag');e.dataTransfer.effectAllowed='move'});
+$('#sorts').addEventListener('dragover',e=>{const c=e.target.closest('.chip');if(c&&dragI!==null){e.preventDefault();$$('.chip').forEach(x=>x.classList.toggle('over',x===c))}});
+$('#sorts').addEventListener('drop',e=>{const c=e.target.closest('.chip');if(!c||dragI===null)return;e.preventDefault();e.stopPropagation();const to=+c.dataset.i;const[s]=state.sort.splice(dragI,1);state.sort.splice(to,0,s);dragI=null;renderBar();renderMain()});
+$('#sorts').addEventListener('dragend',()=>{dragI=null;$$('.chip').forEach(x=>x.classList.remove('drag','over'))});
+// detail
+$('#btnPlay').onclick=()=>{if(PB.src)stop();else{const t=state.tracks.get(state.focus);const ct=t?.analysis?cueTimes(t):null;play(ct?ct.A:0)}};
+$('#dJumps').onclick=e=>{const b=e.target.closest('[data-jump]');if(b)jump(b.dataset.jump)};
+$('#btnReset').onclick=()=>{const t=state.tracks.get(state.focus);if(!t)return;t.manual=null;IDB.put('manual',t.loc,null);updateRow(t);renderDetail()};
+$('#btnReanalyze').onclick=()=>{const t=state.tracks.get(state.focus);if(t)analyzeIds([t.id],true)};
+const cv=$('#tl');
+cv.addEventListener('mousedown',e=>{const g=tlGeom();if(!g.a)return;const r=cv.getBoundingClientRect(),mx=e.clientX-r.left;const ct=cueTimes(g.t);
+  const hit=['G','F','A','L'].find(k=>Math.abs(g.x(k==='L'?ct.L0:ct[k])-mx)<7);
+  if(hit){TL.drag=hit;e.preventDefault()}else{play(g.s(mx>3?barT(g.a,nearestBar(g.a,g.s(mx))):0))}});
+window.addEventListener('mousemove',e=>{const g=tlGeom();if(!g.a)return;const r=cv.getBoundingClientRect(),mx=e.clientX-r.left;const tip=$('#tlTip');
+  if(TL.drag){const b=Math.max(0,Math.min(g.a.rms.length-1,nearestBar(g.a,g.s(mx))));setManual(g.t,TL.drag,b);drawTL();tip.style.display='block';tip.style.left=(14+g.x(barT(g.a,b))+6)+'px';tip.textContent=`${TL.drag} → Bar ${b+1} · ${fmtT(barT(g.a,b))}`;return}
+  if(e.target===cv){TL.hover=nearestBar(g.a,g.s(mx));const ct=cueTimes(g.t);const near=['G','F','A','L'].some(k=>Math.abs(g.x(k==='L'?ct.L0:ct[k])-mx)<7);cv.style.cursor=near?'ew-resize':'crosshair';
+    tip.style.display='block';tip.style.left=(14+mx+10)+'px';tip.textContent=`Bar ${TL.hover+1} · ${fmtT(barT(g.a,TL.hover))}`;drawTL()}
+  else if(TL.hover>=0){TL.hover=-1;tip.style.display='none';drawTL()}});
+window.addEventListener('mouseup',()=>{if(TL.drag){const t=state.tracks.get(state.focus);TL.drag=null;$('#tlTip').style.display='none';updateRow(t);renderDetail()}});
+window.addEventListener('resize',()=>drawTL());
+// keyboard
+document.addEventListener('keydown',e=>{
+  if(e.target.matches('input,select,textarea')){if(e.key==='Escape')e.target.blur();return}
+  if($('#modalBg').classList.contains('on')){if(e.key==='Escape')closeModal();return}
+  if(!state.doc)return;const v=state.view;
+  if(e.key==='ArrowDown'||e.key==='ArrowUp'){e.preventDefault();let i=v.indexOf(state.focus);i=e.key==='ArrowDown'?Math.min(v.length-1,i+1):Math.max(0,i-1);if(i<0)i=0;const id=v[i];if(!id)return;
+    if(e.shiftKey){state.sel.add(id)}else{state.sel=new Set([id]);state.anchor=id}stop();state.focus=id;updateSel();renderDetail();$(`tr[data-id="${CSS.escape(id)}"]`)?.scrollIntoView({block:'nearest'});return}
+  if(e.key==='Enter'){analyzeIds(state.sel.size?[...state.sel]:v);return}
+  if(e.key===' '){e.preventDefault();$('#btnPlay').click();return}
+  if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='a'){e.preventDefault();state.sel=new Set(v);updateSel();return}
+  if(e.metaKey||e.ctrlKey||e.altKey)return;
+  const k=e.key.toUpperCase();if(['A','F','G','L'].includes(k)){jump(k);return}
+  if(k==='R'){$('#btnReset').click();return}
+  if(e.key==='/'){e.preventDefault();$('#q').focus();return}
+  if(e.key==='?'){openModal('guide');return}
+  if(e.key==='Escape'){state.sel.clear();updateSel()}
+});
+// drag & drop
+let dragDepth=0;
+window.addEventListener('dragenter',e=>{if(e.dataTransfer.types.includes('Files')){dragDepth++;$('#drop').classList.add('on')}});
+window.addEventListener('dragleave',()=>{dragDepth=Math.max(0,dragDepth-1);if(!dragDepth)$('#drop').classList.remove('on')});
+window.addEventListener('dragover',e=>{if(e.dataTransfer.types.includes('Files'))e.preventDefault()});
+window.addEventListener('drop',async e=>{if(!e.dataTransfer.types.includes('Files'))return;e.preventDefault();dragDepth=0;$('#drop').classList.remove('on');
+  const items=[...e.dataTransfer.items];const files=await readDropEntries(items);
+  const xml=files.find(f=>/\.xml$/i.test(f.name));if(xml)await readXmlFile(xml);
+  const aud=files.filter(f=>AUDIO_RE.test(f.name));if(aud.length)addFiles(aud)});
+renderAll();
+</script>
+</body>
+</html>

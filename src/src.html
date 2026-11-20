@@ -407,7 +407,9 @@ const pct=(arr,p)=>{const a=arr.filter(Number.isFinite).sort((x,y)=>x-y);if(!a.l
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 const nfc=s=>String(s||'').normalize('NFC');
 function toast(msg,err){const d=document.createElement('div');d.className='toast'+(err?' err':'');d.textContent=msg;$('#toasts').append(d);setTimeout(()=>d.remove(),err?7000:3800)}
-function download(name,data,type){const b=data instanceof Blob?data:new Blob([data],{type:type||'application/octet-stream'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=name;document.body.append(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},3000)}
+function download(name,data,type){const b=data instanceof Blob?data:new Blob([data],{type:type||'application/octet-stream'});const url=URL.createObjectURL(b),a=document.createElement('a');a.href=url;a.download=name;a.rel='noopener';a.style.display='none';document.body.append(a);a.click();a.remove();
+  /* Blob-URL erst spät freigeben: Chrome liest die Datei teils erst nach Speichern-Dialog/Sicherheitsprüfung – sonst "Fehlgeschlagen" */
+  setTimeout(()=>URL.revokeObjectURL(url),10*60*1000)}
 const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
 const safeName=s=>String(s).replace(/[\/\\:*?"<>|%\x00-\x1f]/g,'-').replace(/^\.+/,'').slice(0,120)||'Playlist';
 

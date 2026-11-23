@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-JuBy2n8o77tH8iqz5skctGxKI7RbRWjhU0rbIjgS14Y='; style-src 'unsafe-inline'; font-src data:; img-src 'self' data: blob:; media-src blob:; connect-src 'none'; worker-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-kizb/hfx8p3as+R6sqCje2IJh7Jg7INFeNOtrJq8S30='; style-src 'unsafe-inline'; font-src data:; img-src 'self' data: blob:; media-src blob:; connect-src 'none'; worker-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="referrer" content="no-referrer">
 <title>JAILR Prep – Cue & Energy Lab</title>
@@ -350,6 +350,35 @@ canvas#tlz{width:100%;height:92px;display:block;border-radius:12px;background:va
 .cuesw .kn{width:26px;height:15px;border-radius:99px;background:var(--line2);position:relative;margin:0}.cuesw .kn:after{content:"";position:absolute;left:2px;top:2px;width:11px;height:11px;border-radius:50%;background:var(--bone);transition:.15s}.cuesw.on .kn{background:var(--ok)}.cuesw.on .kn:after{left:13px}
 .ctog{border:1px dashed var(--line2);background:none;border-radius:7px;color:var(--dim);font-size:11.5px;padding:3px 8px;cursor:pointer;white-space:nowrap}.ctog:hover{color:var(--bone);border-color:var(--dim)}
 .cuebar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+/* set planner */
+.plan{grid-area:bar/main/detail/main;grid-row:2/5;grid-column:2;display:grid;grid-template-columns:minmax(0,1fr) 350px;min-height:0;overflow:hidden}
+.plan[hidden],main[hidden],.bar[hidden]{display:none!important}
+.pmain{overflow:auto;padding:14px 16px 40px;min-width:0}.pside{overflow:auto;border-left:1px solid var(--line);padding:12px 14px 40px;background:var(--surface)}
+.phead{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px}.pname{flex:1 1 180px;max-width:300px;font-weight:600;font-size:15px}
+.pstat{display:flex;gap:8px 14px;flex-wrap:wrap;color:var(--smoke);font-size:12.5px;flex:1 1 auto}.pstat b{color:var(--bone)}.pacts{display:flex;gap:6px;flex-wrap:wrap}
+.pcurve{margin-bottom:12px}canvas#pCv{width:100%;height:128px;display:block;border-radius:12px;background:var(--surface);cursor:crosshair;touch-action:none}.pcl{color:var(--dim);font-size:11.5px;padding:5px 2px 0}
+.pi{display:grid;grid-template-columns:18px 26px 36px minmax(0,1fr) auto auto;gap:10px;align-items:center;padding:7px 10px;border:1px solid var(--line);border-radius:12px;background:var(--surface);cursor:pointer}
+.pi:hover{background:#1b1a18}.pi.sel{border-color:var(--bone);background:#211f1c}.pi.lock{border-left:3px solid var(--warn)}.pi.drag{opacity:.75;border-style:dashed;border-color:var(--bone)}
+.plan.dragging{user-select:none;-webkit-user-select:none;cursor:grabbing}
+.pgrip{color:var(--dim);cursor:grab;touch-action:none;font-size:17px;line-height:1;padding:8px 2px}.pnum{color:var(--dim);font-variant-numeric:tabular-nums;text-align:right;font-size:12.5px}
+.ptx{min-width:0}.ptitle{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.part{color:var(--dim);font-size:12.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pmeta{display:flex;align-items:center;gap:10px;font-variant-numeric:tabular-nums}.pbpm{color:var(--smoke);min-width:28px;text-align:right}.ptime{color:var(--dim);font-size:12px;min-width:44px;text-align:right}
+.pbtn{display:flex}.pbtn button{width:30px;height:32px;border:0;background:none;border-radius:7px;color:var(--dim);cursor:pointer;display:grid;place-items:center}.pbtn button:hover{background:var(--hover);color:var(--bone)}.pbtn button:disabled{opacity:.25}.pbtn button.on{color:var(--warn)}.pbtn svg.i{width:15px;height:15px}
+.ptr{display:flex;align-items:center;gap:8px;padding:5px 8px 5px 62px;color:var(--smoke);font-size:12.5px;flex-wrap:wrap}
+.sc{font-weight:600;font-size:12px;border-radius:7px;padding:2px 7px;background:var(--raised);font-variant-numeric:tabular-nums}.sc.ok{color:var(--ok);background:rgba(76,208,125,.1)}.sc.mid{color:var(--warn);background:rgba(255,178,36,.1)}.sc.bad{color:var(--err);background:rgba(240,68,58,.12)}
+.pw{color:var(--warn);font-size:12px;white-space:nowrap}.pwhy{color:var(--smoke);font-size:12.5px}
+.pempty{border:1px dashed var(--line2);border-radius:14px;padding:22px}.pempty h3{margin:0 0 6px}
+.pside details{border-bottom:1px solid var(--line);padding-bottom:10px;margin-bottom:10px}.pside summary{cursor:pointer;font-weight:600;padding:6px 0}
+.pform{display:grid;gap:10px;padding-top:6px}.pl1{font-size:12.5px;color:var(--dim)}.pchips{display:flex;gap:6px;flex-wrap:wrap;max-height:150px;overflow:auto}
+.pchip{border:1px solid var(--line2);background:var(--raised);border-radius:99px;padding:5px 11px;cursor:pointer;font-size:12.5px;color:var(--smoke)}.pchip.on{background:var(--bone);color:var(--night);border-color:var(--bone);font-weight:600}.pchip small{opacity:.6}
+.pnote{color:var(--dim);font-size:12px;line-height:1.5}.pcurves{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}.pcurves button{border:1px solid var(--line2);background:var(--raised);border-radius:10px;padding:7px 4px 6px;cursor:pointer;font-size:12px;color:var(--smoke);display:grid;gap:2px;justify-items:center}.pcurves button.on{border-color:var(--bone);color:var(--bone);background:var(--hover)}.pcurves svg{width:60px;height:24px}
+.pgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.pgrid label{font-size:12.5px;color:var(--dim);display:grid;gap:4px;min-width:0}.pgrid .inp{color:var(--bone);min-width:0}.pin{display:flex;align-items:center;gap:6px}.pchk{display:flex;gap:9px;align-items:center;font-size:13px}.pchk input,.prg input{accent-color:var(--bone)}.pchk input{width:17px;height:17px}
+.prg{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--smoke)}.prg input{flex:1;min-width:60px}.pbtns{display:flex;gap:8px;flex-wrap:wrap}.psaved{display:flex;justify-content:space-between;gap:8px}.psaved .lnk{font-size:13px;color:var(--smoke)}
+.psug{border:1px solid var(--line2);border-radius:14px;padding:10px;margin-bottom:12px;background:var(--night)}.pshead{display:flex;gap:8px;align-items:baseline;margin-bottom:8px}.pshead span{color:var(--dim);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}.psug .seg{margin-bottom:6px;display:inline-flex}
+.psi{display:grid;grid-template-columns:36px minmax(0,1fr) auto auto;gap:9px;align-items:center;padding:7px 2px;border-top:1px solid var(--line)}.psi .pwhy{font-size:12px}
+body.planning aside{display:block}
+@media (max-width:1100px){.plan{grid-template-columns:minmax(0,1fr) 310px}.ptime{display:none}}
+@media (max-width:760px){.plan{grid-column:1;grid-row:2/4;display:block;overflow:auto}.pmain,.pside{overflow:visible;padding:12px}.pside{border-left:0;border-top:1px solid var(--line)}.pi{grid-template-columns:20px 20px 36px minmax(0,1fr) auto;gap:8px;padding:8px}.pmeta{grid-column:4/6;grid-row:2;gap:12px}.pbtn{grid-column:5;grid-row:1}.pbtn [data-up],.pbtn [data-dn]{display:none}.pbtn button{width:38px;height:40px}.pgrip{grid-row:1/3;padding:14px 4px}.pnum{grid-row:1/3}.pi .art{grid-row:1/3}.ptr{padding:6px 8px 6px 14px}canvas#pCv{height:110px}.pgrid{grid-template-columns:1fr 1fr}.ptime{display:inline}}
 /* hero */
 .empty{max-width:1120px}
 .hero{display:grid;grid-template-columns:1.05fr 1fr;gap:48px;align-items:center;margin-bottom:56px}
@@ -391,7 +420,7 @@ canvas#tlz{width:100%;height:92px;display:block;border-radius:12px;background:va
   </div>
   <div class="spacer"></div>
   <div class="player" id="player" aria-label="Wiedergabe"><button class="plbtn" id="plBtn" title="Abspielen / Stopp (Leertaste)" aria-label="Abspielen" disabled><svg class="i" viewBox="0 0 24 24" id="plIco"><path d="M8 5.5v13l11-6.5z"/></svg></button><div class="plx"><div class="plt"><b id="plTitle">Nichts ausgewählt</b></div><div class="pls"><span id="plState">gestoppt</span><span id="plTime"></span></div><div class="plbar"><i id="plBar"></i></div></div></div>
-  <div hidden class="viewsw seg" id="viewSw" role="group" aria-label="Ansicht"><button data-view="prep" class="on" aria-pressed="true">Tracks</button><button data-view="plan" aria-pressed="false">Set-Planer</button></div>
+  <div class="viewsw seg" id="viewSw" role="group" aria-label="Ansicht"><button data-view="prep" class="on" aria-pressed="true">Tracks</button><button data-view="plan" aria-pressed="false">Set-Planer</button></div>
   <div class="progress" id="progress" role="status"><span id="progTxt"></span><div class="pbar"><i id="progBar"></i></div><button class="btn ghost" id="btnCancel">Stopp</button></div>
   <button class="btn primary" id="btnAnalyze" disabled title="Auswahl oder ganze Playlist analysieren (Enter)"><svg class="i" viewBox="0 0 24 24"><path d="M3 12h3l3-8 4 16 3-8h5"/></svg><span id="btnAnalyzeTxt">Analysieren</span></button>
   <div class="menu-wrap">
@@ -663,7 +692,7 @@ async function afterLoad(keep){
   if(state.source==='xml')matchFiles();
   const[an,mn]=await Promise.all([IDB.all('analysis'),IDB.all('manual')]);let n=0;
   for(const t of state.tracks.values()){const m=mn.get(mKey(t));if(m){t.manual=m;applyMeta(t)}const a=an.get(aKey(t));if(a&&a.v===ALG_V){t.analysis=a;t.status='done';n++}else if(keep&&t.analysis){t.analysis=null;t.status='idle'}}
-  renderAll();
+  await planLoad();renderAll();
   const nf=[...state.tracks.values()].filter(t=>!t.tempos.length).length;
   if(!keep)toast(`${state.tracks.size} Tracks · ${state.playlists.length} Playlists geladen${n?` · ${n} frühere Analysen wiederhergestellt`:''}${nf?` · ${nf} ohne Beatgrid`:''}`);
 }
@@ -1087,7 +1116,7 @@ function stepHist(from,to,word){const h=from.pop();if(!h){toast(word==='Rückgä
   renderAll();const t=state.tracks.get(h[0].id);toast(`${word}: ${h.length>1?h.length+' Tracks':t?t.title:''}`)}
 function undo(){stepHist(HIST,REDO,'Rückgängig')}
 function redo(){stepHist(REDO,HIST,'Wiederholt')}
-function refreshTrack(t){relCache=null;updateRow(t);if(t.id===state.focus)renderDetail();renderBar()}
+function refreshTrack(t){relCache=null;updateRow(t);if(t.id===state.focus)renderDetail();renderBar();if(PLAN.on)renderPlan()}
 
 /* ================= quality / status ================= */
 function gainOf(t){if(!t.analysis||state.refLufs==null)return null;return Math.round((state.refLufs-t.analysis.lufs)*10)/10}
@@ -1116,7 +1145,7 @@ function computeView(){
 }
 
 /* ================= render ================= */
-function renderAll(){renderTop();renderSide();renderBar();renderMain();renderDetail()}
+function renderAll(){renderTop();renderSide();renderBar();renderMain();renderDetail();if(PLAN.on){$('#bar').hidden=true;$('#main').hidden=true;$('#detail').classList.add('hidden');renderPlan()}}
 function musicLabel(){const all=[...state.tracks.values()],found=all.filter(t=>t.file).length;return state.fileCount?(all.length?`Musik: ${found}/${all.length} gefunden`:`${state.fileCount} Dateien`):'Musik verbinden'}
 function renderTop(){
   const pl=$('#pillLib'),pm=$('#pillMusic'),all=[...state.tracks.values()],found=all.filter(t=>t.file).length;
@@ -1372,7 +1401,7 @@ async function analyzeIds(ids,force){
     done++;upd();relCache=null;updateRow(t);if(t.id===state.focus)renderDetail();await sleep(0)}};
   await Promise.all([worker(),worker()]);
   state.busy=false;$('#progress').classList.remove('on');for(const t of state.tracks.values())if(t.status==='busy')t.status=t.analysis?'done':'idle';
-  renderAll();const ne=Object.values(errs).reduce((a,b)=>a+b,0);
+  renderAll();if(PLAN.on)renderPlan();const ne=Object.values(errs).reduce((a,b)=>a+b,0);
   toast(state.cancel?'Analyse gestoppt':`${done-ne} Tracks analysiert${ne?` · ${ne} Fehler (${Object.entries(errs).map(([k,v])=>ERR[k]+': '+v).join(', ')}) – Filter „Fehler“ zeigt sie`:''}`,ne>0);
 }
 
@@ -1602,7 +1631,198 @@ async function exportSerato(){
   toast(`Serato: ${rep.ok} Dateien mit Cues, ${names.length} Crates geschrieben${rep.err.length?` · ${rep.err.length} Fehler (Log in _Serato_)`:''}`,rep.err.length>0);
 }
 
-const PLAN={on:false};function planKey(){}function setView(){}
+/* ================= set planner ================= */
+const CURVES={warm:{l:'Warm-up',d:'ruhig rein, stetig hoch',p:[1.3,1.5,1.8,2.1,2.5,2.9,3.3,3.6]},peak:{l:'Peak-Time',d:'schnell hoch, oben bleiben',p:[3,3.8,4.4,4.7,4.4,4.9,4.6,4.8]},journey:{l:'Journey',d:'zwei Wellen mit Luft dazwischen',p:[1.8,2.8,3.8,3.1,2.6,3.7,4.8,3.4]},closing:{l:'Closing',d:'von oben sanft raus',p:[4.4,4.5,4,3.5,3,2.5,1.9,1.4]}};
+const PLAN={on:false,pls:new Set(),ids:[],lock:new Set(),intro:'',outro:'',min:60,play:'full',curve:'journey',pts:null,tol:4,half:false,boost:true,prio:50,all:false,sel:null,name:'',hist:[],redo:[],seed:1,drag:null,names:[]};
+const CN=48;
+function curveAt(x){const P=PLAN.pts||CURVES[PLAN.curve].p,f=clamp(x)*(P.length-1),i=Math.min(P.length-2,Math.floor(f));return P[i]+(P[i+1]-P[i])*(f-i)}
+function poolIds(){const out=[];const seen=new Set();for(const i of PLAN.pls)for(const id of(i<0?state.order:state.playlists[i]?.ids||[]))if(!seen.has(id)&&state.tracks.has(id)){seen.add(id);out.push(id)}return out}
+function eAbs(t){if(t.manual&&t.manual.E)return t.manual.E;if(t.analysis){const s=t.analysis.score,T=[20,...ENERGY_T,90];for(let i=0;i<5;i++)if(s<T[i+1]||i===4)return clamp(i+1+(s-T[i])/(T[i+1]-T[i])-0.5,1,5)}return t.rating?t.rating/51:null}
+function planCtx(){ // relative energy 1–5 inside the chosen pool, so a curve always uses the whole range you own
+  const ids=[...new Set([...poolIds(),...PLAN.ids])],ts=ids.map(id=>state.tracks.get(id)).filter(Boolean),v=ts.map(eAbs).filter(x=>x!=null).sort((a,b)=>a-b),rel=new Map();
+  for(const t of ts){const e=eAbs(t);if(e==null||v.length<3){rel.set(t.id,e==null?3:e);continue}let lo=0,hi=0;for(const x of v){if(x<e)lo++;if(x<=e)hi++}const p=((lo+hi)/2)/v.length;rel.set(t.id,1+4*p)}
+  return{rel,e:id=>rel.get(id)??3}}
+function playLen(t){const f={full:1,mid:0.75,fast:0.55}[PLAN.play]||1;let l;if(t.analysis){const c=cueTimes(t);l=Math.max(60,c.G-c.A)}else l=Math.max(60,(t.dur||240)-40);return Math.min(Math.max(60,l*f),t.dur||l)}
+function keyRel(a,b){
+  if(!a||!b)return{s:0.6,t:'Key fehlt',k:'?'};const d=((b.n-a.n)%12+12)%12,same=a.l===b.l,nm=`${a.n}${a.l} → ${b.n}${b.l}`;
+  if(same&&d===0)return{s:1,t:nm,k:'gleich'};if(same&&d===1)return{s:0.96,t:nm,k:'+1'};if(same&&d===11)return{s:0.94,t:nm,k:'−1'};if(!same&&d===0)return{s:0.92,t:nm,k:'A↔B'};
+  if(same&&d===2)return{s:PLAN.boost?0.78:0.45,t:nm,k:'+2 Boost',boost:1};if(same&&d===7)return{s:PLAN.boost?0.72:0.3,t:nm,k:'+7 Boost',boost:1};
+  if(!same&&(d===1||d===11))return{s:0.55,t:nm,k:'diagonal'};if(same&&d===10)return{s:0.42,t:nm,k:'−2'};if(same&&(d===9||d===3))return{s:0.28,t:nm,k:'weit',clash:1};return{s:0.12,t:nm,k:'Clash',clash:1}}
+function bpmRel(a,b){
+  if(!a||!b)return{s:0.5,d:0,t:'BPM fehlt'};let best={d:b-a,f:1};if(PLAN.half)for(const f of[2,0.5])if(Math.abs(b*f-a)<Math.abs(best.d))best={d:b*f-a,f};
+  const x=Math.abs(best.d),tol=PLAN.tol,s=x<=tol?1-0.3*Math.pow(x/tol,1.5):Math.max(0,0.6*Math.exp(-(x-tol)/tol*1.2));
+  const r=Math.abs(best.d)<0.05?'gleiches Tempo':`${best.d>0?'+':'−'}${Math.abs(best.d)<9.95?r1(Math.abs(best.d)).toString().replace('.',','):Math.round(Math.abs(best.d))} BPM`;
+  return{s,d:best.d,f:best.f,t:r+(best.f===2?' (Half Time)':best.f===0.5?' (Double Time)':''),jump:x>tol}}
+function trans(a,b,cx,want){ // a→b: score 0–100, reason, warnings
+  const k=keyRel(a.key,b.key),p=bpmRel(a.bpm,b.bpm),ea=cx.e(a.id),eb=cx.e(b.id),de=eb-ea,w=want==null?de:want;
+  const es=clamp(1-Math.abs(de-w)/2.6),sm=clamp(1.15-Math.abs(de)/3.2),pk=PLAN.prio/100,wk=0.28+0.34*(1-pk),wb=0.18+0.34*pk,we=1-wk-wb;
+  let s=wk*k.s+wb*p.s+we*(0.55*es+0.45*sm);const artist=a.artist&&a.artist===b.artist;if(artist)s-=0.05;
+  if(k.clash)s-=0.1;if(p.jump)s-=0.08;
+  const sa=stars0(a),sb=stars0(b),ds=sa!=null&&sb!=null?sb-sa:null,warn=[];if(k.clash)warn.push('Key-Clash');if(p.jump)warn.push('BPM-Sprung');if(k.k==='?')warn.push('Key fehlt');
+  const why=`${k.t}${k.boost&&PLAN.boost?' (Boost)':''}, ${p.t}${ds==null?'':ds===0?', Energie gleich':`, Energie ${ds>0?'+':'−'}${Math.abs(ds)}`}${artist?', gleicher Artist':''}`;
+  return{s:Math.round(100*clamp(s)),why,warn,k,p,de}}
+const stars0=t=>t.manual&&t.manual.E?t.manual.E:t.analysis?autoStars(t):t.rating?Math.round(t.rating/51):null;
+const rngOf=s=>()=>{s|=0;s=s+0x6D2B79F5|0;let t=Math.imul(s^s>>>15,1|s);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296};
+function setCost(ids,cx,total){ // lower is better
+  let c=0,tm=0;for(let i=0;i<ids.length;i++){const t=state.tracks.get(ids[i]),L=playLen(t),mid=(tm+L/2)/total;c+=0.9*Math.pow(Math.abs(cx.e(t.id)-curveAt(mid))/1.6,2);tm+=L;
+    if(i){const a=state.tracks.get(ids[i-1]),w=curveAt(mid)-curveAt(Math.max(0,mid-L/total)),x=trans(a,t,cx,w);c+=Math.pow((100-x.s)/30,2)+(x.k.clash?1.6:0)+(x.p.jump?1.2:0);
+      for(let j=Math.max(0,i-3);j<i-1;j++)if(t.artist&&state.tracks.get(ids[j]).artist===t.artist)c+=0.15}}
+  return c}
+function buildSet(){
+  const pool=poolIds(),cx=planCtx(),R=rngOf(PLAN.seed);if(pool.length<2&&PLAN.ids.length<2){toast('Wähle oben mindestens eine Playlist mit Tracks.',1);return}
+  const total0=PLAN.min*60,lockAt=new Map();PLAN.ids.forEach((id,i)=>{if(PLAN.lock.has(id))lockAt.set(i,id)});
+  const intro=state.tracks.has(PLAN.intro)?PLAN.intro:null,outro=state.tracks.has(PLAN.outro)&&PLAN.outro!==intro?PLAN.outro:null;if(intro)lockAt.set(0,intro);
+  const avail=[...new Set([...pool,...lockAt.values(),...(outro?[outro]:[])])],avg=avail.reduce((x,id)=>x+playLen(state.tracks.get(id)),0)/avail.length;
+  const total=PLAN.all?avail.reduce((x,id)=>x+playLen(state.tracks.get(id)),0):total0;
+  let K=PLAN.all?avail.length:Math.min(avail.length,Math.max(2,Math.round(total/avg)));for(const i of lockAt.keys())K=Math.max(K,i+1);if(outro)K=Math.max(K,2);K=Math.min(K,avail.length);
+  if(outro){for(const[i,id]of[...lockAt])if(id===outro)lockAt.delete(i);lockAt.set(K-1,outro)}
+  const fixed=new Set(lockAt.values()),noise=new Map(avail.map(id=>[id,PLAN.seed===1?0:R()*0.55]));
+  const free=avail.filter(id=>!fixed.has(id));
+  let beam=[{ids:[],used:new Set(),tm:0,c:0}];const W=PLAN.all?28:44;
+  for(let i=0;i<K;i++){const next=[];
+    for(const st of beam){const opts=lockAt.has(i)?[lockAt.get(i)]:free.filter(id=>!st.used.has(id));const sc=[];
+      for(const id of opts){const t=state.tracks.get(id),L=playLen(t),mid=(st.tm+L/2)/total;let c=0.9*Math.pow(Math.abs(cx.e(id)-curveAt(mid))/1.6,2)+noise.get(id);
+        if(st.ids.length){const a=state.tracks.get(st.ids[st.ids.length-1]),x=trans(a,t,cx,curveAt(mid)-curveAt(Math.max(0,mid-L/total)));c+=Math.pow((100-x.s)/30,2)+(x.k.clash?1.6:0)+(x.p.jump?1.2:0);for(const pid of st.ids.slice(-4,-1))if(t.artist&&state.tracks.get(pid).artist===t.artist)c+=0.15}
+        if(lockAt.has(i+1)&&!lockAt.has(i)){const x=trans(t,state.tracks.get(lockAt.get(i+1)),cx);c+=0.7*(Math.pow((100-x.s)/30,2)+(x.k.clash?1.6:0)+(x.p.jump?1.2:0))}
+        sc.push([c,id,L])}
+      sc.sort((x,y)=>x[0]-y[0]);for(const[c,id,L]of sc.slice(0,PLAN.all?6:8))next.push({ids:[...st.ids,id],used:new Set(st.used).add(id),tm:st.tm+L,c:st.c+c})}
+    if(!next.length)break;next.sort((x,y)=>x.c-y.c);const seen=new Map();beam=[];for(const n of next){const key=n.ids[n.ids.length-1];const q=seen.get(key)||0;if(q>=6)continue;seen.set(key,q+1);beam.push(n);if(beam.length>=W)break}}
+  let ids=beam[0].ids,cost=setCost(ids,cx,total);const lk=new Set([...lockAt.keys()]);
+  // polish: swap, move and replace while it gets better
+  const t0=performance.now();let better=true;while(better&&performance.now()-t0<1200){better=false;
+    for(let i=0;i<ids.length&&performance.now()-t0<1200;i++){if(lk.has(i))continue;
+      for(let j=i+1;j<ids.length;j++){if(lk.has(j))continue;const n=[...ids];[n[i],n[j]]=[n[j],n[i]];const c=setCost(n,cx,total);if(c<cost-1e-6){ids=n;cost=c;better=true}}
+      if(!PLAN.all){const us=new Set(ids);for(const id of free){if(us.has(id))continue;const n=[...ids];n[i]=id;const c=setCost(n,cx,total)+(noise.get(id)||0)-(noise.get(ids[i])||0);if(c<cost-1e-6){us.delete(ids[i]);us.add(id);ids=n;cost=c;better=true}}}}}
+  planDo(()=>{PLAN.ids=ids;PLAN.lock=new Set([...PLAN.lock].filter(id=>ids.includes(id)));PLAN.sel=null});
+}
+/* ---- plan state: undo, storage ---- */
+const planSnap=()=>JSON.stringify({ids:PLAN.ids,lock:[...PLAN.lock],pts:PLAN.pts,curve:PLAN.curve,intro:PLAN.intro,outro:PLAN.outro});
+function planDo(fn){PLAN.hist.push(planSnap());PLAN.redo.length=0;if(PLAN.hist.length>100)PLAN.hist.shift();fn();planSave();renderPlan()}
+function planStep(a,b){const s=a.pop();if(!s){toast('Nichts mehr');return}b.push(planSnap());const o=JSON.parse(s);PLAN.ids=o.ids.filter(id=>state.tracks.has(id));PLAN.lock=new Set(o.lock);PLAN.pts=o.pts;PLAN.curve=o.curve;PLAN.intro=o.intro;PLAN.outro=o.outro;planSave();renderPlan()}
+const planData=()=>({v:1,name:PLAN.name,tracks:PLAN.ids.map(id=>mKey(state.tracks.get(id))),lock:[...PLAN.lock].filter(id=>state.tracks.has(id)).map(id=>mKey(state.tracks.get(id))),intro:state.tracks.has(PLAN.intro)?mKey(state.tracks.get(PLAN.intro)):'',outro:state.tracks.has(PLAN.outro)?mKey(state.tracks.get(PLAN.outro)):'',min:PLAN.min,play:PLAN.play,curve:PLAN.curve,pts:PLAN.pts,tol:PLAN.tol,half:PLAN.half,boost:PLAN.boost,prio:PLAN.prio,all:PLAN.all,pls:[...PLAN.pls].map(i=>i<0?'*':[...state.playlists[i].folder,state.playlists[i].name].join('/'))});
+let planT=0;function planSave(){clearTimeout(planT);planT=setTimeout(()=>{if(state.source)IDB.put('sets','__cur',planData())},300)}
+function planApply(d){const by=new Map();for(const t of state.tracks.values())if(!by.has(mKey(t)))by.set(mKey(t),t.id);const m=k=>by.get(k);
+  PLAN.ids=[...new Set(d.tracks.map(m).filter(Boolean))];PLAN.lock=new Set((d.lock||[]).map(m).filter(Boolean));PLAN.intro=m(d.intro)||'';PLAN.outro=m(d.outro)||'';
+  for(const k of['name','min','play','curve','pts','tol','half','boost','prio','all'])if(d[k]!=null||k==='pts')PLAN[k]=d[k]??null;if(!CURVES[PLAN.curve])PLAN.curve='journey';
+  PLAN.pls=new Set((d.pls||[]).map(n=>n==='*'?-1:state.playlists.findIndex(p=>[...p.folder,p.name].join('/')===n)).filter(i=>i>=-1&&(i===-1||state.playlists[i])));PLAN.sel=null;return d.tracks.length-PLAN.ids.length}
+async function planLoad(){PLAN.ids=[];PLAN.lock.clear();PLAN.pls.clear();PLAN.hist.length=0;PLAN.redo.length=0;PLAN.intro=PLAN.outro='';const d=await IDB.get('sets','__cur');if(d)planApply(d);PLAN.names=[...(await IDB.all('sets')).keys()].filter(k=>k!=='__cur');if(PLAN.on)renderPlan()}
+function setView(v){const on=v==='plan';if(on&&!state.source){toast('Erst eine Library oder einen Stick laden.');return}PLAN.on=on;document.body.classList.toggle('planning',on);for(const b of $$('#viewSw button')){const x=b.dataset.view===v;b.classList.toggle('on',x);b.setAttribute('aria-pressed',x)}
+  $('#plan').hidden=!on;$('#main').hidden=on;$('#bar').hidden=on;
+  if(on){if(!PLAN.pls.size&&!PLAN.ids.length)PLAN.pls.add(state.cur);state.focus=null;$('#detail').classList.add('hidden');renderPlan()}else{renderAll()}renderTop();renderPlayer()}
+/* ---- view ---- */
+const hms=s=>{s=Math.round(s/60);return s>=60?`${Math.floor(s/60)} h ${String(s%60).padStart(2,'0')} min`:`${s} min`};
+const scCls=s=>s>=80?'ok':s>=60?'mid':'bad';
+function planTimes(){let t=0;return PLAN.ids.map(id=>{const L=playLen(state.tracks.get(id)),o={s:t,L};t+=L;return o})}
+function renderPlan(){
+  const el=$('#plan');if(!PLAN.on)return;PLAN.ids=PLAN.ids.filter(id=>state.tracks.has(id));
+  const pool=poolIds(),cx=planCtx(),T=planTimes(),tot=T.reduce((x,y)=>x+y.L,0),ts=PLAN.ids.map(id=>state.tracks.get(id)),tr=ts.slice(1).map((t,i)=>trans(ts[i],t,cx,planWant(T,i+1,Math.max(tot,PLAN.min*60))));
+  const avg=tr.length?Math.round(tr.reduce((x,y)=>x+y.s,0)/tr.length):0,warns=tr.reduce((n,x)=>n+x.warn.length,0),noA=pool.filter(id=>{const t=state.tracks.get(id);return!t.analysis&&t.file&&t.tempos.length}).length;
+  const opt=(id,label)=>`<option value="">${label}</option>`+[...new Set([...pool,...(id?[id]:[])])].map(x=>state.tracks.get(x)).sort((a,b)=>a.title.localeCompare(b.title)).map(t=>`<option value="${esc(t.id)}" ${t.id===id?'selected':''}>${esc(t.title)}${t.cam?` · ${t.cam}`:''}${t.bpm?` · ${Math.round(t.bpm)}`:''}</option>`).join('');
+  const keep=$('#pScroll')?.scrollTop||0,keepR=$('#pSide')?.scrollTop||0;
+  el.innerHTML=`<div class="pmain" id="pScroll">
+   <div class="phead"><input class="inp pname" id="pName" value="${esc(PLAN.name)}" placeholder="Name des Sets" aria-label="Name des Sets">
+    <div class="pstat">${ts.length?`<span><b>${ts.length}</b> Tracks</span><span><b>${hms(tot)}</b>${PLAN.all?'':` von ${hms(PLAN.min*60)}`}</span>${tr.length?`<span class="sc ${scCls(avg)}">Übergänge <b>${avg}</b></span>`:''}<span class="${warns?'flag':''}">${warns?`⚠ ${warns} Warnung${warns>1?'en':''}`:'keine Warnungen'}</span>`:'<span>Noch leer</span>'}</div>
+    <div class="pacts"><button class="btn sm ghost" data-p="undo" ${PLAN.hist.length?'':'disabled'} title="Rückgängig (⌘Z)" aria-label="Rückgängig">↶</button><button class="btn sm ghost" data-p="redo" ${PLAN.redo.length?'':'disabled'} title="Wiederholen" aria-label="Wiederholen">↷</button><button class="btn sm" data-p="xml" ${ts.length?'':'disabled'}>rekordbox-Playlist</button><button class="btn sm" data-p="serato" ${ts.length?'':'disabled'}>Serato-Crate</button></div></div>
+   <div class="pcurve"><canvas id="pCv" aria-label="Energiekurve: Linie ziehen, um sie frei zu zeichnen"></canvas><div class="pcl"><span>Linie = Ziel (zum Ändern ziehen), Balken = deine Tracks</span></div></div>
+   ${ts.length?`<div class="plist" id="pList" role="list">${ts.map((t,i)=>(i?trHtml(tr[i-1],i):'')+piHtml(t,i,T[i],cx)).join('')}</div>`:`<div class="pempty"><h3>So baust du ein Set</h3><ol class="guide"><li>Rechts Playlists, Dauer und Energiekurve wählen.</li><li>Auf Wunsch ersten und letzten Track festlegen.</li><li><b>Set vorschlagen</b> drücken. Danach umsortieren, fixieren, austauschen.</li></ol><button class="btn primary lg" data-p="build">Set vorschlagen</button></div>`}
+  </div>
+  <div class="pside" id="pSide">
+   ${PLAN.sel&&PLAN.ids.includes(PLAN.sel)?sugHtml(cx,T,tot):''}
+   <details open><summary>Vorgaben</summary><div class="pform">
+    <label class="pl1">Playlists</label><div class="pchips">${[[-1,'Collection',state.order.length],...state.playlists.map((p,i)=>[i,p.name,p.ids.length])].filter(x=>x[2]).map(([i,n,c])=>`<button class="pchip ${PLAN.pls.has(i)?'on':''}" data-pl1="${i}" aria-pressed="${PLAN.pls.has(i)}">${esc(n)} <small>${c}</small></button>`).join('')}</div>
+    <div class="pnote">${pool.length} Tracks zur Auswahl${noA?`, ${noA} noch nicht analysiert. <button class="lnk" data-p="analyze">Jetzt analysieren</button>`:''}</div>
+    <label class="pl1">Energiekurve</label><div class="pcurves">${Object.entries(CURVES).map(([k,c])=>`<button data-cv="${k}" class="${!PLAN.pts&&PLAN.curve===k?'on':''}" title="${c.d}"><svg viewBox="0 0 70 26" aria-hidden="true"><polyline points="${c.p.map((v,i)=>`${i*10},${24-(v-1)*5.5}`).join(' ')}" fill="none" stroke="currentColor" stroke-width="2"/></svg>${c.l}</button>`).join('')}<button class="${PLAN.pts?'on':''}" data-cv="free" title="Im Diagramm zeichnen"><svg viewBox="0 0 70 26" aria-hidden="true"><path d="M2 20c10-16 20 8 30-6s20-14 36-2" fill="none" stroke="currentColor" stroke-width="2"/></svg>Frei</button></div>
+    <div class="pgrid"><label>Ziel-Dauer<span class="pin"><input type="number" class="inp" id="pMin" min="10" max="480" step="5" value="${PLAN.min}" ${PLAN.all?'disabled':''}> min</span></label><label>Spielweise<select class="inp" id="pPlay"><option value="full" ${PLAN.play==='full'?'selected':''}>Ganze Tracks (A bis H)</option><option value="mid" ${PLAN.play==='mid'?'selected':''}>Kompakt (75 %)</option><option value="fast" ${PLAN.play==='fast'?'selected':''}>Schnell (55 %)</option></select></label></div>
+    <label class="pchk"><input type="checkbox" id="pAll" ${PLAN.all?'checked':''}> Alle Tracks der Auswahl verwenden (nur Reihenfolge)</label>
+    <div class="pgrid"><label>Intro-Track<select class="inp" id="pIntro">${opt(PLAN.intro,'automatisch')}</select></label><label>Outro-Track<select class="inp" id="pOutro">${opt(PLAN.outro,'automatisch')}</select></label></div>
+    <label class="prg">BPM-Toleranz <b id="pTolV">±${PLAN.tol}</b><input type="range" id="pTol" min="1" max="12" step="1" value="${PLAN.tol}"></label>
+    <label class="prg">Wichtiger: <span>Key</span><input type="range" id="pPrio" min="0" max="100" step="10" value="${PLAN.prio}" aria-label="Key oder Tempo wichtiger"><span>Tempo</span></label>
+    <label class="pchk"><input type="checkbox" id="pBoost" ${PLAN.boost?'checked':''}> Energy Boost erlauben (+2 / +7)</label>
+    <label class="pchk"><input type="checkbox" id="pHalf" ${PLAN.half?'checked':''}> Half/Double Time erlauben</label>
+    <div class="pbtns"><button class="btn primary" data-p="build">${ts.length?'Neu vorschlagen':'Set vorschlagen'}</button>${ts.length?'<button class="btn" data-p="shuffle" title="Andere Variante, fixierte Tracks bleiben">Andere Variante</button>':''}</div>
+    <div class="pnote">Fixierte Tracks bleiben an ihrer Stelle. Die Kurve bezieht sich auf die Energie-Spanne deiner Auswahl.</div></div></details>
+   <details ${ts.length?'':''}><summary>Meine Sets</summary><div class="pform">${PLAN.names.map(n=>`<div class="psaved"><button class="lnk" data-load="${esc(n)}">${esc(n)}</button><button class="lnk" data-del="${esc(n)}" aria-label="${esc(n)} löschen">löschen</button></div>`).join('')||'<div class="pnote">Noch keine gespeichert.</div>'}<div class="pbtns"><button class="btn sm" data-p="save" ${ts.length?'':'disabled'}>Aktuelles Set speichern</button>${ts.length?'<button class="btn sm ghost" data-p="clear">Leeren</button>':''}</div></div></details>
+  </div>`;
+  $('#pScroll').scrollTop=keep;$('#pSide').scrollTop=keepR;drawCurve();bindCurve();pumpArt();renderPlayer();
+}
+const planWant=(T,i,tot)=>{const m=x=>(T[x].s+T[x].L/2)/tot;return curveAt(m(i))-curveAt(m(i-1))};
+function trHtml(x,i){return`<div class="ptr" data-tr="${i}"><span class="sc ${scCls(x.s)}" title="Übergangs-Score">${x.s}</span><span class="pwhy">${esc(x.why)}</span>${x.warn.map(w=>`<span class="pw">⚠ ${w}</span>`).join('')}<button class="lnk" data-bridge="${i}" title="Track suchen, der zwischen beide passt">Brücke</button></div>`}
+function piHtml(t,i,T,cx){const s=stars0(t),lk=PLAN.lock.has(t.id)||t.id===PLAN.intro&&i===0||t.id===PLAN.outro&&i===PLAN.ids.length-1;return`<div class="pi ${PLAN.sel===t.id?'sel':''} ${lk?'lock':''} ${PB.id===t.id&&PB.st!=='stop'?'isplay':''}" role="listitem" data-id="${esc(t.id)}" data-i="${i}" tabindex="0"><span class="pgrip" data-grip="${i}" title="${lk?'Fixiert':'Ziehen zum Umsortieren'}" aria-hidden="true">⠿</span><span class="pnum">${i+1}</span>${artTag(t,'',t.file)}<div class="ptx"><div class="ptitle">${esc(t.title)}</div><div class="part">${esc(t.artist)||'&nbsp;'}</div></div>
+  <span class="pmeta">${t.key?`<span class="kc" style="--h:${(t.key.n-1)*30}">${t.cam}</span>`:'<span class="kn">–</span>'}<span class="pbpm">${t.bpm?t.bpm.toFixed(0):'–'}</span>${s?`<span class="meter" data-s="${s}" title="Energie ${s}/5"><i></i><i></i><i></i><i></i><i></i></span>`:'<span class="meter" title="nicht analysiert"><i></i><i></i><i></i><i></i><i></i></span>'}<span class="ptime" title="Start im Set">${fmtT(T.s)}</span></span>
+  <span class="pbtn"><button data-up="${i}" aria-label="Nach oben" ${i&&!lk?'':'disabled'}>↑</button><button data-dn="${i}" aria-label="Nach unten" ${i<PLAN.ids.length-1&&!lk?'':'disabled'}>↓</button><button data-lock="${esc(t.id)}" class="${PLAN.lock.has(t.id)?'on':''}" aria-pressed="${PLAN.lock.has(t.id)}" title="An dieser Stelle fixieren (F)"><svg class="i" viewBox="0 0 24 24"><path d="${PLAN.lock.has(t.id)?'M7 11V8a5 5 0 0 1 10 0v3M5 11h14v9H5z':'M7 11V8a5 5 0 0 1 9.6-2M5 11h14v9H5z'}"/></svg></button><button data-rm="${esc(t.id)}" aria-label="Aus dem Set entfernen" title="Entfernen (Entf)">×</button></span></div>`}
+function suggest(afterI,cx,T,tot,mode){ // mode 'next': after track i · 'swap': instead of i · 'bridge': between i-1 and i
+  const us=new Set(PLAN.ids),total=Math.max(tot,PLAN.min*60),prev=mode==='next'?PLAN.ids[afterI]:PLAN.ids[afterI-1],next=mode==='swap'||mode==='next'?PLAN.ids[afterI+1]:PLAN.ids[afterI];
+  const pt=prev&&state.tracks.get(prev),nt=next&&state.tracks.get(next),pos=mode==='swap'?(T[afterI].s+T[afterI].L/2)/total:mode==='next'?(T[afterI].s+T[afterI].L*1.5)/total:T[afterI].s/total,want=curveAt(pos);
+  return poolIds().filter(id=>!us.has(id)).map(id=>{const t=state.tracks.get(id),x=pt?trans(pt,t,cx,want-cx.e(prev)):null,y=nt?trans(t,nt,cx):null,ef=clamp(1-Math.abs(cx.e(id)-want)/2.5)*100;
+    const s=x&&y?0.45*x.s+0.4*y.s+0.15*ef:x?0.8*x.s+0.2*ef:y?0.8*y.s+0.2*ef:ef;return{t,s:Math.round(s),why:x?x.why:y?y.why:'',warn:[...(x?x.warn:[]),...(y?y.warn.map(w=>w+' danach'):[])],y}}).sort((a,b)=>b.s-a.s).slice(0,8)}
+function sugHtml(cx,T,tot){const i=PLAN.ids.indexOf(PLAN.sel),t=state.tracks.get(PLAN.sel),mode=PLAN.smode||'next',L=suggest(i,cx,T,tot,mode);
+  return`<div class="psug"><div class="pshead"><b>${mode==='next'?'Passt als Nächstes':mode==='swap'?'Passt stattdessen':'Passt dazwischen'}</b><span>${mode==='bridge'?`zwischen ${i} und ${i+1}`:`zu „${esc(t.title)}“`}</span><button class="lnk" data-p="closeSug">schließen</button></div>
+  <div class="seg"><button data-sm="next" class="${mode==='next'?'on':''}">Danach</button><button data-sm="swap" class="${mode==='swap'?'on':''}">Ersetzen</button><button data-sm="bridge" class="${mode==='bridge'?'on':''}" ${i?'':'disabled'}>Davor</button></div>
+  ${L.map(x=>`<div class="psi ${PB.id===x.t.id&&PB.st!=='stop'?'isplay':''}" data-id="${esc(x.t.id)}">${artTag(x.t,'',x.t.file)}<div class="ptx"><div class="ptitle">${esc(x.t.title)}</div><div class="pwhy">${esc(x.why)}${x.warn.length?` <span class="pw">⚠ ${esc(x.warn.join(', '))}</span>`:''}</div></div><span class="sc ${scCls(x.s)}">${x.s}</span><button class="btn sm" data-add="${esc(x.t.id)}" aria-label="${mode==='swap'?'Ersetzen':'Einfügen'}">${mode==='swap'?'⇄':'+'}</button></div>`).join('')||'<div class="pnote">Keine weiteren Tracks in der Auswahl.</div>'}</div>`}
+function drawCurve(){const cv=$('#pCv');if(!cv)return;const w=cv.clientWidth,h=cv.clientHeight,dpr=window.devicePixelRatio||1;cv.width=w*dpr;cv.height=h*dpr;const c=cv.getContext('2d');c.setTransform(dpr,0,0,dpr,0,0);
+  const T=planTimes(),tot=T.reduce((x,y)=>x+y.L,0),full=PLAN.all?Math.max(1,tot):Math.max(tot,PLAN.min*60),cx=planCtx(),y=e=>h-14-(e-1)/4*(h-26),col=['#5B8CFF','#45C2D8','#7BD65A','#FFB224','#F0443A'];
+  c.strokeStyle='#24221f';for(let e=1;e<=5;e++){c.beginPath();c.moveTo(0,y(e));c.lineTo(w,y(e));c.stroke()}
+  PLAN.ids.forEach((id,i)=>{const x0=T[i].s/full*w,x1=(T[i].s+T[i].L)/full*w,e=cx.e(id);c.globalAlpha=PLAN.sel===id?1:.62;c.fillStyle=col[clamp(Math.round(e),1,5)-1];c.beginPath();c.roundRect?c.roundRect(x0+1,y(e),Math.max(2,x1-x0-2),h-14-y(e)+3,4):c.rect(x0+1,y(e),Math.max(2,x1-x0-2),h-14-y(e)+3);c.fill();c.globalAlpha=1;if(x1-x0>18){c.fillStyle='#11100F';c.font='700 10px "Space Grotesk",sans-serif';c.fillText(String(i+1),x0+5,h-17)}});
+  c.strokeStyle='#F4F0E8';c.lineWidth=2.5;c.beginPath();for(let i=0;i<=100;i++){const X=i/100*w,Y=y(curveAt(i/100));i?c.lineTo(X,Y):c.moveTo(X,Y)}c.stroke();
+  c.fillStyle='#736D63';c.font='10.5px "Space Grotesk",sans-serif';for(let m=0;m<=full/60;m+=full>5400?30:15)c.fillText(m+'′',clamp(m*60/full*w+2,2,w-24),h-2)}
+function bindCurve(){const cv=$('#pCv');if(!cv)return;let d=null,last=null,moved=false;const put=e=>{const r=cv.getBoundingClientRect(),i=Math.round(clamp((e.clientX-r.left)/r.width)*(CN-1)),v=clamp(1+(r.height-14-(e.clientY-r.top))/(r.height-26)*4,1,5);if(last!=null)for(let k=Math.min(last.i,i);k<=Math.max(last.i,i);k++)d[k]=last.i===i?v:last.v+(v-last.v)*(k-last.i)/(i-last.i);else d[i]=v;last={i,v};PLAN.pts=d;drawCurve()};
+  cv.addEventListener('pointerdown',e=>{cv.setPointerCapture(e.pointerId);PLAN.preCurve=planSnap();d=Array.from({length:CN},(_,k)=>curveAt(k/(CN-1)));last=null;moved=false;cv._x=e.clientX;cv._y=e.clientY});
+  cv.addEventListener('pointermove',e=>{if(!d)return;if(!moved&&Math.hypot(e.clientX-cv._x,e.clientY-cv._y)<5)return;moved=true;put(e)});
+  const up=e=>{if(!d)return;d=null;if(moved){PLAN.hist.push(PLAN.preCurve);PLAN.redo.length=0;planSave();renderPlan()}else{const r=cv.getBoundingClientRect(),T=planTimes(),tot=T.reduce((x,y)=>x+y.L,0),full=PLAN.all?Math.max(1,tot):Math.max(tot,PLAN.min*60),s=(e.clientX-r.left)/r.width*full,i=T.findIndex(o=>s>=o.s&&s<o.s+o.L);if(i>=0){PLAN.sel=PLAN.ids[i];PLAN.smode='next';renderPlan();$(`.pi[data-i="${i}"]`)?.scrollIntoView({block:'nearest'})}}};cv.addEventListener('pointerup',up);cv.addEventListener('pointercancel',()=>{d=null})}
+/* reorder: locked tracks keep their slot, the others flow around them */
+function moveTo(from,to){const ids=[...PLAN.ids],id=ids[from];const lk=new Map();ids.forEach((x,i)=>{if(isLk(x,i))lk.set(i,x)});if(lk.has(from))return null;const free=ids.filter((x,i)=>!lk.has(i)&&x!==id);let slot=0;for(let i=0;i<to;i++)if(!lk.has(i)&&i!==from)slot++;if(to>from){slot=0;for(let i=0;i<=to;i++)if(!lk.has(i)&&i!==from)slot++}free.splice(slot,0,id);const out=[];let f=0;for(let i=0;i<ids.length;i++)out.push(lk.has(i)?lk.get(i):free[f++]);return out}
+const isLk=(id,i)=>PLAN.lock.has(id)||id===PLAN.intro&&i===0||id===PLAN.outro&&i===PLAN.ids.length-1;
+function planMove(i,j){const n=moveTo(i,clamp(j,0,PLAN.ids.length-1));if(!n||n.join()===PLAN.ids.join())return;planDo(()=>{PLAN.ids=n})}
+function planKey(e){
+  if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='z')return;const i=PLAN.ids.indexOf(PLAN.sel);
+  if(e.key==='ArrowDown'||e.key==='ArrowUp'){e.preventDefault();const d=e.key==='ArrowDown'?1:-1;if(e.altKey&&i>=0){planMove(i,i+d);return}const n=PLAN.ids[clamp(i<0?0:i+d,0,PLAN.ids.length-1)];if(n){if(n!==PLAN.sel)stop();PLAN.sel=n;renderPlan();$(`.pi[data-id="${CSS.escape(n)}"]`)?.scrollIntoView({block:'nearest'})}return}
+  if((e.key==='Delete'||e.key==='Backspace')&&i>=0){e.preventDefault();planDo(()=>{const id=PLAN.sel;PLAN.ids.splice(i,1);PLAN.lock.delete(id);PLAN.sel=PLAN.ids[Math.min(i,PLAN.ids.length-1)]||null});return}
+  if(e.key.toLowerCase()==='f'&&i>=0&&!e.metaKey&&!e.ctrlKey){planDo(()=>{PLAN.lock.has(PLAN.sel)?PLAN.lock.delete(PLAN.sel):PLAN.lock.add(PLAN.sel)});return}
+  if(e.key==='Escape'){PLAN.sel=null;renderPlan()}}
+function bindPlan(){
+  const el=$('#plan');
+  el.addEventListener('click',async e=>{const q=s=>e.target.closest(s);let b;
+    if(b=q('[data-play]')){playId(b.dataset.play);renderPlan();return}
+    if(b=q('[data-p]')){const a=b.dataset.p;
+      if(a==='build'||a==='shuffle'){PLAN.seed=a==='shuffle'?PLAN.seed+1:1;buildSet();if(isM())$('#pScroll').scrollIntoView({block:'start'})}
+      else if(a==='undo')planStep(PLAN.hist,PLAN.redo);else if(a==='redo')planStep(PLAN.redo,PLAN.hist);
+      else if(a==='analyze')analyzeIds(poolIds());else if(a==='closeSug'){PLAN.sel=null;renderPlan()}
+      else if(a==='xml')openModal('planxml');else if(a==='serato')planSerato();
+      else if(a==='clear')planDo(()=>{PLAN.ids=[];PLAN.lock.clear();PLAN.sel=null});
+      else if(a==='save'){const n=planName();await IDB.put('sets',n,planData());if(!PLAN.names.includes(n))PLAN.names.push(n);toast(`Set „${n}“ gespeichert`);renderPlan()}return}
+    if(b=q('[data-load]')){const d=await IDB.get('sets',b.dataset.load);if(d){PLAN.hist.push(planSnap());const miss=planApply(d);planSave();renderPlan();toast(miss?`${miss} Tracks dieses Sets sind nicht in der geladenen Library`:'Set geladen')}return}
+    if(b=q('[data-del]')){const n=b.dataset.del;if(!confirm(`Set „${n}“ löschen?`))return;await IDB.put('sets',n,null);PLAN.names=PLAN.names.filter(x=>x!==n);renderPlan();return}
+    if(b=q('[data-pl1]')){const i=+b.dataset.pl1;PLAN.pls.has(i)?PLAN.pls.delete(i):PLAN.pls.add(i);planSave();renderPlan();return}
+    if(b=q('[data-cv]')){const k=b.dataset.cv;planDo(()=>{if(k==='free')PLAN.pts=Array.from({length:CN},(_,i)=>curveAt(i/(CN-1)));else{PLAN.curve=k;PLAN.pts=null}});if(k==='free')toast('Jetzt oben im Diagramm die Linie ziehen.');return}
+    if(b=q('[data-sm]')){PLAN.smode=b.dataset.sm;renderPlan();return}
+    if(b=q('[data-add]')){const i=PLAN.ids.indexOf(PLAN.sel),id=b.dataset.add,m=PLAN.smode||'next';planDo(()=>{if(m==='swap'){PLAN.lock.delete(PLAN.ids[i]);PLAN.ids[i]=id;PLAN.sel=id}else{PLAN.ids.splice(m==='next'?i+1:i,0,id);if(m==='next')PLAN.sel=id}});return}
+    if(b=q('[data-bridge]')){PLAN.sel=PLAN.ids[+b.dataset.bridge];PLAN.smode='bridge';renderPlan();if(isM())$('.psug')?.scrollIntoView({block:'start',behavior:'smooth'});else $('#pSide').scrollTop=0;return}
+    if(b=q('[data-up]')){planMove(+b.dataset.up,+b.dataset.up-1);return}if(b=q('[data-dn]')){planMove(+b.dataset.dn,+b.dataset.dn+1);return}
+    if(b=q('[data-lock]')){const id=b.dataset.lock;planDo(()=>{PLAN.lock.has(id)?PLAN.lock.delete(id):PLAN.lock.add(id)});return}
+    if(b=q('[data-rm]')){const id=b.dataset.rm;planDo(()=>{PLAN.ids=PLAN.ids.filter(x=>x!==id);PLAN.lock.delete(id);if(PLAN.sel===id)PLAN.sel=null;if(PLAN.intro===id)PLAN.intro='';if(PLAN.outro===id)PLAN.outro=''});return}
+    if(b=q('.pi')){const id=b.dataset.id;if(PLAN.sel!==id){if(PB.id!==id)stop();PLAN.sel=id;PLAN.smode='next';renderPlan();$('#pSide').scrollTop=0}}});
+  el.addEventListener('change',e=>{const i=e.target.id,v=e.target.value;
+    if(i==='pName'){PLAN.name=v.trim();planSave()}else if(i==='pMin'){PLAN.min=clamp(+v||60,10,480);planSave();renderPlan()}else if(i==='pPlay'){PLAN.play=v;planSave();renderPlan()}else if(i==='pAll'){PLAN.all=e.target.checked;planSave();renderPlan()}
+    else if(i==='pIntro'||i==='pOutro'){planDo(()=>{const k=i==='pIntro'?'intro':'outro';PLAN[k]=v;if(v&&PLAN.ids.length){const r=PLAN.ids.filter(x=>x!==v);PLAN.ids=k==='intro'?[v,...r]:[...r,v]}})}
+    else if(i==='pTol'){PLAN.tol=+v;planSave();renderPlan()}else if(i==='pPrio'){PLAN.prio=+v;planSave();renderPlan()}else if(i==='pBoost'){PLAN.boost=e.target.checked;planSave();renderPlan()}else if(i==='pHalf'){PLAN.half=e.target.checked;planSave();renderPlan()}});
+  el.addEventListener('input',e=>{if(e.target.id==='pTol')$('#pTolV').textContent='±'+e.target.value});
+  // drag & drop with pointer events – same on mouse and touch
+  let D=null;
+  el.addEventListener('pointerdown',e=>{const g=e.target.closest('[data-grip]');if(!g)return;const i=+g.dataset.grip;if(isLk(PLAN.ids[i],i)){toast('Fixiert. Erst das Schloss lösen.');return}e.preventDefault();D={id:PLAN.ids[i],pre:planSnap(),start:PLAN.ids.join()};el.setPointerCapture(e.pointerId);el.classList.add('dragging');$(`.pi[data-i="${i}"]`)?.classList.add('drag')});
+  el.addEventListener('pointermove',e=>{if(!D)return;const sc=$('#pScroll'),r=sc.getBoundingClientRect(),host=isM()?el:sc;if(e.clientY<r.top+50)host.scrollTop-=14;else if(e.clientY>Math.min(r.bottom,innerHeight)-60)host.scrollTop+=14;
+    const rows=$$('#pList .pi'),from=PLAN.ids.indexOf(D.id);let to=from;for(const x of rows){const b=x.getBoundingClientRect();if(e.clientY>b.top&&e.clientY<b.bottom){const j=+x.dataset.i;if(j>from&&e.clientY>b.top+b.height*0.5||j<from&&e.clientY<b.top+b.height*0.5)to=j}}
+    if(rows.length&&e.clientY<rows[0].getBoundingClientRect().top)to=0;if(rows.length&&e.clientY>rows[rows.length-1].getBoundingClientRect().bottom)to=rows.length-1;
+    if(to!==from){const n=moveTo(from,to);if(n&&n.join()!==PLAN.ids.join()){PLAN.ids=n;renderPlan();$(`.pi[data-id="${CSS.escape(D.id)}"]`)?.classList.add('drag')}}});
+  const end=()=>{if(!D)return;el.classList.remove('dragging');if(PLAN.ids.join()!==D.start){PLAN.hist.push(D.pre);PLAN.redo.length=0;planSave()}D=null;renderPlan()};
+  el.addEventListener('pointerup',end);el.addEventListener('pointercancel',end);
+  $('#viewSw').addEventListener('click',e=>{const b=e.target.closest('[data-view]');if(b)setView(b.dataset.view)});
+}
+const planName=()=>{const v=($('#pName')?.value||PLAN.name||'').trim();if(v)PLAN.name=v;return PLAN.name||`Set ${today()}`};
+function planCx(){return makeCtx({mode:'new',pl:null,ids:[...PLAN.ids],name:planName(),root:'/Volumes/'+state.volName})}
+function planSerato(){ // hand the set over as a playlist, the Serato dialog does the rest (crate only or with cues)
+  const nm=planName(),i0=state.playlists.findIndex(p=>p.set&&p.name===nm),pl={name:nm,folder:[],ids:[...PLAN.ids],set:true};let i=i0;if(i0>=0)state.playlists[i0]=pl;else{i=state.playlists.length;state.playlists.push(pl);state.tree.push({type:'list',name:nm,depth:0,idx:i,parent:''})}
+  renderSide();openModal('serato',{only:i})}
+
 /* ================= problem list (CSV) ================= */
 function exportCsv(){
   const rows=[['Titel','Artist','Status','Problem','Was tun']];
@@ -1638,39 +1858,45 @@ function renderXmlDiff(){
 }
 let tourDj='rb';
 const TOUR=[
- {t:'Was die App für dich macht',b:`<p>Du gibst ihr eine Playlist, sie bereitet jeden Track für den Mix vor und schreibt alles zurück in dein DJ-Programm.</p>
-  <div class="cuemap"><span class="on" style="background:var(--cA)">A<small>Start</small></span><span>B</span><span>C</span><span>D</span><span>E</span><span>F</span><span class="on" style="background:var(--cF)">G<small>Mix-Out</small></span><span class="on" style="background:var(--cG)">H<small>Energie fällt</small></span></div>
-  <ol class="guide"><li><b>Hot Cue A</b> auf dem ersten Beat.</li><li><b>Hot Cue G und H</b>: 32 Beats Mix-Out-Fenster. H liegt dort, wo die Energie am Ende abfällt.</li>
-  <li><b>Emergency Loop</b> als Memory Cue: 16, 8 oder 4 Beats, je nachdem, was nahtlos loopt. Rettet dich, wenn der Track ausläuft.</li>
-  <li><b>Energie 1–5</b> im Rating-Feld, dazu Lautheit, Gain-Hinweise und schlechte Bitraten.</li></ol>
-  <div class="note">Deine Musik verlässt nie deinen Rechner. Alles läuft im Browser. Deine eigenen Hot Cues bleiben, solange „überschreiben“ aus ist.</div>`},
- {t:'Playlists laden',b:`<p>Die App braucht deine Playlists und ein Beatgrid. Beides kommt aus rekordbox.</p>
-  <ol class="guide"><li><b>Empfohlen:</b> in rekordbox <b>Datei → Exportieren → Collection im xml-Format exportieren</b>. Die Datei hier mit „rekordbox XML laden“ öffnen.</li>
-  <li>Danach den <b>Musikordner</b> verbinden, in dem deine Tracks liegen (z. B. Musik). Die App findet die Dateien selbst, auch bei gekürzten Namen.</li>
-  <li><b>Alternative:</b> den ganzen <b>USB-Stick</b> mit dem PIONEER-Ordner wählen. Gut zum Testen, für den Rückweg nach rekordbox ist die XML aber sicherer.</li></ol>
-  <div class="note warn">Nur Serato und kein rekordbox? Dann fehlt das Beatgrid, und die App kann die Tracks nicht analysieren. Einmal in rekordbox analysieren reicht.</div>`},
- {t:'Analysieren',b:`<p>Links eine Playlist wählen und oben auf <b>Analysieren</b> klicken (oder <kbd>Enter</kbd>). Pro Track dauert das ein paar Sekunden.</p>
-  <ol class="guide"><li><b>Grün</b>: fertig, Cues sind sicher.</li><li><b>Gelb</b>: kurz anhören. Die App sagt dir, warum (z. B. schwacher Energieabfall oder kein ganz sauberer Loop).</li>
-  <li><b>„Bestätigen“</b>: Sicherheit niedrig. Diese Tracks bekommen erst Cues, wenn du sie geprüft und mit <kbd>C</kbd> bestätigt hast.</li><li><b>Rot</b>: Datei fehlt oder ist kaputt. Diese Tracks werden nie verändert.</li></ol>`},
- {t:'Prüfen und anpassen',b:`<p>Klick auf einen Track öffnet die Detailansicht mit Wellenform und allen Markern.</p>
-  <ol class="guide"><li>Tasten <kbd>A</kbd> <kbd>G</kbd> <kbd>H</kbd> <kbd>L</kbd> springen zum Marker und spielen ab. <kbd>L</kbd> spielt den Emergency Loop in Dauerschleife, damit du hörst, ob er sauber ist.</li>
-  <li>Marker mit der Maus ziehen oder mit <kbd>←</kbd> <kbd>→</kbd> um einen Takt verschieben.</li><li>Energie passt nicht? Auf die Balken klicken und deinen Wert setzen.</li>
-  <li>Spalte <b>Gain</b>: so viel solltest du am Gain-Regler drehen, damit der Track so laut ist wie der Rest der Playlist.</li></ol>`},
- {t:'Exportieren',b:`<p>Oben auf <b>Export</b> und dein Ziel wählen.</p>
-  <ol class="guide"><li><b>rekordbox XML</b>: Du entscheidest, ob eine <b>neue Playlist</b> („Name Edited“) entsteht oder die bestehende <b>überschrieben</b> wird.</li>
-  <li>Vor dem Download zeigt dir die App jede Änderung: neue, ersetzte und behaltene Cues pro Track.</li><li><b>Serato</b>: Crates und Cues direkt auf Stick oder Festplatte schreiben, oder nur die Crates als ZIP.</li></ol>
-  <div class="note">Tipp für rekordbox: Speicher die XML immer unter demselben Namen am selben Ort. Dann musst du rekordbox nur einmal einrichten.</div>`},
+ {t:'Was JAILR Prep macht',b:`<p>Die App hört deine Tracks an, bewertet sie und hilft dir beim Set. Cues setzt sie nur, wenn du das willst.</p>
+  <div class="cuemap"><span class="on" style="background:var(--cA)">A<small>Start</small></span><span>B</span><span>C</span><span>D</span><span>E</span><span>F</span><span class="on" style="background:var(--cF)">G<small>Mix-Out</small></span><span class="on" style="background:var(--cG)">H<small>Ende</small></span></div>
+  <ol class="guide"><li><b>Energie 1–5, Lautheit, Gain</b> für jeden Track.</li><li><b>A</b>: erster Downbeat, auf dem der Kick einsetzt, auf der Phrase.</li><li><b>G → H</b>: 32 Beats zum Rausmischen. H sitzt dort, wo die Energie wirklich abfällt.</li>
+  <li><b>Emergency Loop</b>: 16, 8 oder 4 Beats, die längste Länge, die nahtlos läuft.</li><li><b>Set-Planer</b>: Reihenfolge nach Key, Tempo und Energiekurve.</li></ol>
+  <div class="note">Deine Musik verlässt nie deinen Rechner. Deine eigenen Hot Cues bleiben, solange „überschreiben“ aus ist.</div>`},
+ {t:'Playlists und Musik laden',b:()=>`<ol class="guide"><li><b>Collection laden:</b> in rekordbox <b>Datei → Collection im xml-Format exportieren</b>, hier mit „rekordbox XML laden“ öffnen.</li>
+  <li><b>Musik verbinden:</b> Musikordner oder Stick wählen. ${dirApi()?'Dein Browser fragt nur nach Lesezugriff, nichts wird hochgeladen.':'In Chrome oder Edge geht das ohne die Frage „Dateien hochladen?“.'}</li>
+  <li><b>Nur der Stick?</b> Geht auch. Egal ob du den Stick, <b>PIONEER</b> oder <b>Contents</b> anklickst, die App findet die Playlists. Beim nächsten Mal reicht ein Klick auf „wieder verbinden“.</li></ol>
+  <div class="note warn"><b>Keine Duplikate:</b> Vom Stick aus brauchst du vor dem Export einmal deine Collection-XML. Die App ordnet jeden Track deiner Library zu. Was dort nicht steht, kommt nicht in die Datei.</div>`},
+ {t:'Analysieren',b:`<p>Playlist wählen, oben auf <b>Analysieren</b> klicken (oder <kbd>Enter</kbd>). Danach siehst du Energie, Lautheit und Gain. Cues sind noch aus.</p>
+  <ol class="guide"><li><b>Grün</b>: fertig.</li><li><b>Gelb</b>: kurz ansehen, der Grund steht unten im Detail.</li><li><b>Rot</b>: Datei fehlt oder ist kaputt. Diese Tracks werden nie verändert.</li></ol>
+  <p>Die Spalte <b>Gain</b> sagt dir, wie weit du am Gain drehst, damit der Track so laut ist wie der Rest.</p>`},
+ {t:'Cues einschalten',b:`<p>Du entscheidest, wo Cues gesetzt werden:</p>
+  <ol class="guide"><li><b>Ganze Playlist:</b> Schalter <b>„Cues (Playlist)“</b> oben in der Leiste. Mit mehreren markierten Tracks gilt er für die Auswahl.</li><li><b>Einzelner Track:</b> „+ Cues“ in der Zeile oder Schalter im Detail.</li>
+  <li><b>„Bestätigen“</b>: Bei niedriger Sicherheit schreibt die App erst, wenn du geprüft und mit <kbd>C</kbd> bestätigt hast.</li></ol>
+  <div class="note">Cues aus heißt: Beim Export bleiben alle Cues des Tracks, wie sie sind. Energie und Kommentar kommen trotzdem mit.</div>`},
+ {t:'Anhören und anpassen',b:`<ol class="guide"><li><b>Leertaste</b> oder der runde Play-Knopf: Abspielen und Stopp, überall. Es läuft immer nur ein Track, beim Wechsel stoppt er.</li>
+  <li><kbd>A</kbd> <kbd>G</kbd> <kbd>H</kbd> <kbd>L</kbd> springen zum Marker und spielen ab. <kbd>L</kbd> läuft im Kreis, so hörst du, ob der Loop sauber ist.</li>
+  <li><b>Ziehen</b> in der großen Wellenform rastet auf Takten und Phrasen ein. In der Zoom-Ansicht darunter schiebst du Beat für Beat.</li>
+  <li><b>Tasten:</b> <kbd>←</kbd> <kbd>→</kbd> ein Takt, mit Shift acht, mit Alt ein Beat. Am Handy nimmst du die Schiebe-Knöpfe.</li>
+  <li><b>Vorschläge:</b> Bei H siehst du weitere Stellen, an denen die Energie abfällt. Ein Klick genügt.</li><li><kbd>⌘Z</kbd> macht alles rückgängig, <kbd>⇧⌘Z</kbd> wiederholt.</li></ol>`},
+ {t:'Set planen',b:`<p>Oben auf <b>Set-Planer</b> wechseln.</p><ol class="guide"><li><b>Vorgaben:</b> eine oder mehrere Playlists, Dauer, Energiekurve (Warm-up, Peak-Time, Journey, Closing oder selbst gezeichnet), auf Wunsch Intro- und Outro-Track.</li>
+  <li><b>„Set vorschlagen“</b>: Zwischen zwei Tracks steht ein Score mit Grund, z. B. „8A → 9A, +2 BPM, Energie +1“. Warnungen gibt es bei Key-Clash und BPM-Sprung.</li>
+  <li><b>Umbauen:</b> am Griff ziehen, mit dem Schloss fixieren, „Brücke“ sucht einen Track für einen harten Übergang. Ein Klick auf einen Track zeigt, was danach passt.</li>
+  <li><b>Export:</b> als rekordbox-Playlist in genau dieser Reihenfolge oder als Serato-Crate.</li></ol>`},
+ {t:'Exportieren',b:()=>`<ol class="guide"><li><b>Export → rekordbox XML</b>: neue Playlist oder bestehende überschreiben. Die Vorschau zeigt jede Änderung.</li>
+  <li>${xmlApi()?'<b>Immer dieselbe Datei:</b> Beim ersten Mal wählst du den Speicherort, danach überschreibt die App dieselbe XML. Den Pfad in rekordbox stellst du nur einmal ein.':'<b>Immer dieselbe Datei:</b> Dein Browser kann nicht überschreiben. Lösch vor dem Export die alte „JAILR Prep.xml“ oder ersetze sie durch die neue. In Chrome und Edge geht das automatisch.'}</li>
+  <li><b>Kommentar:</b> kurz und lesbar, z. B. „Energie 4/5 · Gain +3 dB“. Dein eigener Text bleibt davor.</li><li><b>Serato</b>: Crates als ZIP oder Crates und Cues direkt auf Stick oder Platte.</li></ol>
+  <div class="note">Vor dem Schreiben prüft die App, dass jeder Pfad in deiner Collection steht und alle deine Cues enthalten sind.</div>`},
  {t:'Zurück in dein DJ-Programm',b:()=>`<div class="seg"><button data-dj="rb" class="${tourDj==='rb'?'on':''}">rekordbox</button><button data-dj="se" class="${tourDj==='se'?'on':''}">Serato</button></div>`+(tourDj==='rb'?`
-  <p><b>Einmal einrichten</b></p><ol class="guide"><li><b>rekordbox → Voreinstellungen → Betrachten → Layout</b>: „rekordbox xml“ anhaken.</li>
-  <li><b>Voreinstellungen → Erweitert → Datenbank → rekordbox xml</b>: bei „Importierte Bibliothek“ deine exportierte XML wählen.</li></ol>
-  <p><b>Jedes Mal</b></p><ol class="guide"><li>Library sichern (Datei → Library → Sichern).</li><li>Links auf das <b>&lt;/&gt;-Symbol</b> (rekordbox xml) und auf <b>↻</b> klicken. Wichtig, sonst liest rekordbox die alte Datei.</li>
-  <li>Playlist öffnen, alle Tracks markieren (<kbd>⌘A</kbd> / <kbd>Strg+A</kbd>) → Rechtsklick → <b>In Sammlung importieren</b> → Ja. Den Haken „Diese Frage nicht mehr stellen“ setzen, dann gilt das für alle Tracks.</li>
-  <li>Rechtsklick auf die Playlist → <b>Wiedergabeliste importieren</b>. Gibt es sie schon, die alte vorher löschen.</li></ol>
-  <div class="note warn">Lade die XML aus rekordbox (Schritt 1), nicht vom Stick. Nur dann stimmen die Dateipfade, und rekordbox aktualisiert deine Tracks, statt sie doppelt anzulegen.</div>`:`
-  <ol class="guide"><li>In der App <b>Export → Serato</b>, Playlists wählen und <b>„Mit Cues“</b> einstellen.</li><li><b>Stick oder Musik-Festplatte wählen.</b> Die App schreibt die Crates in den _Serato_-Ordner und die Cues direkt in die MP3-Dateien.</li>
-  <li><b>Serato DJ öffnen.</b> Die Crates erscheinen links unter dem Laufwerk. A liegt auf Cue 1, G und H auf Cue 7 und 8, der Emergency Loop als gespeicherter Loop.</li>
-  <li>Fehlen Cues bei schon geladenen Tracks: Track neu laden oder in den Serato-Einstellungen die ID3-Tags neu einlesen.</li></ol>
-  <div class="note warn">Cues können nur in MP3-Dateien geschrieben werden. WAV/AIFF/FLAC bekommen Crates, aber keine Cues. Ohne „Mit Cues“ bekommst du nur ein ZIP mit Crates.</div>`)}
+  <p><b>Einmal einrichten</b></p><ol class="guide"><li><b>Voreinstellungen → Betrachten → Layout</b>: „rekordbox xml“ anhaken.</li>
+  <li><b>Voreinstellungen → Erweitert → Datenbank → rekordbox xml</b>: bei „Importierte Bibliothek“ deine <b>JAILR Prep.xml</b> wählen.</li></ol>
+  <p><b>Jedes Mal</b></p><ol class="guide"><li>Library sichern (Datei → Library → Sichern).</li><li>Links auf <b>&lt;/&gt;</b> (rekordbox xml) und auf <b>↻</b> klicken. Ohne ↻ liest rekordbox die alte Datei.</li>
+  <li>Playlist öffnen, alle Tracks markieren (<kbd>⌘A</kbd> / <kbd>Strg+A</kbd>) → Rechtsklick → <b>In Sammlung importieren</b> → Ja. „Diese Frage nicht mehr stellen“ anhaken, dann gilt das für alle.</li>
+  <li>Rechtsklick auf die Playlist → <b>Wiedergabeliste importieren</b>. Gibt es sie schon, die alte vorher löschen.</li></ol>`:`
+  <ol class="guide"><li><b>Export → Serato</b>, Playlists wählen und <b>„Mit Cues“</b> einstellen.</li><li><b>Stick oder Musik-Festplatte wählen.</b> Die App schreibt die Crates in den _Serato_-Ordner und die Cues in die MP3-Dateien.</li>
+  <li><b>Serato DJ öffnen.</b> Die Crates erscheinen links unter dem Laufwerk. A liegt auf Cue 1, G und H auf 7 und 8, der Emergency Loop als gespeicherter Loop.</li>
+  <li>Fehlen Cues bei geladenen Tracks: Track neu laden oder die ID3-Tags neu einlesen.</li></ol>
+  <div class="note warn">Cues gehen nur in MP3-Dateien. WAV, AIFF und FLAC bekommen Crates, aber keine Cues.</div>`)}
 ];
 function fileBox(){
   if(!xmlApi())return`<div class="note warn">Dieser Browser kann keine feste Datei überschreiben. Die XML landet als <b>JAILR Prep.xml</b> im Download-Ordner. Damit rekordbox sie findet: <b>alte „JAILR Prep.xml“ vorher löschen</b> oder die neue Datei („JAILR Prep (1).xml“) so umbenennen und die alte ersetzen. Mit Chrome oder Edge geht das automatisch.</div>`;
@@ -1707,6 +1933,12 @@ function openModal(kind,ctx){
     <h3>Datei</h3>${fileBox()}
     <h3>Vorschau der Änderungen</h3><div id="xDiff"></div></div>
     </div><div class="foot"><span class="info" id="xInfo"></span><button class="btn ghost" data-close>Abbrechen</button><button class="btn primary" id="xGo" data-act="doXml">${xmlApi()?'Prüfen & speichern':'Prüfen & herunterladen'}</button></div>`;
+  }else if(kind==='planxml'){const cx=planCx();
+    const needLib=state.source==='usb'&&!state.lib;
+    h=`<h2>Set als rekordbox-Playlist</h2><p class="sub">„${esc(cx.name)}“ mit ${cx.ids.length} Tracks in genau dieser Reihenfolge.</p><div class="body">
+    ${needLib?`<div class="note err"><b>Erst deine Collection-XML laden</b>, sonst legt rekordbox die Tracks doppelt an. <div style="margin-top:8px"><button class="btn sm primary" data-act="loadLib">Collection-XML laden</button></div></div>`:''}
+    <h3>Datei</h3>${fileBox()}<h3>Vorschau</h3>${diffHtml(cx)}
+    </div><div class="foot"><button class="btn ghost" data-close>Abbrechen</button><button class="btn primary" data-act="doPlanXml" ${cx.plans.length&&!needLib?'':'disabled'}>${xmlApi()?'Prüfen & speichern':'Prüfen & herunterladen'}</button></div>`;
   }else if(kind==='libwarn'){const inf=state.libInfo||{};
     h=`<h2>Das sieht nicht nach deiner Collection aus</h2><p class="sub">${inf.own?'Diese XML hat JAILR Prep selbst exportiert.':`${inf.stick} von ${inf.files} Tracks zeigen auf ein Laufwerk unter /Volumes.`}</p><div class="body">
     <div class="note warn">Importierst du damit nach rekordbox, kann es deine Tracks <b>doppelt</b> anlegen. rekordbox erkennt Tracks nur am exakten Pfad.</div>
@@ -1745,10 +1977,10 @@ function openModal(kind,ctx){
     ${META.map(([k,l])=>`<div class="field"><label for="me_${k}">${l}${t.orig&&t.orig[k]!==t[k]?`<small>Original: ${esc(t.orig[k])||'leer'}</small>`:''}</label><input class="inp" id="me_${k}" value="${esc(t[k])}" ${k==='keyRaw'?'placeholder="z.B. 8A oder Am"':''}></div>`).join('')}
     </div><div class="foot">${hasMeta(t)?'<button class="btn ghost" data-act="metaReset" style="margin-right:auto">Original wiederherstellen</button>':''}<button class="btn ghost" data-close>Abbrechen</button><button class="btn primary" data-act="metaSave">Speichern</button></div>`;
   }else if(kind==='serato'){
-    h=`<h2>Serato Crates exportieren</h2><p class="sub">Wandelt Playlists in Serato-Crates um (ZIP mit _Serato_-Ordner).</p><div class="body">
-    <div class="opts plsel">${state.playlists.map((p,i)=>`<label><input type="checkbox" value="${i}" ${i===state.cur?'checked':''}> ${esc([...p.folder,p.name].join(' / '))}<span class="c">${p.ids.length}</span></label>`).join('')}</div>
+    h=`<h2>Nach Serato exportieren</h2><p class="sub">Wandelt Playlists in Serato-Crates um (ZIP mit _Serato_-Ordner).</p><div class="body">
+    <div class="opts plsel">${state.playlists.map((p,i)=>`<label><input type="checkbox" value="${i}" ${i===(ctx&&ctx.only!=null?ctx.only:state.cur)?'checked':''}> ${esc([...p.folder,p.name].join(' / '))}<span class="c">${p.ids.length}</span></label>`).join('')}</div>
     <h3>Crate-Name</h3><div class="opts"><label><input type="radio" name="smode" value="over" checked> Gleicher Name – überschreibt gleichnamige Crates</label><label><input type="radio" name="smode" value="new"> Neue Crate mit Zusatz <input class="inp" id="sSuffix" value=" Edited" aria-label="Namenszusatz"></label></div>
-    <div class="field"><label>Aktuelle Sortierung übernehmen</label>${sw('srtSort',true)}</div>
+    <div class="field"><label>Aktuelle Sortierung übernehmen</label>${sw('srtSort',!(ctx&&ctx.only!=null))}</div>
     <div class="field"><label>Serato-Datenbank mitschreiben<small>Für einen frischen Stick sinnvoll. Ersetzt eine vorhandene „database V2“.</small></label>${sw('srtDb',true)}</div>
     <h3>Cues für Serato</h3><div class="opts">
       <label><input type="radio" name="scue" value="none" checked> Ohne Cues – nur Crates als ZIP</label>
@@ -1783,11 +2015,11 @@ $('#dClose').onclick=()=>{state.focus=null;renderDetail();updateSel();renderPlay
 function pickMusic(){if(matchMedia('(pointer:coarse)').matches)$('#inFiles').click();else if(dirApi())pickDir();else $('#inDir').click()}
 $('#inFiles').addEventListener('change',async e=>{const fs=[...e.target.files];e.target.value='';await handleFiles(fs)});
 $('#btnSettings').onclick=()=>openModal('settings');$('#btnHelp').onclick=()=>openModal('guide');$('#btnTour').onclick=()=>openModal('tour',{i:0});$('#btnCancel').onclick=()=>{state.cancel=true};
-$('#btnAnalyze').onclick=()=>analyzeIds(state.sel.size>1?[...state.sel]:state.view);
+$('#btnAnalyze').onclick=()=>analyzeIds(PLAN.on?poolIds():state.sel.size>1?[...state.sel]:state.view);
 $('#btnExport').onclick=e=>{e.stopPropagation();$('#exportMenu').classList.toggle('open')};
 document.addEventListener('click',e=>{if(!e.target.closest('.menu-wrap'))$('#exportMenu').classList.remove('open')});
-$('#exportMenu').onclick=e=>{const b=e.target.closest('button');if(!b)return;$('#exportMenu').classList.remove('open');if(b.dataset.act==='csv')exportCsv();else openModal(b.dataset.act)};
-$('#modalBg').addEventListener('click',e=>{if(e.target.id==='modalBg'||e.target.closest('[data-close]'))closeModal();const a=e.target.closest('[data-act]');if(a){if(a.dataset.act==='doXml')exportXml();if(a.dataset.act==='loadLib'){closeModal();$('#inXml').click()}if(a.dataset.act==='xmlOther'){XMLF.handle=null;IDB.put('handles','xml',null);$('#xFile').outerHTML=fileBox()}if(a.dataset.act==='gotoPlan'){closeModal();setView('plan')}if(a.dataset.act==='doSerato')exportSerato();if(a.dataset.act==='metaSave'||a.dataset.act==='metaReset')saveMeta(a.dataset.act==='metaReset')}});
+$('#exportMenu').onclick=e=>{const b=e.target.closest('button');if(!b)return;$('#exportMenu').classList.remove('open');if(b.dataset.act==='csv')exportCsv();else if(PLAN.on&&PLAN.ids.length&&b.dataset.act==='xml')openModal('planxml');else if(PLAN.on&&PLAN.ids.length&&b.dataset.act==='serato')planSerato();else openModal(b.dataset.act)};
+$('#modalBg').addEventListener('click',e=>{if(e.target.id==='modalBg'||e.target.closest('[data-close]'))closeModal();const a=e.target.closest('[data-act]');if(a){if(a.dataset.act==='doXml')exportXml();if(a.dataset.act==='loadLib'){closeModal();$('#inXml').click()}if(a.dataset.act==='xmlOther'){XMLF.handle=null;IDB.put('handles','xml',null);$('#xFile').outerHTML=fileBox()}if(a.dataset.act==='gotoPlan'){closeModal();setView('plan')}if(a.dataset.act==='doPlanXml')exportXml(planCx());if(a.dataset.act==='doSerato')exportSerato();if(a.dataset.act==='metaSave'||a.dataset.act==='metaReset')saveMeta(a.dataset.act==='metaReset')}});
 function saveMeta(reset){const t=state.tracks.get(state.focus);if(!t)return;applyMeta(t);let meta=null;
   if(!reset){meta={};for(const[k]of META){const v=$('#me_'+k).value.trim();if(v!==String(t.orig[k]??''))meta[k]=v}if(!Object.keys(meta).length)meta=null}
   if(meta&&meta.keyRaw&&!parseKey(meta.keyRaw)){toast('Key nicht erkannt – z.B. 8A, Am oder F#m',1);return}
@@ -1808,7 +2040,7 @@ $('#main').addEventListener('click',e=>{
   if(state.focus!==id){stop();state.focus=id;renderDetail()}updateSel()});
 $('#main').addEventListener('dblclick',e=>{const tr=e.target.closest('tbody tr.r');if(!tr)return;const t=state.tracks.get(tr.dataset.id);if(t.analysis)jump('A');else analyzeIds([t.id])});
 $('#side').addEventListener('click',e=>{const re=e.target.closest('[data-re]');if(re){reconnect(+re.dataset.re);return}const sb=e.target.closest('[data-src]');if(sb){document.body.classList.remove('showside');sb.dataset.src==='lib'?$('#inXml').click():pickMusic();return}const f=e.target.closest('[data-folder]');if(f){const k=f.dataset.folder;state.collapsed.has(k)?state.collapsed.delete(k):state.collapsed.add(k);renderSide();return}
-  const p=e.target.closest('[data-pl]');if(!p)return;state.cur=+p.dataset.pl;state.sel.clear();state.focus=null;stop();document.body.classList.remove('showside');$('#main').scrollTop=0;renderAll()});
+  const p=e.target.closest('[data-pl]');if(!p)return;if(PLAN.on)setView('prep');state.cur=+p.dataset.pl;state.sel.clear();state.focus=null;stop();document.body.classList.remove('showside');$('#main').scrollTop=0;renderAll()});
 $('#side').addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();e.target.click()}});
 $('#q').addEventListener('input',e=>{state.q=e.target.value;renderMain()});
 $('#filt').addEventListener('click',e=>{const b=e.target.closest('[data-f]');if(!b)return;state.filter=b.dataset.f;renderBar();renderMain()});
@@ -1853,15 +2085,16 @@ function bindMarkers(cv,G){ // G() → {t,a,c,w,x(pos),pos(x,e)}
     if(tlDown&&g&&g.a&&e.type==='pointerup'){const mx=e.clientX-cv.getBoundingClientRect().left;if(Math.abs(mx-tlDown.x)<6&&Math.abs(e.clientY-tlDown.y)<10)play(cv.id==='tl'&&mx<=3?0:barT(g.a,g.pos(mx,e)),null,g.t.id)}tlDown=null};
   cv.addEventListener('pointerup',end);cv.addEventListener('pointercancel',end);
   cv.addEventListener('pointerleave',()=>{if(!TL.drag&&TL.hover>=0){TL.hover=-1;$('#tlTip').style.display='none';drawTL()}})}
+bindPlan();
 bindMarkers(cv,()=>{const g=tlGeom();if(!g.a)return null;const c=computeCues(g.t);return{t:g.t,a:g.a,c,mid:c[TL.sel],x:b=>g.x(barT(g.a,b)),pos:(mx,e,k)=>{const sec=clamp(g.s(mx),0,g.dur);if(e.altKey)return nearestPos(g.a,sec,0.25);let b=nearestPos(g.a,sec,1);if(k&&!e.shiftKey){let bd=9,bb=b;for(const x of c.bnd){const d=Math.abs(g.x(barT(g.a,x))-mx);if(d<bd){bd=d;bb=x}}b=bb}return clamp(b,0,k==='L'?g.a.rms.length-1:g.a.rms.length)}}});
 function bindZoom(){const z=$('#tlz');if(!z)return;bindMarkers(z,()=>{const g=zGeom();if(!g)return null;return{t:g.t,a:g.a,c:g.c,mid:g.mid,x:g.x,pos:(mx,e,k)=>clamp(Math.round(g.b(mx)*4)/4,0,k==='L'?g.a.rms.length-1:g.a.rms.length)}})}
 function t_set(t,p){t.manual=Object.assign({},t.manual||{},p);cleanM(t);drawTL()}
-window.addEventListener('resize',()=>{drawTL();renderRows()});
+window.addEventListener('resize',()=>{drawTL();renderRows();if(PLAN.on)drawCurve()});
 document.addEventListener('keydown',e=>{
   if($('#modalBg').classList.contains('on')){if(e.key==='Escape')closeModal();if(e.key==='Tab'){const f=$$('#modal input,#modal select,#modal button').filter(x=>!x.disabled&&x.offsetParent);if(f.length){const i=f.indexOf(document.activeElement);if(e.shiftKey&&i<=0){e.preventDefault();f[f.length-1].focus()}else if(!e.shiftKey&&i===f.length-1){e.preventDefault();f[0].focus()}}}return}
   if(e.target.matches('input,select,textarea')){if(e.key==='Escape')e.target.blur();return}
   if(!state.source)return;const v=state.view;
-  if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='z'){e.preventDefault();e.shiftKey?redo():undo();return}
+  if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='z'){e.preventDefault();if(PLAN.on)e.shiftKey?planStep(PLAN.redo,PLAN.hist):planStep(PLAN.hist,PLAN.redo);else e.shiftKey?redo():undo();return}
   if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='y'){e.preventDefault();redo();return}
   if(e.key===' '&&!e.metaKey&&!e.ctrlKey&&!e.altKey){if(e.target.closest&&e.target.closest('button,[role=button],[tabindex]')&&e.target.matches(':focus-visible')&&!e.target.closest('tr,canvas,.pi'))return;e.preventDefault();togglePlay();return}
   if(PLAN.on){planKey(e);return}

@@ -8,9 +8,11 @@ Läuft komplett lokal im Browser. Es wird nichts hochgeladen – die Seite ist p
 
 ## Was es macht
 
-- **Hot Cue A** auf den ersten Downbeat
-- **Hot Cue G + H** als 32-Beat-Mix-Out-Fenster (8 Takte, einstellbar) vor dem Energieabfall am Ende
-- **Emergency Loop** als Memory Cue: 16, 8 oder 4 Beats – die App nimmt die längste Länge, die nahtlos loopt
+- **Cues sind optional:** erst analysieren, dann pro Playlist oder Track bewusst einschalten
+- **Hot Cue A** auf dem ersten Downbeat, an dem der Kick durchgehend einsetzt, auf der Phrase
+- **Hot Cue G + H** als 32-Beat-Mix-Out-Fenster: H am echten Energieabfall (Outro, Breakdown oder Trackende), nie mitten in Break oder Fill
+- **Emergency Loop** als Memory Loop hinter H: 16, 8 oder 4 Beats, die längste Länge, die nahtlos läuft. Auf dem Stick als **Active Loop** schaltbar
+- **Set-Planer:** Reihenfolge nach Key (Camelot), Tempo und Energiekurve, mit Score und Begründung pro Übergang, Export als rekordbox-Playlist oder Serato-Crate
 - **Energie 1–5** als Rating (Tempo, Dichte, Drive, Bass, Höhen – unabhängig von der Master-Lautstärke), per Klick überschreibbar
 - **Lautstärke (LUFS) & Gain-Empfehlung** relativ zur Playlist, Hinweise zu niedriger Bitrate und Übersteuerung
 - **Mehrfach-Sortierung** nach Key (Camelot), BPM, Energie u. a. gleichzeitig
@@ -20,27 +22,30 @@ Läuft komplett lokal im Browser. Es wird nichts hochgeladen – die Seite ist p
 ## Zwei Wege rein
 
 1. **rekordbox XML (empfohlen):** rekordbox → *Datei → Collection im xml-Format exportieren*, XML laden, Musikordner verbinden.
-2. **USB-Stick:** den ganzen rekordbox-Stick (mit `PIONEER`-Ordner) wählen – Playlists, Beatgrids und Musik kommen in einem Schritt. Achtung: Ein XML-Export aus dieser Quelle zeigt auf die Dateien auf dem Stick; liegen die Tracks in deiner Library woanders, legt rekordbox sie doppelt an.
+2. **USB-Stick:** Stick, `PIONEER` oder `Contents` wählen (Chrome/Edge ohne „Hochladen“-Frage). Für den Rückweg nach rekordbox einmal die Collection-XML dazuladen: Die App ordnet jeden Track deiner Library zu, nur diese Pfade kommen in die Datei. So entstehen keine Duplikate.
 
 ## Sicherheitsnetz
 
-- Vor dem Download zeigt eine **Vorschau** jede Änderung (neu / ersetzt / bleibt).
+- Vor dem Speichern zeigt eine **Vorschau** jede Änderung (neu / ersetzt / bleibt). Danach überschreibt die App immer **dieselbe XML-Datei** (Chrome/Edge).
+- Jeder Pfad muss in der geladenen Collection stehen, und alle deine vorhandenen Cues müssen in der Datei sein – sonst bricht der Export ab.
 - Jede Cue wird **geprüft** (im Track, A ≤ F < G, Loop mit Länge), die fertige XML wird noch einmal **selbst eingelesen und kontrolliert**.
 - Tracks mit **unsicherer Erkennung** werden erst nach deiner Bestätigung (`C`) verändert.
 - Tracks mit **Fehlern** (Datei fehlt, nicht lesbar, kein Beatgrid, zu lang) werden nie verändert.
-- Vorhandene Hot Cues bleiben standardmäßig erhalten. Rückgängig mit `⌘Z`.
+- Vorhandene Hot Cues bleiben standardmäßig erhalten. Rückgängig mit `⌘Z`, Wiederholen mit `⇧⌘Z`.
 
 **Trotzdem: vor jedem Import ein Backup der rekordbox-Library machen** und beim ersten Mal mit 2–3 Tracks testen.
 
 ## Hinweise
 
-- Empfohlen: Chrome oder Edge am Desktop. Safari geht, Mobile nicht.
+- Empfohlen: Chrome oder Edge am Desktop. Safari und Firefox gehen mit Einschränkungen (Datei von Hand ersetzen), am Handy lassen sich XML und einzelne Dateien laden.
 - Die Energie-Bewertung ist eine Heuristik. Im Zweifel zählt dein Ohr – eigener Wert per Klick.
+- **MP3-Versatz:** rekordbox zählt das Encoder-Delay mit, der Browser schneidet es ab (25 oder 51 ms). Die App misst den Versatz pro Track und rechnet ihn bei Analyse und Wiedergabe ein. Geschriebene Cues stehen immer in rekordbox-Zeit.
+- **Active Loops:** Das rekordbox-XML hat dafür kein Feld. Auf dem Stick setzt die App die Markierung in den ANLZ-Dateien (mit Sicherung und Rücklesen), in der Sammlung schaltest du sie selbst.
 - Serato-Cues: aktuell nur MP3. Vorhandene Serato-Cues bleiben erhalten (außer „überschreiben“ ist an). Bei MP3s kann es zwischen rekordbox und Serato einen minimalen Zeitversatz geben – beim ersten Mal einen Cue in Serato gegenprüfen.
 
 ## Entwicklung
 
-`index.html` ist gebaut aus `src/src.html` (`python3 src/build.py index.html`): bettet die Schrift ein und setzt den CSP-Hash des Skripts.
+`index.html` ist gebaut aus `src/src.html` (`python3 src/build.py`): bettet die Schrift ein und setzt den CSP-Hash des Skripts.
 Schrift: Space Grotesk (SIL Open Font License).
 
 Made by JAILR.

@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-04v2AKcVwEfvHPMJiAgN95JWlRd5gdT0+oOBlzrdUYg='; style-src 'unsafe-inline'; font-src data:; img-src 'self' data: blob:; media-src blob:; connect-src 'none'; worker-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-G1ZbD4BGgypNGO55t63P2ostTZTFv0EY/FHRm4L5UAw='; style-src 'unsafe-inline'; font-src data:; img-src 'self' data: blob:; media-src blob:; connect-src 'none'; worker-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="referrer" content="no-referrer">
 <title>JAILR Prep – Cue & Energy Lab</title>
@@ -1688,13 +1688,13 @@ function setCost(ids,cx,total){ // lower is better
     if(i){const a=state.tracks.get(ids[i-1]),w=curveAt(mid)-curveAt(Math.max(0,mid-L/total)),x=trans(a,t,cx,w);c+=Math.pow((100-x.s)/30,2)+(x.k.clash?1.6:0)+(x.p.jump?1.2:0);
       for(let j=Math.max(0,i-3);j<i-1;j++)if(t.artist&&state.tracks.get(ids[j]).artist===t.artist)c+=0.15}}
   return c}
-function buildSet(){
+function buildSet(adj,tries=0){adj=typeof adj==='number'?adj:0;
   const pool=poolIds(),cx=planCtx(),R=rngOf(PLAN.seed);if(pool.length<2&&PLAN.ids.length<2){toast('Wähle oben mindestens eine Playlist mit Tracks.',1);return}
   const total0=PLAN.min*60,lockAt=new Map();PLAN.ids.forEach((id,i)=>{if(PLAN.lock.has(id))lockAt.set(i,id)});
   const intro=state.tracks.has(PLAN.intro)?PLAN.intro:null,outro=state.tracks.has(PLAN.outro)&&PLAN.outro!==intro?PLAN.outro:null;if(intro)lockAt.set(0,intro);
   const avail=[...new Set([...pool,...lockAt.values(),...(outro?[outro]:[])])],avg=avail.reduce((x,id)=>x+playLen(state.tracks.get(id)),0)/avail.length;
   const total=PLAN.all?avail.reduce((x,id)=>x+playLen(state.tracks.get(id)),0):total0;
-  let K=PLAN.all?avail.length:Math.min(avail.length,Math.max(2,Math.round(total/avg)));for(const i of lockAt.keys())K=Math.max(K,i+1);if(outro)K=Math.max(K,2);K=Math.min(K,avail.length);
+  let K=PLAN.all?avail.length:Math.min(avail.length,Math.max(2,Math.round(total/avg)+(adj||0)));for(const i of lockAt.keys())K=Math.max(K,i+1);if(outro)K=Math.max(K,2);K=Math.min(K,avail.length);
   if(outro){for(const[i,id]of[...lockAt])if(id===outro)lockAt.delete(i);lockAt.set(K-1,outro)}
   const fixed=new Set(lockAt.values()),noise=new Map(avail.map(id=>[id,PLAN.seed===1?0:R()*0.55]));
   const free=avail.filter(id=>!fixed.has(id));
@@ -1713,6 +1713,7 @@ function buildSet(){
     for(let i=0;i<ids.length&&performance.now()-t0<1200;i++){if(lk.has(i))continue;
       for(let j=i+1;j<ids.length;j++){if(lk.has(j))continue;const n=[...ids];[n[i],n[j]]=[n[j],n[i]];const c=setCost(n,cx,total);if(c<cost-1e-6){ids=n;cost=c;better=true}}
       if(!PLAN.all){const us=new Set(ids);for(const id of free){if(us.has(id))continue;const n=[...ids];n[i]=id;const c=setCost(n,cx,total)+(noise.get(id)||0)-(noise.get(ids[i])||0);if(c<cost-1e-6){us.delete(ids[i]);us.add(id);ids=n;cost=c;better=true}}}}}
+  {const tot=ids.reduce((x,id)=>x+playLen(state.tracks.get(id)),0);if(!PLAN.all&&tries<3&&K>2){if(tot-total>avg*0.55&&K>lockAt.size+0&&K>2)return buildSet(adj-1,tries+1);if(total-tot>avg*0.55&&K<avail.length)return buildSet(adj+1,tries+1)}}
   planDo(()=>{PLAN.ids=ids;PLAN.lock=new Set([...PLAN.lock].filter(id=>ids.includes(id)));PLAN.sel=null});
 }
 /* ---- plan state: undo, storage ---- */

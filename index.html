@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-RSk7xXNwjulp6Dc8g489jkzAiWqoQkTcM7s+4mXYvwo='; style-src 'unsafe-inline'; font-src data:; img-src 'self' data: blob:; media-src blob:; connect-src 'none'; worker-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-6tnpjZt9GM5J9wWm8v/CErvjIVmhCQaxeKJZVnWpOG4='; style-src 'unsafe-inline'; font-src data:; img-src 'self' data: blob:; media-src blob:; connect-src 'none'; worker-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="referrer" content="no-referrer">
 <title>JAILR Prep – Cue & Energy Lab</title>
@@ -2210,7 +2210,7 @@ function openModal(kind,ctx){
     <div class="note warn" id="scueWarn" hidden>Originaldateien werden verändert (nur der Serato-Tag, der Ton bleibt identisch). Vorher ein Backup des Sticks machen. rekordbox und CDJs spielen die Dateien weiter normal.</div>
     </div><div class="foot"><button class="btn ghost" data-close>Abbrechen</button><button class="btn primary" data-act="doSerato" id="sGo">ZIP herunterladen</button></div>`;
   }
-  m.innerHTML=h;m.onchange=null;m.oninput=null;m.classList.remove('wide');$('#modalBg').classList.add('on');m.scrollTop=0;
+  m.innerHTML=h;m.onchange=null;m.oninput=null;m.onclick=null;m.classList.remove('wide');$('#modalBg').classList.add('on');m.scrollTop=0;
   if(kind==='settings'){const on=(id,fn)=>$('#'+id).addEventListener('change',e=>{fn(e.target);saveS();relCache=null;renderMain();renderBar();renderDetail()});
     on('sMix',e=>S.mixBars=+e.value);on('sLoop',e=>S.loopMax=+e.value);on('sSens',e=>S.sens=+e.value);on('sTgt',e=>S.mixTarget=e.value);on('sDrop',e=>S.playOnDrop=e.checked);on('sMode',e=>S.energyMode=e.value);on('sConf',e=>S.requireConfirm=e.checked);
     on('sOver',e=>S.overwrite=e.checked);on('sRate',e=>S.writeRating=e.checked);on('sCom',e=>S.writeComment=e.checked);on('sMax',e=>S.maxMin=+e.value)}
@@ -2218,7 +2218,7 @@ function openModal(kind,ctx){
   }else{m.onclick=null}
   if(kind==='serato')m.onchange=(e=>{if(e.target.name==='scue'){$('#scueWarn').hidden=e.target.value!=='inplace';$('#sGo').textContent=e.target.value==='none'?'ZIP herunterladen':'Stick wählen & schreiben'}});
   if(kind==='xml'){renderXmlDiff();m.onchange=e=>{if(e.target.id==='xForce'){state.forceStick=e.target.checked;$('#xForceBox').hidden=!state.forceStick}if(e.target.name==='xmode'){$('#xOverNote').hidden=e.target.value!=='over';$('#xScope').hidden=e.target.value==='over'||state.view.length===listIds().length}if(['xmode','xscope'].includes(e.target.name)||['xRoot','xForce'].includes(e.target.id))renderXmlDiff()};m.oninput=e=>{if(e.target.id==='xName'){$('input[name=xmode][value=new]').checked=true;$('#xOverNote').hidden=true;$('#xScope').hidden=state.view.length===listIds().length}}}
-  m.onclick=null;if(kind==='settings')m.onclick=e=>{const b=e.target.closest('[data-bk]');if(!b)return;if(b.dataset.bk==='save')backupSave();else{const f=$('#inBk');f.onchange=()=>{if(f.files[0])backupLoad(f.files[0])};f.click()}};
+  if(kind==='settings')m.onclick=e=>{const b=e.target.closest('[data-bk]');if(!b)return;if(b.dataset.bk==='save')backupSave();else{const f=$('#inBk');f.onchange=()=>{if(f.files[0])backupLoad(f.files[0])};f.click()}};
   if(kind==='account')m.onclick=e=>{const b=e.target.closest('[data-acc]');if(b)accAct(b.dataset.acc,b)};
   if(kind==='accmerge')m.onclick=e=>{const b=e.target.closest('[data-mg]');if(!b)return;const r=b.dataset.mg;ctx.done=1;closeModal();ctx.res(r==='x'?null:r==='dev')};
   if(kind==='needdir')m.onclick=e=>{const a=e.target.closest('[data-act=pickMore]');if(a){closeModal();pickDir(ctx.h)}};

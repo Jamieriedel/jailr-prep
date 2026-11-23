@@ -10,7 +10,9 @@ Läuft komplett lokal im Browser. Es wird nichts hochgeladen – die Seite ist p
 
 - **Cues sind optional:** erst analysieren, dann pro Playlist oder Track bewusst einschalten
 - **Hot Cue A** auf dem ersten Downbeat, an dem der Kick durchgehend einsetzt, auf der Phrase
-- **Hot Cue G + H** als 32-Beat-Mix-Out-Fenster: H am echten Energieabfall (Outro, Breakdown oder Trackende), nie mitten in Break oder Fill
+- **Hot Cue B** (Bass Swap): spätestens hier im Track sein, am ersten vollen Abschnitt nach A
+- **Hot Cue D + F**: erste Transition, genau 16 Takte voller Groove bis zu einem Abschnittsende
+- **Hot Cue G + H** (zweite Transition) als 32-Beat-Mix-Out-Fenster: H am echten Energieabfall (Outro, Breakdown oder Trackende), nie mitten in Break oder Fill
 - **Emergency Loop** als Memory Loop hinter H: 16, 8 oder 4 Beats, die längste Länge, die nahtlos läuft. Auf dem Stick als **Active Loop** schaltbar
 - **Set-Planer:** Reihenfolge nach Key (Camelot), Tempo und Energiekurve, mit Score und Begründung pro Übergang, Export als rekordbox-Playlist oder Serato-Crate
 - **Energie 1–5** als Rating (Tempo, Dichte, Drive, Bass, Höhen – unabhängig von der Master-Lautstärke), per Klick überschreibbar

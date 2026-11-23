@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-BR0Ai1GY01FlgJpLAvEvgmlcFkSnVvePTtdqLdUgFiM='; style-src 'unsafe-inline'; font-src data:; img-src 'self' data: blob:; media-src blob:; connect-src 'none'; worker-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-/GMPTpN9SKfFJfIZ0wZaKwaSMzoy0p6umNWyZuI/El8='; style-src 'unsafe-inline'; font-src data:; img-src 'self' data: blob:; media-src blob:; connect-src 'none'; worker-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="referrer" content="no-referrer">
 <title>JAILR Prep – Cue & Energy Lab</title>
@@ -12,7 +12,7 @@
 :root{
   --night:#11100F;--surface:#171614;--raised:#1F1D1B;--hover:#262421;--line:#2A2825;--line2:#3A3732;
   --bone:#F4F0E8;--smoke:#ABA499;--dim:#736D63;
-  --cA:#2FD44E;--cF:#FF9A1F;--cG:#F0443A;--cL:#3D9BFF;
+  --cA:#2FD44E;--cF:#FF9A1F;--cG:#F0443A;--cB:#B07CFF;--cD:#50DCCD;--cX:#1EA0BE;--cL:#3D9BFF;
   --ok:#4CD07D;--warn:#FFB224;--err:#F0443A;
   --r1:8px;--r2:12px;--r3:18px;
   --bg:var(--night);--bg2:var(--surface);--bg3:var(--raised);--bg4:var(--hover);--fg:var(--bone);--fg2:var(--smoke);--fg3:var(--dim);
@@ -132,7 +132,7 @@ td.r,th.r{text-align:right}
 .cues{display:inline-flex;gap:3px}
 .cb{width:19px;height:19px;border-radius:5px;display:inline-grid;place-items:center;font-size:10px;font-weight:700;background:var(--raised);color:var(--dim);border:1px solid var(--line)}
 .cb.L{width:auto;padding:0 5px}.cb.on{color:#111;border-color:transparent}
-.cb.A.on{background:var(--cA)}.cb.F.on{background:var(--cF)}.cb.G.on{background:var(--cG)}.cb.L.on{background:var(--cL)}
+.cb.A.on{background:var(--cA)}.cb.B.on{background:var(--cB)}.cb.D.on{background:var(--cD)}.cb.X.on{background:var(--cX)}.cb.none{opacity:.35}.cb.F.on{background:var(--cF)}.cb.G.on{background:var(--cG)}.cb.L.on{background:var(--cL)}
 .cb.kept{background:transparent;border:1px solid var(--dim);color:var(--smoke)}
 .st{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--dim);padding:3px 9px;border-radius:99px;background:var(--raised)}
 .st.ok{color:var(--ok);background:rgba(76,208,125,.09)}.st.warn{color:var(--warn);background:rgba(255,178,36,.09)}.st.err{color:var(--err);background:rgba(240,68,58,.09)}
@@ -496,12 +496,14 @@ function download(name,data,type){const b=data instanceof Blob?data:new Blob([da
 const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
 const safeName=s=>String(s).replace(/[\/\\:*?"<>|%\x00-\x1f]/g,'-').replace(/^\.+/,'').slice(0,120)||'Playlist';
 
-const ALG_V=13;const APP_V='3.1';
+const ALG_V=13;const APP_V='3.2';
 const RATING_VAL=[0,51,102,153,204,255];
 const ENERGY_T=[48,56,63,70];
 const DEFAULTS={mixBars:8,mixV:2,loopMax:16,loopBars:8,sens:3,overwrite:false,energyMode:'abs',writeRating:true,writeComment:true,phrase:8,requireConfirm:true,maxMin:20,mixTarget:'outro',playOnDrop:true};
-const CUE={A:{num:0,name:'Start',rgb:[40,226,20],col:'#28E214'},F:{num:6,name:'Mix-Out Start',rgb:[255,154,31],col:'#FF9A1F'},G:{num:7,name:'Mix-Out Ende',rgb:[240,68,58],col:'#F0443A'},L:{name:'Emergency Loop',col:'#3D9BFF'}};
-const LBL={A:'A',F:'G',G:'H',L:'Loop'};const KEY2CUE={A:'A',G:'F',H:'G',L:'L'};
+const CUE={A:{num:0,name:'Start',rgb:[40,226,20],col:'#28E214'},B:{num:1,name:'Bass Swap',rgb:[176,124,255],col:'#B07CFF'},D:{num:3,name:'Transition 1 Start',rgb:[80,220,205],col:'#50DCCD'},X:{num:5,name:'Transition 1 Ende',rgb:[30,160,190],col:'#1EA0BE'},F:{num:6,name:'Mix-Out Start',rgb:[255,154,31],col:'#FF9A1F'},G:{num:7,name:'Mix-Out Ende',rgb:[240,68,58],col:'#F0443A'},L:{name:'Emergency Loop',col:'#3D9BFF'}};
+const LBL={A:'A',B:'B',D:'D',X:'F',F:'G',G:'H',L:'Loop'};const KEY2CUE={A:'A',B:'B',D:'D',F:'X',G:'F',H:'G',L:'L'};
+const HOT=['A','B','D','X','F','G'],MK=[...HOT,'L'],T1=16; // hot cues in slot order; first transition is always 16 bars
+const PAIR={D:'X',X:'D',F:'G',G:'F'};
 const ERR={nofile:'Audiodatei nicht gefunden',decode:'Datei nicht lesbar',nogrid:'Kein Beatgrid',grid:'Beatgrid unbrauchbar',toolong:'Zu lang',mem:'Zu wenig Speicher',other:'Analyse fehlgeschlagen'};
 const FIX={nofile:'Musikordner bzw. Stick (neu) verbinden. Liegt die Datei woanders, den passenden Ordner wählen.',decode:'Format oder Datei defekt. In rekordbox abspielen; falls ok, als MP3 320 / WAV neu exportieren.',nogrid:'Track in rekordbox analysieren (Beatgrid), Library neu exportieren.',grid:'Beatgrid in rekordbox prüfen/korrigieren und neu exportieren.',toolong:`Vermutlich ein DJ-Mix. Wird bewusst übersprungen (Limit in den Einstellungen).`,mem:'Browser-Tab neu laden und weniger Tracks auf einmal analysieren.',other:'„Erneut versuchen“. Bleibt der Fehler, Track in rekordbox prüfen.'};
 class AErr extends Error{constructor(code,msg){super(msg||ERR[code]);this.code=code}}
@@ -1049,6 +1051,30 @@ function findH(a,st,bA){
     if(c.type!=='end')c.score-=0.5*Math.max(0,mainR-c.before-1.2);if(c.type==='outro'&&v>=2.4*thr/0.8&&c.left<=40)c.score=Math.max(c.score,1.5);c.score+=0.35*c.al+(c.type!=='break'&&c.left>=8&&c.left<=40?0.25:0)}
   cands.sort((x,y)=>y.score-x.score);
   return{cands,tail,thr}}
+/* B: latest point to be fully in – the bass swap. First full section after A (low end and kick running), on a phrase, before the first break. */
+function findB(a,st,bA,lim){
+  const{nb,bnd,seg,sco,full,medProf}=st,avg=p=>{let x=0;for(let j=0;j<p.length;j++)x+=p[j];return x/p.length},rich=(x,y)=>{const p=medProf(x,y);return p?avg(p):-24};
+  let brk=nb;for(let b=bA+4;b<nb-2;b++){let n=0;for(let i=0;i<4&&b+i<nb;i++)n+=!full(b+i);if(n>=3){brk=b;break}}
+  const end=Math.min(lim,bA+64),cands=[],opts=new Set([...bnd,bA+8,bA+16,bA+24,bA+32]);
+  for(const b of opts){const d=b-bA;if(d<8||b>end||b+8>nb)continue;
+    let f=0;const lo=[];for(let i=b;i<b+8;i++){f+=full(i);lo.push(a.low[i])}if(f<6||!full(b)||med(lo)<st.ref.low-3)continue; // there must be bass to swap to
+    const after=b>=brk;if(after&&brk-bA>=16)continue; // long enough groove before the break: be in before it
+    const rise=clamp((rich(b,b+8)-rich(b-8,b))/6),main=seg.some(x=>x.s===b&&x.t==='main'),isB=bnd.includes(b);
+    let sc=rise+0.5*Math.min(1.5,sco[b]||0)+({8:0.35,16:0.9,24:0.6,32:0.8,40:0.3,48:0.1,56:-0.8,64:-1.2}[d]||0)+(main&&rise>0.15?0.5:0)+(isB?0.3:0);
+    if(d%8)sc-=0.6;if(!after&&brk-b<8)sc-=0.7;cands.push({b,score:sc,rise})}
+  cands.sort((x,y)=>y.score-x.score);return cands}
+/* D/F: first transition, 16 bars. F is a section end in the body of the track, D → F an unbroken full groove; late enough that the track was really played, early enough to leave room for G/H. */
+function findT1(a,st,bB,bA,bF){
+  const{nb,bnd,seg,sco,full,kb,medProf,medK}=st,avg=p=>{let x=0;for(let j=0;j<p.length;j++)x+=p[j];return x/p.length},rich=(x,y)=>{const p=medProf(x,y);return p?avg(p):-24};
+  const mainR=pct(seg.filter(x=>x.k>0.6&&x.e-x.s>=4).map(x=>avg(x.p)),0.6),from=bB??bA+8,cands=[],span=Math.max(1,bF-bA);
+  for(const b of bnd){const d=b-T1;if(d<from||b>bF-8||b>=nb-4)continue;
+    let bad=0,hole=0;const lo=[],lv=[];for(let i=d;i<b;i++){if(!full(i)&&i<b-1)bad++;if(i<b-1&&(a.low[i]<st.ref.low-6||a.rms[i]<st.ref.rms-5))hole++;lo.push(a.low[i]);lv.push(a.rms[i])}
+    if(!full(d)||!full(d+1)||bad>2||hole>1||med(lo)<st.ref.low-3||med(lv)<st.ref.rms-3)continue;
+    const before=rich(b-8,b),dk=before-rich(b,Math.min(nb,b+8)),kL=medK(b-8,b)-medK(b,Math.min(nb,b+4)),p=(b-bA)/span,dB=bnd.includes(d);
+    const pos=1.3*Math.exp(-Math.pow((p-0.6)/0.22,2));
+    let sc=pos+(kL>0.5?0.9:0)+0.18*clamp(dk,0,5)+0.35*Math.min(1.5,sco[b]||0)+(dB?0.45:0)-0.25*Math.max(0,mainR-before-1.2)-0.2*bad;
+    if((b-bA)%8)sc-=0.3;if(d<from+8)sc-=0.5;if(vocalIn(a,st,d))sc-=0.35;cands.push({b,score:sc,dk,kL,bad,p})}
+  cands.sort((x,y)=>y.score-x.score);return cands}
 function computeCues(t){
   const a=t.analysis;if(!a)return null;const sig=JSON.stringify([S.mixBars,S.loopMax,S.sens,S.phrase,S.mixTarget,t.manual]);const cc=cueCache.get(t);if(cc&&cc.sig===sig&&cc.a===a)return cc.c;
   const nb=a.rms.length,flags=[],info=[];let conf=2;const low=c=>{conf=Math.min(conf,c)};
@@ -1079,10 +1105,13 @@ function computeCues(t){
   let bL,LBt,lErr;{const r=pickLoop(a,st,Math.max(bA,bG-8),fh.tail,bG);
     if(r.err<99&&r.bar<bG)info.push(hT==='end'?'Kein Outro: der Loop liegt auf den letzten Takten vor H':'Hinter H gibt es keinen sauberen Loop, er liegt davor – als Active Loop rastet er vor dem Mix-Ende ein');bL=r.bar;LBt=r.len;lErr=r.err;
     if(r.err>LOOP_T){info.push(r.err>=99?'Kein sauberer Loop gefunden – bitte anhören':`Loop nicht ganz sauber (Abweichung ${r.err.toFixed(1)} dB) – bitte anhören`);low(r.err>LOOP_T+1.2?0:1);if(r.err>LOOP_T+1.2)flags.push('Emergency Loop unsicher')}}
-  const m0=t.manual||{},dPh=((m0.ph||0)-(a.phase||0))/4,m=dPh?{...m0,...Object.fromEntries(['A','F','G','L'].filter(k=>m0[k]!=null).map(k=>[k,Math.max(0,m0[k]+dPh)]))}:m0,fG=m.G??bG;
+  const cB=findB(a,st,bA,Math.min(bF-8,nb-8)),bB=cB.length?cB[0].b:null;if(bB==null)info.push('Keine klare Stelle für den Bass Swap (B) gefunden');
+  const cD=findT1(a,st,bB,bA,bF),bX=cD.length&&cD[0].score>=0.7?cD[0].b:null;if(bX==null)info.push('Keine gute erste Transition (D/F) gefunden, der Track bietet keine 16 Takte am Stück');else if(cD[0].kL<=0.5&&cD[0].dk<0.8){info.push('Erste Transition (D/F) ohne klaren Energieabfall – kurz anhören');low(1)}
+  const m0=t.manual||{},dPh=((m0.ph||0)-(a.phase||0))/4,m=dPh?{...m0,...Object.fromEntries(MK.filter(k=>m0[k]!=null).map(k=>[k,Math.max(0,m0[k]+dPh)]))}:m0,fG=m.G??bG;
   if(m.L!=null){const r=loopAt(a,st,m.L,m.LB);LBt=r.len;lErr=r.err}else if(m.LB){LBt=m.LB;lErr=loopErr(a,st,bL,m.LB).err}
   const c={p0:bA,phase,flags,info,drop,LB:LBt,lErr,conf:['low','mid','high'][conf],auto:{A:bA,F:bF,G:bG,L:bL},A:m.A??bA,F:m.F??(m.G!=null?Math.max(m.A??bA,fG-S.mixBars):bF),G:fG,L:m.L??bL,
-    manual:['A','F','G','L','LB'].some(k=>m[k]!=null),ok:!!m.ok,hType:hT,seg:st.seg,bnd:st.bnd,hCands:fh.cands.slice(0,6).map(x=>({b:x.b,type:x.type,d:r1(x.type==='break'?x.dk:x.d),score:Math.round(x.score*100)/100}))};
+    B:m.B??bB,D:m.D??(m.X!=null?Math.max(0,m.X-T1):bX!=null?bX-T1:null),X:m.X??(m.D!=null?m.D+T1:bX),bCands:cB.slice(0,3),dCands:cD.slice(0,4),
+    manual:[...MK,'LB'].some(k=>m[k]!=null),ok:!!m.ok,hType:hT,seg:st.seg,bnd:st.bnd,hCands:fh.cands.slice(0,6).map(x=>({b:x.b,type:x.type,d:r1(x.type==='break'?x.dk:x.d),score:Math.round(x.score*100)/100}))};
   cueCache.set(t,{sig,a,c});return c;
 }
 function vocalIn(a,st,b){ // something new and tonal enters in the mid band on this bar that was not there in the 4 bars before
@@ -1129,17 +1158,19 @@ function fixedTempos(t){ // corrected TEMPO entries for the export
   const a=t.analysis,g=a.grid,ph=a.phase||0,bar=b=>((b-1-ph+8)%4)+1;
   if(Math.abs(g.drift)<DRIFT_T)return t.tempos.map(x=>{let tt=x.t+gridErr(t,x.t);if(tt<0){tt+=60/x.bpm;return{t:tt,bpm:x.bpm,beat:bar(x.beat%4+1)}}return{t:tt,bpm:x.bpm,beat:bar(x.beat)}});
   const B=gridBeats(t,a.dur),out=[];for(let i=0;i<B.length;i+=32){const j=Math.min(B.length-1,i+32);if(j-i<8)break;const t0=B[i][0]+gridErr(t,B[i][0]),t1=B[j][0]+gridErr(t,B[j][0]);out.push({t:Math.max(0,t0),bpm:60*(j-i)/(t1-t0),beat:bar(B[i][1])})}return out.length?out:t.tempos}
-function cueTimes(t){const c=computeCues(t);if(!c)return null;const a=t.analysis,cap=x=>clamp(gridFix(t,x),0,a.dur-0.05);return{A:cap(barT(a,c.A)),F:cap(barT(a,c.F)),G:cap(barT(a,c.G)),L0:cap(barT(a,c.L)),L1:cap(beatT(a,c.L*4+c.LB)),c}}
+function cueTimes(t){const c=computeCues(t);if(!c)return null;const a=t.analysis,cap=x=>clamp(gridFix(t,x),0,a.dur-0.05);const at=b=>b==null?null:cap(barT(a,b));return{A:at(c.A),B:at(c.B),D:at(c.D),X:at(c.X),F:cap(barT(a,c.F)),G:cap(barT(a,c.G)),L0:cap(barT(a,c.L)),L1:cap(beatT(a,c.L*4+c.LB)),c}}
 function isOurLoop(n){n=n||'';return n.startsWith(CUE.L.name)||n.startsWith('Exit Loop')}
-function slotState(t,k){if(k==='L')return t.marks.some(m=>m.num===-1&&isOurLoop(m.name))?'repl':'set';const ex=t.marks.find(m=>m.num===CUE[k].num);return ex?(S.overwrite?'repl':'kept'):'set'}
-function pairBlocked(t,ct){ // F/G only make sense together and after A
-  if(slotState(t,'F')==='kept'||slotState(t,'G')==='kept')return'G oder H ist schon mit deinem eigenen Cue belegt';
-  if(slotState(t,'A')==='kept'){const a=t.marks.find(m=>m.num===0);if(a&&ct&&a.start>=ct.F)return'dein Cue A liegt hinter dem Mix-Out-Fenster'}return''}
+function slotState(t,k){if(k!=='L'){const c=t.analysis&&computeCues(t);if(c&&c[k]==null)return t.marks.some(m=>m.num===CUE[k].num)?'kept':'none'}if(k==='L')return t.marks.some(m=>m.num===-1&&isOurLoop(m.name))?'repl':'set';const ex=t.marks.find(m=>m.num===CUE[k].num);return ex?(S.overwrite?'repl':'kept'):'set'}
+const ownAt=(t,k)=>{if(slotState(t,k)!=='kept')return null;const m=t.marks.find(m=>m.num===CUE[k].num);return m?m.start:null};
+function blocked(t,ct,k){ // why a cue is not written although its own slot is free; pairs only make sense together and in order
+  const pk=PAIR[k];if(pk&&(slotState(t,k)==='kept'||slotState(t,pk)==='kept'))return`${LBL[k]<LBL[pk]?LBL[k]+' oder '+LBL[pk]:LBL[pk]+' oder '+LBL[k]} ist schon mit deinem eigenen Cue belegt`;
+  const oa=ownAt(t,'A');if(oa!=null&&ct&&ct[k]!=null&&k!=='A'&&oa>=ct[k==='X'?'D':k==='G'?'F':k]-0.01)return'dein Cue A liegt dahinter';return''}
 function needsConfirm(t){const c=computeCues(t);return!!c&&c.conf==='low'&&!c.ok&&S.requireConfirm}
 function validate(t){
   const a=t.analysis;if(!a)return['nicht analysiert'];const ct=cueTimes(t),d=a.dur,e=[];
   const ok=x=>Number.isFinite(x)&&x>=0&&x<=d;
-  for(const k of['A','F','G'])if(!ok(ct[k]))e.push(`${LBL[k]} liegt außerhalb des Tracks`);
+  for(const k of HOT)if(ct[k]!=null&&!ok(ct[k]))e.push(`${LBL[k]} liegt außerhalb des Tracks`);
+  if(ct.B!=null&&!(ct.A<ct.B))e.push('B liegt nicht nach A');if(ct.D!=null&&ct.X!=null&&!(ct.D<ct.X))e.push('F liegt nicht nach D');if(ct.D!=null&&ct.D<ct.A)e.push('D liegt vor A');
   if(!ok(ct.L0)||!ok(ct.L1))e.push('Emergency Loop endet nach dem Track');
   if(!(ct.L1>ct.L0))e.push('Emergency Loop hat keine Länge');
   if(!(ct.A<=ct.F))e.push('G liegt vor A');if(!(ct.F<ct.G))e.push('H liegt nicht nach G');
@@ -1250,21 +1281,21 @@ function renderBar(){
 function gainCell(t){const g=gainOf(t);if(g==null)return'–';const ab=Math.abs(g);return`<span class="gn ${ab>=3?'bad':ab>=1.5?'mid':''}" title="Gain-Korrektur ggü. Playlist-Schnitt (${state.refLufs} LUFS)">${ab<0.5?'±0':(g>0?'+':'−')+ab.toFixed(1)}</span>`}
 function rowHtml(t,pos){
   const a=t.analysis,s=stars(t),ct=a?computeCues(t):null;
-  const cb=k=>{if(!ct||!con)return`<span class="cb ${k}">${LBL[k]}</span>`;const st=slotState(t,k);return`<span class="cb ${k} ${st==='kept'?'kept':'on'}" title="${k==='L'?'Emergency Loop':CUE[k].name}${st==='kept'?' – vorhandener Cue bleibt':st==='repl'?' – ersetzt vorhandenen':''}">${LBL[k]}</span>`};
+  const cb=k=>{if(!ct||!con)return`<span class="cb ${k}">${LBL[k]}</span>`;const st=slotState(t,k);return`<span class="cb ${k} ${st==='kept'?'kept':st==='none'?'none':'on'}" title="${k==='L'?'Emergency Loop':CUE[k].name}${st==='kept'?' – vorhandener Cue bleibt':st==='none'?' – keine passende Stelle':st==='repl'?' – ersetzt vorhandenen':''}">${LBL[k]}</span>`};
   const cls=['r',state.sel.has(t.id)?'sel':'',state.focus===t.id?'focus':'',PB.id===t.id&&PB.st!=='stop'?'isplay':''].join(' ');const con=cuesOn(t);
   return`<tr data-id="${esc(t.id)}" class="${cls}"><td class="num">${pos}</td><td class="tt" title="${esc(t.path)}"><div class="ttw">${artTag(t,'',t.file)}<div class="ttx"><div class="ti">${esc(t.title)}${hasMeta(t)?'<span class="edt" title="Infos bearbeitet">●</span>':''}</div><div class="ar">${esc(t.artist)||'&nbsp;'}</div></div></div></td>
   <td class="r">${t.bpm?t.bpm.toFixed(1):'–'}</td>
   <td>${t.key?`<span class="kc" style="--h:${(t.key.n-1)*30}">${t.cam}</span><span class="kn">${esc(t.keyName)}</span>`:`<span class="kn">${esc(t.keyRaw)||'–'}</span>`}</td>
   <td>${a?`<span class="meter" data-s="${s}"><i></i><i></i><i></i><i></i><i></i></span>${t.manual&&t.manual.E?'<span class="man" title="manuell gesetzt">●</span>':''}<span class="esc">${a.score}</span>`:'<span class="meter"><i></i><i></i><i></i><i></i><i></i></span>'}</td>
   <td class="r lu">${a?a.lufs.toFixed(1):'–'}</td><td class="r">${gainCell(t)}</td><td class="r lu">${t.kbps?`<span class="kb ${t.kbps<128?'bad':t.kbps<160?'mid':''}">${t.kbps}</span>`:'–'}</td><td class="r du">${fmtT(t.dur)}</td>
-  <td>${a&&!con?`<button class="ctog" data-cue="${esc(t.id)}" title="Vorschlag ansehen und Cues für diesen Track aktivieren">+ Cues</button>`:`<span class="cues" ${a?`data-cue="${esc(t.id)}" role="button" style="cursor:pointer" title="Klick: Cues für diesen Track ausschalten"`:''}>${['A','F','G','L'].map(cb).join('')}</span>`}</td>
+  <td>${a&&!con?`<button class="ctog" data-cue="${esc(t.id)}" title="Vorschlag ansehen und Cues für diesen Track aktivieren">+ Cues</button>`:`<span class="cues" ${a?`data-cue="${esc(t.id)}" role="button" style="cursor:pointer" title="Klick: Cues für diesen Track ausschalten"`:''}>${MK.map(cb).join('')}</span>`}</td>
   <td class="sp">${a?spark(t,con?ct:null):t.pwav?pspark(t):''}</td><td>${statusHtml(t)}</td></tr>`;
 }
 function pspark(t){const v=t.pwav,W=120,H=22,n=v.length;let d='M0 '+H;for(let i=0;i<n;i++)d+=` L${(i/n*W).toFixed(1)} ${(H-1-v[i]/31*(H-3)).toFixed(1)}`;d+=` L${W} ${H}Z`;return`<svg class="spark" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" aria-hidden="true"><title>Vorschau aus rekordbox – noch nicht analysiert</title><path d="${d}" fill="#736D63" opacity=".55"/></svg>`}
 function spark(t,c){
   const a=t.analysis,W=120,H=22,n=a.rms.length;if(n<2)return'';const top=pct(a.rms,0.95),lo=top-24;const x=i=>i/n*W,y=v=>H-1-clamp((v-lo)/24)*(H-3);
   let d='M0 '+H;for(let i=0;i<n;i++)d+=` L${x(i).toFixed(1)} ${y(a.rms[i]).toFixed(1)} L${x(i+1).toFixed(1)} ${y(a.rms[i]).toFixed(1)}`;d+=` L${W} ${H}Z`;
-  return`<svg class="spark" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" aria-hidden="true">${c?`<rect x="${x(c.F)}" y="0" width="${Math.max(1,x(c.G)-x(c.F))}" height="${H}" fill="#FF9A1F" opacity=".16"/><rect x="${x(c.L)}" y="0" width="${Math.max(1,x(c.L+c.LB/4)-x(c.L))}" height="${H}" fill="#3D9BFF" opacity=".28"/>`:''}<path d="${d}" fill="#BDB6AA" opacity=".55"/>${c?`<rect x="${x(c.A)}" y="0" width="1.5" height="${H}" fill="#28E214"/><rect x="${x(c.F)}" y="0" width="1.5" height="${H}" fill="#FF9A1F"/><rect x="${x(c.G)}" y="0" width="1.5" height="${H}" fill="#F0443A"/>`:''}</svg>`;
+  return`<svg class="spark" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" aria-hidden="true">${c?`<rect x="${x(c.F)}" y="0" width="${Math.max(1,x(c.G)-x(c.F))}" height="${H}" fill="#FF9A1F" opacity=".16"/><rect x="${x(c.L)}" y="0" width="${Math.max(1,x(c.L+c.LB/4)-x(c.L))}" height="${H}" fill="#3D9BFF" opacity=".28"/>`:''}<path d="${d}" fill="#BDB6AA" opacity=".55"/>${c?`${['B','D','X'].filter(k=>c[k]!=null).map(k=>`<rect x="${x(c[k])}" y="0" width="1.5" height="${H}" fill="${CUE[k].col}"/>`).join('')}<rect x="${x(c.A)}" y="0" width="1.5" height="${H}" fill="#28E214"/><rect x="${x(c.F)}" y="0" width="1.5" height="${H}" fill="#FF9A1F"/><rect x="${x(c.G)}" y="0" width="1.5" height="${H}" fill="#F0443A"/>`:''}</svg>`;
 }
 const isM=()=>matchMedia('(max-width:760px)').matches;let ROWH=52,HEADH=36;const rowDims=()=>{ROWH=isM()?66:52;HEADH=isM()?0:36};
 const ASSETS={hero:false,usb:false}; // set true once the Higgsfield images are in /assets
@@ -1276,7 +1307,7 @@ function heroDeck(){
     const col=p>=L0&&p<G?'#78B6FF':p>=F&&p<G?'#FFBE78':'#F4F0E8',op=p>=F&&p<G?.95:.42+v*.4;
     svg+=`<rect x="${x}" y="${(mid-hu).toFixed(1)}" width="${(bw-1.2).toFixed(1)}" height="${hu}" rx="1" fill="${col}" opacity="${op.toFixed(2)}"/><rect x="${x}" y="${mid+1}" width="${(bw-1.2).toFixed(1)}" height="${hd}" fill="#ABA499" opacity=".3"/>`});
   const mk=(p,c,l)=>`<g><rect x="${(p*W-1).toFixed(1)}" y="8" width="2" height="${H-8}" fill="${c}"/><rect x="${(p*W-1).toFixed(1)}" y="0" width="${l.length>1?30:16}" height="14" rx="3.5" fill="${c}"/><text x="${(p*W+(l.length>1?3:4)).toFixed(1)}" y="10.5" font-size="9.5" font-weight="700" fill="#11100F">${l}</text></g>`;
-  const pads=[['A','var(--cA)',1],['B','',0],['C','',0],['D','',0],['E','',0],['F','',0],['G','var(--cF)',2],['H','var(--cG)',3]];
+  const pads=[['A','var(--cA)',1],['B','var(--cB)',1],['C','',0],['D','var(--cD)',2],['E','',0],['F','var(--cX)',2],['G','var(--cF)',2],['H','var(--cG)',3]];
   return`<div class="deck" aria-hidden="true">${ASSETS.hero?'<img data-opt class="photo" src="assets/hero-960.webp" alt="">':''}<div class="deck-in">
     <div class="deck-head"><span class="art big"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="2"/></svg></span><div><b>Hermès</b><span>Vermeer</span></div><span class="chip-k">6A</span><span class="chip-b">150 BPM</span></div>
     <div class="padgrid">${pads.map(([l,c,o])=>`<i class="${o?'lit':''}" style="${c?`--c:${c};`:''}--d:${o*0.45}s">${o?l:''}</i>`).join('')}</div>
@@ -1317,7 +1348,7 @@ function renderDetail(){
   const es=stars(t);
   $('#dFacts').innerHTML=`<span><b>${t.bpm?t.bpm.toFixed(1):'–'}</b> BPM</span><span>${t.key?`<span class="kc" style="--h:${(t.key.n-1)*30}">${t.cam}</span>`:'–'} ${esc(t.keyName||'')}</span>`
     +(a?`<span title="Klick auf die Balken = eigene Bewertung">Energie <span class="estars">${[1,2,3,4,5].map(i=>`<button data-e="${i}" class="${i<=es?'on':''}" aria-label="Energie ${i}"></button>`).join('')}</span> <b>${es}</b>${t.manual&&t.manual.E?` <button class="lnk" data-e="0">auto ${autoStars(t)}</button>`:''}</span><span title="So weit am Gain drehen, damit der Track so laut ist wie die Playlist">Gain ${gainCell(t)}</span>`:'');
-  const con=cuesOn(t);$('#dJumps').innerHTML=ct?[['A',ct.A,CUE.A.col],['F',ct.F,CUE.F.col],['G',ct.G,CUE.G.col],['L',ct.L0,CUE.L.col]].map(([k,tm,col])=>`<button class="jb ${TL.sel===k?'sel':''}" style="--c:${col}${con?'':';opacity:.55'}" data-jump="${k}" title="${k==='L'?'Emergency Loop anspielen (loopt)':CUE[k].name+' anspielen'} – Taste ${LBL[k]}, dann ←/→ verschieben">${LBL[k]}<span class="t">${fmtT(tm)}</span></button>`).join(''):'';
+  const con=cuesOn(t);$('#dJumps').innerHTML=ct?MK.map(k=>[k,k==='L'?ct.L0:ct[k],CUE[k].col]).map(([k,tm,col])=>`<button class="jb ${TL.sel===k?'sel':''}" style="--c:${col}${con&&tm!=null?'':';opacity:.55'}" data-jump="${k}" title="${k==='L'?'Emergency Loop anspielen (loopt)':CUE[k].name+' anspielen'} – Taste ${LBL[k]}, dann ←/→ verschieben">${LBL[k]}<span class="t">${tm==null?'–':fmtT(tm)}</span></button>`).join(''):'';
   let acts='';
   if(ct)acts+=`<button class="cuesw ${con?'on':''}" data-act="cues" title="Nur wenn Cues an sind, schreibt der Export A, G, H und Loop"><span class="kn"></span>${con?'Cues an':'Cues aus'}</button>`;
       
@@ -1330,20 +1361,20 @@ function renderDetail(){
   if(a){const c=ct.c;
     foot+=hs.length?`<div class="hl">${hs.map(h=>`<div class="hr"><span class="st warn">${h.l}</span><span class="hw">${esc(h.why)}</span><span class="ha">${h.k==='grid'?`<button class="btn sm" data-act="clickplay">Klick anhören</button><button class="btn sm" data-act="gridOn" title="Schreibt das verschobene Beatgrid mit in die XML. rekordbox übernimmt es beim Import.">Grid korrigieren</button>`:''}${h.k==='conf'||h.k==='cue'?`<button class="btn sm okb" data-act="confirm">Passt so</button>`:`<button class="btn sm ghost" data-ack="${h.k}" title="${esc(h.fix)}">Passt so</button>`}</span></div>`).join('')}</div>`:`<div class="hl"><div class="hr"><span class="st ok">Fertig</span><span class="hw">${gridOn(t)?'Grid-Korrektur geht beim Export mit.':con?'':'Cues sind aus. Vorschlag ansehen und bei Bedarf einschalten.'}</span></div></div>`;
     let more='';const g=a.grid;
-    more+=`<span class="tag">Sicherheit ${{high:'hoch',mid:'mittel',low:'niedrig'}[c.conf]}</span><span class="tag">A ${posTxt(c.A)}, G ${posTxt(c.F)}, H ${posTxt(c.G)}, Loop ${posTxt(c.L)} (${c.LB} Beats)</span><span class="tag">Grid ${g&&g.q>=1.5?`${g.res>0?'+':''}${g.res} ms, Drift ${g.drift} ms`:'nicht messbar'}</span><span class="tag">${a.lufs.toFixed(1)} LUFS, Peak ${a.peak} dBFS</span>${t.kbps?`<span class="tag">${t.kbps} kbps</span>`:''}<span class="tag">Tempo ${a.parts[0]}, Dichte ${a.parts[1]}, Drive ${a.parts[2]}, Bass ${a.parts[3]}, Höhen ${a.parts[4]}</span>`;
-    for(const k of['A','F','G'])if(con&&slotState(t,k)==='kept')more+=`<span>Dein Hot Cue ${LBL[k]} bleibt</span>`;
-    {const pb=con&&pairBlocked(t,ct);if(pb)more+=`<span>G/H werden nicht gesetzt: ${esc(pb)}</span>`}
+    more+=`<span class="tag">Sicherheit ${{high:'hoch',mid:'mittel',low:'niedrig'}[c.conf]}</span><span class="tag">${HOT.filter(k=>c[k]!=null).map(k=>LBL[k]+' '+posTxt(c[k])).join(', ')}, Loop ${posTxt(c.L)} (${c.LB} Beats)</span><span class="tag">Grid ${g&&g.q>=1.5?`${g.res>0?'+':''}${g.res} ms, Drift ${g.drift} ms`:'nicht messbar'}</span><span class="tag">${a.lufs.toFixed(1)} LUFS, Peak ${a.peak} dBFS</span>${t.kbps?`<span class="tag">${t.kbps} kbps</span>`:''}<span class="tag">Tempo ${a.parts[0]}, Dichte ${a.parts[1]}, Drive ${a.parts[2]}, Bass ${a.parts[3]}, Höhen ${a.parts[4]}</span>`;
+    for(const k of HOT)if(con&&slotState(t,k)==='kept')more+=`<span>Dein Hot Cue ${LBL[k]} bleibt</span>`;
+    for(const k of['B','D','F']){const pb=con&&slotState(t,k)==='set'&&blocked(t,ct,k);if(pb)more+=`<span>${k==='B'?'B wird':k==='D'?'D/F werden':'G/H werden'} nicht gesetzt: ${esc(pb)}</span>`}
     for(const f of c.info)more+=`<span>${esc(f)}</span>`;
     foot+=`<details class="dm" ${TL.more?'open':''}><summary>Details</summary><div class="dml">${more}</div></details>`}
   else if(hs.length)foot=`<div class="hl"><div class="hr"><span class="st ${hs[0].k==='open'?'':'err'}">${hs[0].l}</span><span class="hw">${esc(hs[0].why)}</span><span class="hw">${esc(hs[0].fix)}</span></div></div>`;
   $('#dFoot').innerHTML=foot;renderAdj(t,ct);renderPlayer();
 }
-const CNAME={A:'A – Start',F:'G – Mix-Out beginnt',G:'H – Energieabfall',L:'Emergency Loop'};
+const CNAME={A:'A – Start',B:'B – Bass Swap',D:'D – Transition 1 beginnt',X:'F – Transition 1 endet',F:'G – Mix-Out beginnt',G:'H – Energieabfall',L:'Emergency Loop'};
 const HTYPE={outro:'Outro',break:'Breakdown',end:'Trackende'};
 function renderAdj(t,ct){
   const el=$('#dAdj');el.hidden=!ct||TL.editId!==t.id;if(el.hidden){el.innerHTML='';return}
-  const k=TL.sel,c=ct.c,col=CUE[k].col,v=c[k],a=t.analysis;
-  const alt=k==='G'?c.hCands.filter(h=>h.score>-0.3).slice(0,4).sort((x,y)=>x.b-y.b).map(h=>`<button data-set="G:${h.b}" class="${c.G===h.b?'on':''}" title="Energieabfall ${h.d} dB">${HTYPE[h.type]} ${fmtT(barT(a,h.b))}</button>`).join(''):'';
+  if(ct.c[TL.sel]==null)TL.sel='G';const k=TL.sel,c=ct.c,col=CUE[k].col,v=c[k],a=t.analysis;
+  const alt=k==='G'?c.hCands.filter(h=>h.score>-0.3).slice(0,4).sort((x,y)=>x.b-y.b).map(h=>`<button data-set="G:${h.b}" class="${c.G===h.b?'on':''}" title="Energieabfall ${h.d} dB">${HTYPE[h.type]} ${fmtT(barT(a,h.b))}</button>`).join(''):k==='B'?c.bCands.map(h=>`<button data-set="B:${h.b}" class="${c.B===h.b?'on':''}">${fmtT(barT(a,h.b))}</button>`).join(''):k==='D'||k==='X'?[...c.dCands].sort((x,y)=>x.b-y.b).map(h=>`<button data-set="X:${h.b}" class="${c.X===h.b?'on':''}" title="D ${fmtT(barT(a,h.b-T1))}, F ${fmtT(barT(a,h.b))}">${fmtT(barT(a,h.b-T1))}–${fmtT(barT(a,h.b))}</button>`).join(''):'';
   el.innerHTML=`<canvas id="tlz" aria-label="Zoom um den gewählten Marker, ziehen verschiebt in Beats"></canvas>
   <div class="adjrow"><span class="nm" style="--c:${col}"><i></i>${CNAME[k]}<span class="kn">${posTxt(v)}</span></span>
    <span class="grp lbl" data-l="Schieben"><button data-mv="-8" title="8 Takte zurück (Shift ←)">« 8</button><button data-mv="-1" title="1 Takt zurück (←)">‹ Takt</button><button data-mv="-0.25" title="1 Beat zurück (Alt ←)">‹ Beat</button><button data-mv="0.25" title="1 Beat vor (Alt →)">Beat ›</button><button data-mv="1" title="1 Takt vor (→)">Takt ›</button><button data-mv="8" title="8 Takte vor (Shift →)">8 »</button></span>
@@ -1366,6 +1397,7 @@ function drawTL(){
   {let i=0;const sg=cc.seg;while(i<sg.length){let j=i;while(j+1<sg.length&&sg[j+1].t===sg[i].t)j++;const x0=x(barT(a,sg[i].s)),x1=x(barT(a,sg[j].e));c.globalAlpha=.75;c.fillStyle=SC[sg[i].t];c.fillRect(x0+.5,h-3,Math.max(1,x1-x0-1),3);c.globalAlpha=1;if(x1-x0>46){c.fillStyle='#8d867b';c.font=`10.5px ${F}`;c.fillText(SN[sg[i].t],x0+4,h-6)}i=j+1}}
   c.globalAlpha=cuesOn(t)?1:.45;
   c.fillStyle='rgba(255,154,31,.10)';c.fillRect(x(ct.F),TOP,x(ct.G)-x(ct.F),BOT-TOP);
+  if(ct.D!=null){c.fillStyle='rgba(80,220,205,.10)';c.fillRect(x(ct.D),TOP,x(ct.X)-x(ct.D),BOT-TOP)}
   c.fillStyle='rgba(61,155,255,.16)';c.fillRect(x(ct.L0),TOP,x(ct.L1)-x(ct.L0),BOT-TOP);c.globalAlpha=1;
   for(let b=0;b<=n;b++){const rel=b-cc.p0;if(rel%S.phrase)continue;const X=Math.round(x(barT(a,b)));c.fillStyle=rel%32===0?'#34312c':'#1f1d1b';c.fillRect(X,TOP,1,BOT-TOP)}
   for(let b=0;b<n;b++){const x0=x(a.db[b]),bw=Math.max(1,x(a.db[b+1])-x0-0.8),inLoop=a.db[b]>=ct.L0-0.01&&a.db[b]<ct.L1-0.01,inFG=a.db[b]>=ct.F-0.01&&a.db[b]<ct.G-0.01;
@@ -1377,7 +1409,7 @@ function drawTL(){
   const mk=(k,tm,col)=>{const X=Math.round(x(tm));c.fillStyle=col;c.fillRect(X-1,TOP-2,2,BOT-TOP+2);const lw=k==='L'?34:20,lx=Math.min(Math.max(0,X-1),w-lw);
     c.beginPath();c.roundRect?c.roundRect(lx,2,lw,18,5):c.rect(lx,2,lw,18);c.fill();if(TL.sel===k){c.strokeStyle='#F4F0E8';c.lineWidth=1.5;c.beginPath();c.roundRect?c.roundRect(lx-1.5,0.5,lw+3,21,6):c.rect(lx-1.5,0.5,lw+3,21);c.stroke()}
     c.fillStyle='#11100F';c.font=`700 11px ${F}`;c.fillText(LBL[k],lx+(k==='L'?5:6),15)};
-  c.globalAlpha=cuesOn(t)?1:.5;mk('L',ct.L0,CUE.L.col);mk('A',ct.A,CUE.A.col);mk('F',ct.F,CUE.F.col);mk('G',ct.G,CUE.G.col);c.globalAlpha=1;
+  c.globalAlpha=cuesOn(t)?1:.5;mk('L',ct.L0,CUE.L.col);for(const k of HOT)if(ct[k]!=null)mk(k,ct[k],CUE[k].col);c.globalAlpha=1;
   if(TL.hover>=0){c.fillStyle='rgba(244,240,232,.4)';c.fillRect(x(barT(a,TL.hover)),TOP,1,BOT-TOP)}
   if(PB.id===t.id&&PB.src){const X=x(PB.pos());c.fillStyle='#fff';c.fillRect(X-0.75,TOP-2,1.5,BOT-TOP+2);c.beginPath();c.moveTo(X-5,TOP-6);c.lineTo(X+5,TOP-6);c.lineTo(X,TOP);c.fill()}
   drawZoom();
@@ -1386,27 +1418,27 @@ function nearestBar(a,s){return nearestPos(a,s,1)}
 function nearestPos(a,s,step){let best=0,bd=1e9;for(let b=0;b<a.db.length;b++){const d=Math.abs(a.db[b]-s);if(d<bd){bd=d;best=b}}
   if(step<1)for(let q=best*4-4;q<=best*4+4;q++){if(q<0)continue;const d=Math.abs(barT(a,q/4)-s);if(d<bd){bd=d;best=q/4}}return best}
 const posTxt=b=>`Takt ${Math.floor(b)+1}${b%1?'.'+(Math.round((b%1)*4)+1):''}`;
-function markerPatch(t,k,nv){const nb=t.analysis.rms.length;nv=clamp(beatNo(nv),0,k==='L'?nb-1:nb);const p={[k]:nv,ok:true},ph=t.analysis.phase||0;if((t.manual?.ph||0)!==ph){const d=((t.manual?.ph||0)-ph)/4;for(const j of['A','F','G','L'])if(j!==k&&t.manual?.[j]!=null)p[j]=Math.max(0,t.manual[j]+d);p.ph=ph||null}if(k==='G'&&t.manual?.F==null)p.F=null;if(t.manual?.cue==null)p.cue=true;return p}
-function moveMarker(k,delta){const t=state.tracks.get(state.focus);if(!t||!t.analysis)return;const c=computeCues(t),p=markerPatch(t,k,c[k]+delta);if(p[k]===c[k])return;setManual(t,p);previewMarker(t,k)}
-function setMarker(k,v){const t=state.tracks.get(state.focus);if(!t||!t.analysis)return;setManual(t,markerPatch(t,k,v));previewMarker(t,k)}
+function markerPatch(t,k,nv){const nb=t.analysis.rms.length;nv=clamp(beatNo(nv),0,k==='L'?nb-1:nb);const p={[k]:nv,ok:true},ph=t.analysis.phase||0;if((t.manual?.ph||0)!==ph){const d=((t.manual?.ph||0)-ph)/4;for(const j of MK)if(j!==k&&t.manual?.[j]!=null)p[j]=Math.max(0,t.manual[j]+d);p.ph=ph||null}if(t.manual?.cue==null)p.cue=true;return p}
+function moveMarker(k,delta){const t=state.tracks.get(state.focus);if(!t||!t.analysis)return;const c=computeCues(t);if(c[k]==null)return;const p=markerPatch(t,k,c[k]+delta);if(p[k]===c[k])return;setManual(t,p);previewMarker(t,k)}
+function setMarker(k,v){const t=state.tracks.get(state.focus);if(!t||!t.analysis)return;const p=markerPatch(t,k,v);if(k==='X')p.D=null;setManual(t,p);previewMarker(t,k)}
 function previewMarker(t,k){if(!S.playOnDrop||PB.st==='stop'||PB.id!==t.id)return;const ct=cueTimes(t);if(k==='L')play(ct.L0,[ct.L0,ct.L1],t.id);else play(ct[k],null,t.id)} // keeps playing from the new spot
 /* zoom view: ±6 bars around the chosen marker, eighth-of-a-beat resolution from the fingerprint */
 const ZB=6;
-function zGeom(){const cv=$('#tlz'),t=state.tracks.get(state.focus),a=t&&t.analysis;if(!a||!cv)return null;const w=cv.clientWidth,h=cv.clientHeight,c=computeCues(t);const mid=TL.drag&&TL.zc!=null?TL.zc:c[TL.sel];return{cv,w,h,t,a,c,b0:mid-ZB,x:b=>(b-(mid-ZB))/(2*ZB)*w,b:x=>(mid-ZB)+x/w*2*ZB,mid}}
+function zGeom(){const cv=$('#tlz'),t=state.tracks.get(state.focus),a=t&&t.analysis;if(!a||!cv)return null;const w=cv.clientWidth,h=cv.clientHeight,c=computeCues(t);const mid=TL.drag&&TL.zc!=null?TL.zc:c[TL.sel]??c.G;return{cv,w,h,t,a,c,b0:mid-ZB,x:b=>(b-(mid-ZB))/(2*ZB)*w,b:x=>(mid-ZB)+x/w*2*ZB,mid}}
 function drawZoom(){
   const g=zGeom();if(!g||!g.w)return;const{cv,w,h,t,a,c}=g,dpr=window.devicePixelRatio||1;
   if(cv.width!==Math.round(w*dpr)||cv.height!==Math.round(h*dpr)){cv.width=Math.round(w*dpr);cv.height=Math.round(h*dpr)}
   const x=cv.getContext('2d');x.setTransform(dpr,0,0,dpr,0,0);x.clearRect(0,0,w,h);const F='"Space Grotesk",sans-serif',B=bRows(a),nb=a.rms.length,TOP=20,BOT=h-14,mid=TOP+(BOT-TOP)*0.6;
   if(!B)return;const peak=pct(a.rms,0.9);
   const q0=Math.max(0,Math.floor(g.b0*4)),q1=Math.min(nb*4,Math.ceil((g.b0+2*ZB)*4));
-  const L0=c.L,L1=c.L+c.LB/4;x.fillStyle='rgba(61,155,255,.14)';x.fillRect(g.x(L0),TOP,g.x(L1)-g.x(L0),BOT-TOP);x.fillStyle='rgba(255,154,31,.10)';x.fillRect(g.x(c.F),TOP,g.x(c.G)-g.x(c.F),BOT-TOP);
+  const L0=c.L,L1=c.L+c.LB/4;x.fillStyle='rgba(61,155,255,.14)';x.fillRect(g.x(L0),TOP,g.x(L1)-g.x(L0),BOT-TOP);if(c.D!=null){x.fillStyle='rgba(80,220,205,.10)';x.fillRect(g.x(c.D),TOP,g.x(c.X)-g.x(c.D),BOT-TOP)}x.fillStyle='rgba(255,154,31,.10)';x.fillRect(g.x(c.F),TOP,g.x(c.G)-g.x(c.F),BOT-TOP);
   for(let q=q0;q<q1;q++){const X=Math.round(g.x(q/4));x.fillStyle=q%4===0?'#3a3732':'#22201d';x.fillRect(X,TOP,1,BOT-TOP);if(q%4===0){x.fillStyle='#736D63';x.font=`10px ${F}`;x.fillText(String(q/4+1),X+3,h-3)}}
   const cw=g.w/(2*ZB*4*SUB);
   for(let q=q0;q<q1;q++)for(let u=0;u<SUB;u++){const r=B[q],o=u*FD;let lo=-128,hi=-128;for(let j=0;j<8;j++)if(r[o+j]>lo)lo=r[o+j];for(let j=8;j<NBD;j++)if(r[o+j]>hi)hi=r[o+j];
     const top=zTop(a),hu=Math.max(1,clamp((hi-(top.hi-36))/36)*(mid-TOP-2)),hd=Math.max(1,clamp((lo-(top.lo-30))/30)*(BOT-mid-2)),X=g.x(q/4+u/(4*SUB));
     x.fillStyle=a.kk&&a.kk[q]>=50&&u<2?'#F4F0E8':'rgba(244,240,232,.5)';x.fillRect(X,mid-hu,Math.max(1,cw-0.4),hu);x.fillStyle=a.kk&&a.kk[q]>=50&&u<3?'#ABA499':'rgba(171,164,153,.4)';x.fillRect(X,mid+1,Math.max(1,cw-0.4),hd)}
   for(const b of c.bnd)if(b>g.b0&&b<g.b0+2*ZB){x.fillStyle='rgba(47,212,78,.55)';x.fillRect(Math.round(g.x(b))-1,BOT-5,3,5)}
-  const on=cuesOn(t);for(const[k,b,col]of[['L',c.L,CUE.L.col],['A',c.A,CUE.A.col],['F',c.F,CUE.F.col],['G',c.G,CUE.G.col]]){if(b<g.b0-.1||b>g.b0+2*ZB+.1)continue;const X=Math.round(g.x(b));x.globalAlpha=on?1:.45;x.fillStyle=col;x.fillRect(X-1,TOP-2,TL.sel===k?3:2,BOT-TOP+2);const lw=k==='L'?34:20,lx=clamp(X-lw/2,0,w-lw);x.beginPath();x.roundRect?x.roundRect(lx,1,lw,18,5):x.rect(lx,1,lw,18);x.fill();if(TL.sel===k){x.strokeStyle='#F4F0E8';x.lineWidth=1.5;x.stroke()}x.fillStyle='#11100F';x.font=`700 11px ${F}`;x.fillText(LBL[k],lx+(k==='L'?5:6),14);x.globalAlpha=1}
+  const on=cuesOn(t);for(const[k,b,col]of['L',...HOT].filter(k=>c[k]!=null).map(k=>[k,c[k],CUE[k].col])){if(b<g.b0-.1||b>g.b0+2*ZB+.1)continue;const X=Math.round(g.x(b));x.globalAlpha=on?1:.45;x.fillStyle=col;x.fillRect(X-1,TOP-2,TL.sel===k?3:2,BOT-TOP+2);const lw=k==='L'?34:20,lx=clamp(X-lw/2,0,w-lw);x.beginPath();x.roundRect?x.roundRect(lx,1,lw,18,5):x.rect(lx,1,lw,18);x.fill();if(TL.sel===k){x.strokeStyle='#F4F0E8';x.lineWidth=1.5;x.stroke()}x.fillStyle='#11100F';x.font=`700 11px ${F}`;x.fillText(LBL[k],lx+(k==='L'?5:6),14);x.globalAlpha=1}
   if(PB.id===t.id&&PB.src){const s=PB.pos();let b=0;while(b+1<a.db.length&&a.db[b+1]<=s)b++;const f=(s-a.db[b])/((a.db[b+1]??a.db[b]+1.5)-a.db[b]);const X=g.x(b+f);if(X>=0&&X<=w){x.fillStyle='#fff';x.fillRect(X-.75,TOP-2,1.5,BOT-TOP+2)}}
 }
 const zTopC=new WeakMap();function zTop(a){let v=zTopC.get(a);if(v)return v;const B=bRows(a),lo=[],hi=[];for(let q=0;q<B.length;q+=3){let l=-128,h=-128;for(let j=0;j<8;j++)l=Math.max(l,B[q][FD+j]);for(let j=8;j<NBD;j++)h=Math.max(h,B[q][FD+j]);lo.push(l);hi.push(h)}v={lo:pct(lo,0.95),hi:pct(hi,0.95)};zTopC.set(a,v);return v}
@@ -1450,7 +1482,9 @@ function renderPlayer(){
   const mine=on&&PB.id===state.focus;$('#playIco').innerHTML=mine?ICO_STOP:ICO_PLAY;$('#btnPlay').classList.toggle('on',mine);
   for(const tr of $$('[data-id].isplay'))tr.classList.remove('isplay');if(on&&PB.id)for(const tr of $$(`[data-id="${CSS.escape(PB.id)}"]`))tr.classList.add('isplay');
   drawTL()}
-function jump(k,id){const t=state.tracks.get(id||state.focus);if(!t||!t.analysis)return;TL.sel=k;TL.editId=t.id;const ct=cueTimes(t);if(k==='L')play(ct.L0,[ct.L0,ct.L1]);else play(ct[k]);renderDetail()}
+function jump(k,id){const t=state.tracks.get(id||state.focus);if(!t||!t.analysis)return;TL.sel=k;TL.editId=t.id;let ct=cueTimes(t);
+  if(k!=='L'&&ct[k]==null){if(PB.st==='play'&&PB.id===t.id){setManual(t,markerPatch(t,k,nearestBar(t.analysis,PB.pos())));toast(`${LBL[k]} gesetzt`,0,1);return}toast(`Für ${LBL[k]} gibt es keinen Vorschlag. Track abspielen und an der gewünschten Stelle ${LBL[k]} drücken.`);renderDetail();return}
+  if(k==='L')play(ct.L0,[ct.L0,ct.L1]);else play(ct[k]);renderDetail()}
 
 /* ================= batch analysis ================= */
 async function analyzeIds(ids,force){
@@ -1471,7 +1505,7 @@ async function analyzeIds(ids,force){
 }
 
 /* ================= export plan / diff ================= */
-const cuesOn=t=>{const m=t.manual||{};return m.cue!=null?!!m.cue:(!!m.ok||['A','F','G','L'].some(k=>m[k]!=null))}; // cues are opt-in per track; edited or confirmed tracks count as on
+const cuesOn=t=>{const m=t.manual||{};return m.cue!=null?!!m.cue:(!!m.ok||MK.some(k=>m[k]!=null))}; // cues are opt-in per track; edited or confirmed tracks count as on
 function planTrack(t){
   const p={t,changed:false,cues:false,reason:'',cueReason:'',rows:[],ratingOld:Math.round((t.rating||0)/51),ratingNew:null};
   if(state.source==='usb'&&!t.libT&&!state.forceStick){p.reason='nicht in deiner Collection gefunden';p.excluded=true;return p}
@@ -1481,8 +1515,8 @@ function planTrack(t){
   if(!cuesOn(t))p.cueReason='Cues aus';
   else{const v=validate(t);if(v.length)p.cueReason='Prüfung: '+v[0];else if(needsConfirm(t))p.cueReason='unsicher, nicht bestätigt'}
   p.cues=!p.cueReason;p.grid=gridOn(t);p.changed=p.cues||p.grid||S.writeRating||S.writeComment;
-  if(p.cues){const ct=cueTimes(t);p.ct=ct;const pb=pairBlocked(t,ct);p.pairNote=pb;
-    for(const k of['A','F','G']){const st=slotState(t,k),old=t.marks.find(m=>m.num===CUE[k].num);const skip=pb&&k!=='A'&&st!=='kept';p.rows.push({k,act:skip?'übersprungen':st==='set'?'neu':st==='repl'?'ersetzt':'bleibt',old:old?old.start:null,nw:st==='kept'||skip?null:ct[k]})}
+  if(p.cues){const ct=cueTimes(t);p.ct=ct;
+    for(const k of HOT){const st=slotState(t,k),old=t.marks.find(m=>m.num===CUE[k].num),why=st==='kept'||st==='none'?'':blocked(t,ct,k);p.rows.push({k,why,act:st==='kept'?'bleibt':st==='none'?'keine':why?'übersprungen':st==='set'?'neu':'ersetzt',old:old?old.start:null,nw:st==='kept'||st==='none'||why?null:ct[k]})}
     p.rows.push({k:'L',act:slotState(t,'L')==='repl'?'ersetzt':'neu',nw:ct.L0})}
   if(S.writeRating)p.ratingNew=stars(t);return p;
 }
@@ -1490,6 +1524,7 @@ function planTrack(t){
 const TAG_RE=/\s*(?:\[E\d[^\]]*\]|(?:·\s*)?Energie [1-5]\/5(?: · (?:Lautheit ok|Gain [+\-−]\s?\d+(?:[.,]\d+)? dB))?)/g;
 function commentTag(t){const g=gainOf(t),r=g==null?0:Math.round(g);return`Energie ${stars(t)}/5 · ${Math.abs(r)<2?'Lautheit ok':`Gain ${r>0?'+':'−'}${Math.abs(r)} dB`}`}
 function withTag(old,tagTxt){const own=String(old||'').replace(TAG_RE,' ').replace(/\s{2,}/g,' ').replace(/^[\s·]+|[\s·]+$/g,'').trim();return own?own+' · '+tagTxt:tagTxt}
+const replNums=p=>new Set((p.rows||[]).filter(r=>r.k!=='L'&&r.act==='ersetzt').map(r=>CUE[r.k].num)); // only slots that really get a new cue
 function buildTrackEl(doc,t,plan,locOverride){
   let el;
   if(t.el){el=doc.importNode(t.el,true)}
@@ -1501,9 +1536,9 @@ function buildTrackEl(doc,t,plan,locOverride){
   if(gridOn(t)){for(const e of[...el.querySelectorAll('TEMPO')])e.remove();const first=el.querySelector('POSITION_MARK');for(const tm of fixedTempos(t)){const e=doc.createElement('TEMPO');e.setAttribute('Inizio',tm.t.toFixed(3));e.setAttribute('Bpm',tm.bpm.toFixed(2));e.setAttribute('Metro','4/4');e.setAttribute('Battito',String(tm.beat));el.insertBefore(e,first)}}
   if(hasMeta(t)){const map={title:'Name',artist:'Artist',album:'Album',genre:'Genre',keyRaw:'Tonality',comments:'Comments'};for(const[k,attr]of Object.entries(map))if(t.manual.meta[k]!=null)el.setAttribute(attr,t.manual.meta[k])}
   if(plan&&plan.changed){const ct=plan.ct;if(plan.cues){
-    for(const pm of[...el.querySelectorAll('POSITION_MARK')]){const num=+pm.getAttribute('Num'),nm=pm.getAttribute('Name')||'';if((num===-1&&isOurLoop(nm))||(S.overwrite&&[0,6,7].includes(num)))pm.remove()}
+    for(const pm of[...el.querySelectorAll('POSITION_MARK')]){const num=+pm.getAttribute('Num'),nm=pm.getAttribute('Name')||'';if((num===-1&&isOurLoop(nm))||replNums(plan).has(num))pm.remove()}
     const add=attrs=>{const pm=doc.createElement('POSITION_MARK');for(const[k,v]of Object.entries(attrs))pm.setAttribute(k,String(v));el.appendChild(pm)};
-    for(const r of plan.rows)if(r.k!=='L'&&r.act!=='bleibt'&&r.act!=='übersprungen'){const C=CUE[r.k];add({Name:C.name,Type:0,Start:ct[r.k].toFixed(3),Num:C.num,Red:C.rgb[0],Green:C.rgb[1],Blue:C.rgb[2]})}
+    for(const r of plan.rows)if(r.k!=='L'&&(r.act==='neu'||r.act==='ersetzt')){const C=CUE[r.k];add({Name:C.name,Type:0,Start:ct[r.k].toFixed(3),Num:C.num,Red:C.rgb[0],Green:C.rgb[1],Blue:C.rgb[2]})}
     add({Name:`${CUE.L.name} ${ct.c.LB} Beats`,Type:4,Start:ct.L0.toFixed(3),End:ct.L1.toFixed(3),Num:-1})}
     const st=stars(t);if(S.writeRating)el.setAttribute('Rating',String(RATING_VAL[st]));
     if(S.writeComment)el.setAttribute('Comments',withTag(el.getAttribute('Comments'),commentTag(t)))}
@@ -1545,10 +1580,10 @@ function selfCheckXml(xml,cx){ // parse what we produced and verify it before it
     if(locs.has(loc))e.push(`${nm}: Location doppelt`);locs.add(loc);
     if(!state.forceStick&&!state.locSet.has(loc))e.push(`${nm}: Pfad steht nicht in deiner Collection`);
     tr.querySelectorAll('POSITION_MARK').forEach(x=>{const st=+x.getAttribute('Start');if(!(st>=0&&st<=dur+1.5))e.push(`${nm}: Cue außerhalb`);if(x.hasAttribute('End')&&!(+x.getAttribute('End')>st))e.push(`${nm}: Loop ohne Länge`);m[x.getAttribute('Num')+'|'+(x.getAttribute('Name')||'')]=st});
-    for(const o of p.t.marks){if((o.num===-1&&isOurLoop(o.name))||(p.cues&&S.overwrite&&[0,6,7].includes(o.num)))continue; // every existing cue must survive: the import replaces all cues of a track
+    for(const o of p.t.marks){if((o.num===-1&&isOurLoop(o.name))||(p.cues&&replNums(p).has(o.num)))continue; // every existing cue must survive: the import replaces all cues of a track
       if(![...tr.querySelectorAll('POSITION_MARK')].some(x=>+x.getAttribute('Num')===o.num&&Math.abs(+x.getAttribute('Start')-o.start)<0.002&&(+x.getAttribute('Type'))===o.type))e.push(`${nm}: vorhandener Cue fehlt`)}
     const ti=[...tr.querySelectorAll('TEMPO')].map(x=>+x.getAttribute('Inizio'));if(p.t.tempos.length&&!ti.length)e.push(`${nm}: Beatgrid fehlt`);if(ti.some((x,i)=>!(x>=0)||i&&x<=ti[i-1]))e.push(`${nm}: Beatgrid unplausibel`);
-    const g=m['6|Mix-Out Start'],h=m['7|Mix-Out Ende'];if(g!=null&&h!=null&&!(g<h))e.push(`${nm}: Reihenfolge G/H`);
+    const g=m['6|Mix-Out Start'],h=m['7|Mix-Out Ende'];if(g!=null&&h!=null&&!(g<h))e.push(`${nm}: Reihenfolge G/H`);{const d=m['3|Transition 1 Start'],f=m['5|Transition 1 Ende'];if((d==null)!==(f==null)&&p.cues&&p.rows.some(r=>r.k==='D'&&r.nw!=null))e.push(`${nm}: D und F nicht als Paar`);if(d!=null&&f!=null&&!(d<f))e.push(`${nm}: Reihenfolge D/F`)}
     const hot=[...tr.querySelectorAll('POSITION_MARK')].map(x=>+x.getAttribute('Num')).filter(n=>n>=0);if(new Set(hot).size!==hot.length&&new Set(p.t.marks.filter(o=>o.num>=0).map(o=>o.num)).size===p.t.marks.filter(o=>o.num>=0).length)e.push(`${nm}: Hot Cue doppelt belegt`)});
   return e;
 }
@@ -1601,7 +1636,7 @@ function zip(files){const te=new TextEncoder(),loc=[],cen=[];let off=0;
   const cs=cen.reduce((a,b)=>a+b.length,0),e=new Uint8Array(22),ev=new DataView(e.buffer);ev.setUint32(0,0x06054b50,true);ev.setUint16(8,files.length,true);ev.setUint16(10,files.length,true);ev.setUint32(12,cs,true);ev.setUint32(16,off,true);
   return new Blob([...loc,...cen,e],{type:'application/zip'})}
 /* ---- Serato cue writing (ID3 GEOB "Serato Markers2", MP3 only) ---- */
-const SER_COL={A:[0x00,0xCC,0x00],F:[0xCC,0x88,0x00],G:[0xCC,0x00,0x00],X:[0xCC,0x00,0x00]};
+const SER_COL={A:[0x00,0xCC,0x00],B:[0x88,0x00,0xCC],D:[0x00,0xCC,0xCC],X:[0x00,0x88,0xCC],F:[0xCC,0x88,0x00],G:[0xCC,0x00,0x00],O:[0xCC,0x00,0x00]};
 const b64e=u8=>{let s='';for(let i=0;i<u8.length;i+=0x8000)s+=String.fromCharCode.apply(null,u8.subarray(i,i+0x8000));return btoa(s)};
 const b64d=s=>{s=s.replace(/[^A-Za-z0-9+/]/g,'');if(s.length%4===1)s+='A==';else while(s.length%4)s+='=';const b=atob(s),o=new Uint8Array(b.length);for(let i=0;i<b.length;i++)o[i]=b.charCodeAt(i);return o};
 const asc=s=>new TextEncoder().encode(s);
@@ -1624,9 +1659,9 @@ function seratoEntries(t,existing){
   const keep=[],cues=new Map(),loops=new Map();
   for(const e of existing){if(e.name==='CUE')cues.set(e.data[1],e);else if(e.name==='LOOP')loops.set(e.data[1],e);else keep.push(e)}
   // rekordbox hot cues → Serato (only where Serato slot is empty)
-  for(const m of t.marks)if(m.type===0&&m.num>=0&&m.num<8&&!cues.has(m.num))cues.set(m.num,cueEntry(m.num,m.start*1000,SER_COL.X,m.name||''));
+  for(const m of t.marks)if(m.type===0&&m.num>=0&&m.num<8&&!cues.has(m.num))cues.set(m.num,cueEntry(m.num,m.start*1000,SER_COL.O,m.name||''));
   let wrote=0;
-  if(ct){const pb=pairBlocked(t,ct);for(const k of['A','F','G']){const idx=CUE[k].num;if(slotState(t,k)==='kept'||(pb&&k!=='A'))continue;if(cues.has(idx)&&!S.overwrite&&!t.marks.some(m=>m.num===idx))continue;cues.set(idx,cueEntry(idx,ct[k]*1000,SER_COL[k],CUE[k].name));wrote++}
+  if(ct){for(const k of HOT){const idx=CUE[k].num,ss=slotState(t,k);if(ss==='kept'||ss==='none'||blocked(t,ct,k))continue;if(cues.has(idx)&&!S.overwrite&&!t.marks.some(m=>m.num===idx))continue;cues.set(idx,cueEntry(idx,ct[k]*1000,SER_COL[k],CUE[k].name));wrote++}
     let li=[...loops.entries()].find(([,e])=>isOurLoop(new TextDecoder().decode(e.data.subarray(20))));li=li?li[0]:0;while(loops.has(li)&&!isOurLoop(new TextDecoder().decode(loops.get(li).data.subarray(20))))li++;
     if(li<8){loops.set(li,loopEntry(li,ct.L0*1000,ct.L1*1000,`${CUE.L.name} ${ct.c.LB} Beats`));wrote++}}
   const col=keep.find(e=>e.name==='COLOR')||{name:'COLOR',data:new Uint8Array([0,0xff,0xff,0xff])};
@@ -1952,16 +1987,16 @@ function exportCsv(){
 let lastFocus=null;
 function diffHtml(cx){
   const cu=cx.plans.filter(p=>p.cues),sk=cx.plans.filter(p=>!p.cues),un=sk.filter(p=>p.cueReason&&p.cueReason!=='Cues aus');let nNew=0,nRep=0,nKeep=0;
-  for(const p of cu)for(const r of p.rows){if(r.act==='neu')nNew++;else if(r.act==='ersetzt')nRep++;else nKeep++}
+  for(const p of cu)for(const r of p.rows){if(r.act==='neu')nNew++;else if(r.act==='ersetzt')nRep++;else if(r.act==='bleibt')nKeep++}
   const fmt=x=>x==null?'–':fmtT(x),old=cx.plans.reduce((n,p)=>n+p.t.marks.length,0);
   const rows=cx.plans.map(p=>{const rt=p.ratingNew!=null?`${p.ratingOld}★→${p.ratingNew}★`:'–',cm=p.changed&&S.writeComment?esc(withTag(p.t.comments,commentTag(p.t))):'–';
-    return p.cues?`<tr><td>${esc(p.t.title)}</td>${p.rows.map(r=>`<td><span class="${r.act==='neu'?'neu':r.act==='ersetzt'?'ers':'blb'}" ${r.act==='übersprungen'?`title="${esc(p.pairNote)}"`:''}>${LBL[r.k]} ${r.act==='bleibt'?'bleibt '+fmt(r.old):r.act==='übersprungen'?'übersprungen':r.act==='ersetzt'&&r.old!=null?fmt(r.old)+'→'+fmt(r.nw):fmt(r.nw)}</span></td>`).join('')}<td>${rt}</td><td>${cm}</td></tr>`
-    :`<tr><td>${esc(p.t.title)}</td><td colspan="4">${hasMeta(p.t)?'<span class="ers">Infos geändert</span>, ':''}<span class="${p.cueReason==='Cues aus'?'blb':'skip'}">${esc(p.cueReason||p.reason)}</span></td><td>${rt}</td><td>${cm}</td></tr>`}).join('');
+    return p.cues?`<tr><td>${esc(p.t.title)}</td>${p.rows.map(r=>`<td><span class="${r.act==='neu'?'neu':r.act==='ersetzt'?'ers':'blb'}" ${r.act==='übersprungen'?`title="${esc(r.why||'')}"`:''}>${LBL[r.k]} ${r.act==='bleibt'?'bleibt '+fmt(r.old):r.act==='übersprungen'?'übersprungen':r.act==='keine'?'–':r.act==='ersetzt'&&r.old!=null?fmt(r.old)+'→'+fmt(r.nw):fmt(r.nw)}</span></td>`).join('')}<td>${rt}</td><td>${cm}</td></tr>`
+    :`<tr><td>${esc(p.t.title)}</td><td colspan="7">${hasMeta(p.t)?'<span class="ers">Infos geändert</span>, ':''}<span class="${p.cueReason==='Cues aus'?'blb':'skip'}">${esc(p.cueReason||p.reason)}</span></td><td>${rt}</td><td>${cm}</td></tr>`}).join('');
   return`<div class="sum"><div><b>${cu.length}</b><span>Tracks mit Cues</span></div><div><b>${nNew}</b><span>neue Cues</span></div><div><b>${nRep}</b><span>ersetzte Cues</span></div><div><b>${old}</b><span>eigene Cues bleiben</span></div></div>${cx.plans.some(p=>p.grid)?`<div class="note">${cx.plans.filter(p=>p.grid).length} Beatgrids werden korrigiert.</div>`:''}
     ${cx.excluded&&cx.excluded.length?`<div class="note err"><b>${cx.excluded.length} Tracks</b> stehen nicht in deiner Collection und kommen nicht in die XML, sonst würde rekordbox sie doppelt anlegen: ${esc(cx.excluded.slice(0,4).map(p=>p.t.title).join(', '))}${cx.excluded.length>4?' …':''}</div>`:''}
     ${un.length?`<div class="note warn">${un.length} Tracks bekommen keine neuen Cues (unsicher und nicht bestätigt, oder Prüfung nicht bestanden). Sie bleiben mit ihrem bisherigen Stand in der Playlist.</div>`:''}
     ${!cu.length&&cx.plans.some(p=>p.t.analysis)?'<div class="note">Cues sind für diese Tracks aus. Exportiert werden nur Energie, Kommentar und Reihenfolge. Cues schaltest du über „Cues (Playlist)“ oder pro Track ein.</div>':''}
-    <details class="mo"><summary>Alle Änderungen ansehen</summary><div class="diff"><table><thead><tr><th>Track</th><th>A</th><th>G</th><th>H</th><th>Loop</th><th>Rating</th><th>Kommentar</th></tr></thead><tbody>${rows}</tbody></table></div></details>`}
+    <details class="mo"><summary>Alle Änderungen ansehen</summary><div class="diff"><table><thead><tr><th>Track</th><th>A</th><th>B</th><th>D</th><th>F</th><th>G</th><th>H</th><th>Loop</th><th>Rating</th><th>Kommentar</th></tr></thead><tbody>${rows}</tbody></table></div></details>`}
 function renderXmlDiff(){
   if(!$('#xDiff'))return;const cx=exportCtx();$('#xDiff').innerHTML=diffHtml(cx);
   const nm=cx.plans.filter(p=>hasMeta(p.t)).length,ok=cx.plans.some(p=>p.changed)||nm;$('#xGo').disabled=!ok||(state.source==='usb'&&!state.lib&&!state.forceStick);$('#xInfo').textContent=ok?(nm?`${nm} Tracks mit geänderten Infos`:''):'Nichts zu exportieren';
@@ -1973,8 +2008,9 @@ const TOUR=[
   <div class="note">Nichts verlässt deinen Rechner. Deine eigenen Cues bleiben.</div>`},
  {t:'Analysieren und Hinweise',b:`<p>Playlist wählen, <b>Analysieren</b> (oder <kbd>Enter</kbd>). Danach steht bei jedem Track, was zu tun ist:</p>
   <ol class="guide"><li><b>Fertig</b>: nichts mehr.</li><li><b>Quantize prüfen</b>: Das Beatgrid liegt daneben, läuft weg oder Takt 1 stimmt nicht. <b>Klick anhören</b>, dann <b>Grid korrigieren</b>.</li><li><b>Cues bestätigen / prüfen</b>: kurz anhören, dann „Passt so“.</li><li><b>Qualität</b> und <b>Lautheit prüfen</b>: schlechte Datei oder stark abweichender Pegel.</li></ol><p>Der Filter <b>Prüfen</b> zeigt nur diese Tracks.</p>`},
- {t:'Cues',b:`<div class="cuemap"><span class="on" style="background:var(--cA)">A<small>Start</small></span><span>B</span><span>C</span><span>D</span><span>E</span><span>F</span><span class="on" style="background:var(--cF)">G<small>Mix-Out</small></span><span class="on" style="background:var(--cG)">H<small>Ende</small></span></div>
-  <ol class="guide"><li>Einschalten: Schalter <b>Cues</b> oben für die ganze Playlist oder „+ Cues“ am Track.</li><li><b>Leertaste</b> spielt und stoppt. <kbd>A</kbd> <kbd>G</kbd> <kbd>H</kbd> <kbd>L</kbd> springen zum Marker.</li><li>Anpassen: ziehen, <kbd>←</kbd> <kbd>→</kbd> oder die Knöpfe. <kbd>⌘Z</kbd> macht rückgängig.</li><li>Der <b>Emergency Loop</b> liegt hinter H, damit er als Active Loop erst am Ende greift.</li></ol>`},
+ {t:'Cues',b:`<div class="cuemap"><span class="on" style="background:var(--cA)">A<small>Start</small></span><span class="on" style="background:var(--cB)">B<small>Bass Swap</small></span><span>C</span><span class="on" style="background:var(--cD)">D<small>Trans. 1</small></span><span>E</span><span class="on" style="background:var(--cX)">F<small>Ende 1</small></span><span class="on" style="background:var(--cF)">G<small>Trans. 2</small></span><span class="on" style="background:var(--cG)">H<small>Ende 2</small></span></div>
+  <p><b>A</b> Start, <b>B</b> spätestens drin sein (Bass Swap), <b>D → F</b> erste Transition über 16 Takte, <b>G → H</b> zweite.</p>
+  <ol class="guide"><li>Einschalten: Schalter <b>Cues</b> oben für die ganze Playlist oder „+ Cues“ am Track.</li><li><b>Leertaste</b> spielt und stoppt. <kbd>A</kbd> <kbd>B</kbd> <kbd>D</kbd> <kbd>F</kbd> <kbd>G</kbd> <kbd>H</kbd> <kbd>L</kbd> springen zum Marker.</li><li>Anpassen: ziehen, <kbd>←</kbd> <kbd>→</kbd> oder die Knöpfe. <kbd>⌘Z</kbd> macht rückgängig.</li><li>Der <b>Emergency Loop</b> liegt hinter H, damit er als Active Loop erst am Ende greift.</li></ol>`},
  {t:'Set planen',b:`<ol class="guide"><li>Oben auf <b>Set-Planer</b>. Playlist, Dauer und Kurve wählen, <b>Set vorschlagen</b>.</li><li>Zwischen den Tracks steht, warum es passt, z. B. „8A → 9A · +2 BPM · Energie +1“.</li><li>Ziehen sortiert um, das Schloss fixiert. Ein Klick auf einen Track zeigt, was danach, davor oder stattdessen passt.</li><li>Alles Weitere (Intro, Outro, Toleranz, Boost) steckt unter <b>Mehr Optionen</b>.</li></ol>`},
  {t:'Exportieren',b:()=>`<div class="seg"><button data-dj="rb" class="${tourDj==='rb'?'on':''}">rekordbox</button><button data-dj="se" class="${tourDj==='se'?'on':''}">Serato</button></div>`+(tourDj==='rb'?`
   <ol class="guide"><li><b>Export → rekordbox XML</b>. ${xmlApi()?'Beim ersten Mal Speicherort wählen, danach wird dieselbe Datei überschrieben.':'Die alte „JAILR Prep.xml“ vorher löschen. In Chrome und Edge geht das automatisch.'}</li>
@@ -2064,7 +2100,7 @@ function openModal(kind,ctx){
     <details class="mo"><summary>Was die Hinweise bedeuten</summary><div style="display:grid;grid-template-columns:auto 1fr;gap:6px 12px;color:var(--smoke);font-size:13px;line-height:1.5"><b>Fertig</b><span>Nichts zu tun.</span><b>Quantize prüfen</b><span>Das Beatgrid sitzt nicht genau, läuft weg oder Takt 1 stimmt nicht. Klick anhören, korrigieren.</span><b>Cues bestätigen</b><span>Unsicher. Wird erst nach deinem OK geschrieben.</span><b>Cues prüfen</b><span>Kurz anhören.</span><b>Qualität prüfen</b><span>Niedrige Bitrate, übersteuert oder Datei nicht eindeutig.</span><b>Lautheit prüfen</b><span>Weicht 3 dB oder mehr vom Schnitt ab.</span></div></details>
     <details class="mo"><summary>Energie 1–5</summary><div style="color:var(--smoke);font-size:13px;line-height:1.6">Tempo 30 %, Dichte 25 %, Drive 20 %, Bass 15 %, Höhen 10 %. Lautstärke zählt nicht. Klick auf die Balken setzt deinen Wert.</div></details>
     <details class="mo"><summary>Tasten</summary><div style="display:grid;grid-template-columns:auto 1fr;gap:6px 12px;color:var(--smoke);font-size:13px">
-    <span><kbd>Leertaste</kbd></span><span>Abspielen, Stopp</span><span><kbd>↑</kbd> <kbd>↓</kbd></span><span>Track wechseln</span><span><kbd>Enter</kbd></span><span>Analysieren</span><span><kbd>A</kbd> <kbd>G</kbd> <kbd>H</kbd> <kbd>L</kbd></span><span>Marker anhören und anpassen</span><span><kbd>←</kbd> <kbd>→</kbd></span><span>Marker 1 Takt (Shift 8 Takte, Alt 1 Beat)</span><span><kbd>C</kbd></span><span>Cues an und bestätigt</span><span><kbd>K</kbd></span><span>Klick an, aus</span><span><kbd>R</kbd></span><span>Marker automatisch</span><span><kbd>⌘Z</kbd> <kbd>⇧⌘Z</kbd></span><span>Rückgängig, Wiederholen</span><span><kbd>/</kbd></span><span>Suche</span></div></details>`}
+    <span><kbd>Leertaste</kbd></span><span>Abspielen, Stopp</span><span><kbd>↑</kbd> <kbd>↓</kbd></span><span>Track wechseln</span><span><kbd>Enter</kbd></span><span>Analysieren</span><span><kbd>A</kbd> <kbd>B</kbd> <kbd>D</kbd> <kbd>F</kbd> <kbd>G</kbd> <kbd>H</kbd> <kbd>L</kbd></span><span>Marker anhören und anpassen</span><span><kbd>←</kbd> <kbd>→</kbd></span><span>Marker 1 Takt (Shift 8 Takte, Alt 1 Beat)</span><span><kbd>C</kbd></span><span>Cues an und bestätigt</span><span><kbd>K</kbd></span><span>Klick an, aus</span><span><kbd>R</kbd></span><span>Marker automatisch</span><span><kbd>⌘Z</kbd> <kbd>⇧⌘Z</kbd></span><span>Rückgängig, Wiederholen</span><span><kbd>/</kbd></span><span>Suche</span></div></details>`}
     </div><div class="foot"><button class="btn primary" data-close>${ctx?'Fertig':'Schließen'}</button></div>`;
   }else if(kind==='edit'){const t=ctx;
     h=`<h2>Infos bearbeiten</h2><p class="sub">Änderungen gehen beim Export nach rekordbox und Serato mit. Deine Audiodatei bleibt unverändert.</p><div class="body">
@@ -2154,7 +2190,7 @@ $('#btnPlay').onclick=()=>{if(state.focus)playId(state.focus)};$('#plBtn').oncli
 $('.plbar').addEventListener('click',e=>{const t=state.tracks.get(PB.id||'');if(!t)return;const r=e.currentTarget.getBoundingClientRect();play((e.clientX-r.left)/r.width*(t.analysis?t.analysis.dur:t.dur||1),null,t.id)});
 $('#cueBar').addEventListener('click',e=>{if(!e.target.closest('#cueAll'))return;const ids=(state.sel.size>1?[...state.sel]:listIds()).filter(id=>state.tracks.get(id)?.analysis),on=ids.every(id=>cuesOn(state.tracks.get(id)));setMany([...new Set(ids)],{cue:!on},on?`Cues für ${ids.length} Tracks aus`:`Cues für ${ids.length} Tracks an`)});
 $('#dAdj').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const t=state.tracks.get(state.focus);if(!t)return;if(b.dataset.mv)moveMarker(TL.sel,+b.dataset.mv);else if(b.dataset.lb){setManual(t,{LB:+b.dataset.lb,ok:true,...(t.manual?.cue==null?{cue:true}:{})});previewMarker(t,'L')}else if(b.dataset.set){const[k,v]=b.dataset.set.split(':');setMarker(k,+v)}else if(b.dataset.adj==='undo')undo();else if(b.dataset.adj==='redo')redo();else if(b.dataset.adj==='reset')resetMarkers(t)});
-function resetMarkers(t){setManual(t,{A:null,F:null,G:null,L:null,LB:null});toast('Marker wieder automatisch',0,1)}
+function resetMarkers(t){setManual(t,{A:null,B:null,D:null,X:null,F:null,G:null,L:null,LB:null});toast('Marker wieder automatisch',0,1)}
 $('#dJumps').onclick=e=>{const b=e.target.closest('[data-jump]');if(b)jump(b.dataset.jump)};
 $('#dFacts').onclick=e=>{const b=e.target.closest('[data-e]');if(!b)return;const t=state.tracks.get(state.focus);if(!t)return;const v=+b.dataset.e;setManual(t,{E:v||null});toast(v?`Energie für „${t.title}“ auf ${v}/5 gesetzt`:'Energie wieder automatisch')};
 $('#dActs').onclick=e=>{const b=e.target.closest('[data-act]');if(!b)return;const t=state.tracks.get(state.focus);if(!t)return;const a=b.dataset.act;
@@ -2164,10 +2200,10 @@ $('#dFoot').addEventListener('click',e=>{const t=state.tracks.get(state.focus);i
 $('#dFoot').addEventListener('toggle',e=>{if(e.target.classList.contains('dm'))TL.more=e.target.open},true);
 const cv=$('#tl');
 const HIT=()=>matchMedia('(pointer:coarse)').matches?22:10;let tlDown=null;
-const KS=['G','F','A','L'];
+const KS=['G','F','X','D','B','A','L'];
 /* pointer handling shared by the overview (bars, magnetic to phrase starts) and the zoom view (beats) */
 function bindMarkers(cv,G){ // G() → {t,a,c,w,x(pos),pos(x,e)}
-  const hitAt=(g,mx,my)=>{const hs=KS.map(k=>({k,d:Math.abs(g.x(g.c[k])-mx)+(my<24?-6:0)+(TL.sel===k?-3:0)})).filter(o=>o.d<HIT()).sort((p,q)=>p.d-q.d);return hs[0]};
+  const hitAt=(g,mx,my)=>{const hs=KS.filter(k=>g.c[k]!=null).map(k=>({k,d:Math.abs(g.x(g.c[k])-mx)+(my<24?-6:0)+(TL.sel===k?-3:0)})).filter(o=>o.d<HIT()).sort((p,q)=>p.d-q.d);return hs[0]};
   let pre=null,moved=false;
   cv.addEventListener('pointerdown',e=>{if(e.button)return;const g=G();if(!g||!g.a)return;const r=cv.getBoundingClientRect(),mx=e.clientX-r.left,my=e.clientY-r.top,hit=hitAt(g,mx,my);
     if(hit){TL.editId=g.t.id;TL.drag=hit.k;TL.dx=g.x(g.c[hit.k])-mx;TL.zc=g.mid;if(TL.sel!==hit.k&&cv.id==='tl'){TL.sel=hit.k;TL.resel=true}else TL.sel=hit.k;pre=cloneM(g.t.manual);moved=false;cv.setPointerCapture(e.pointerId);e.preventDefault();drawTL()}

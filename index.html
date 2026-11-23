@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-WevrZDbxhH48m1kRMzgY85wS0bq8XaSqgRwDTAqjEuc='; style-src 'unsafe-inline'; font-src data:; img-src 'self' data: blob:; media-src blob:; connect-src 'none'; worker-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-ZSEwTMeCvag3w+2m25apYUpzl6y9zg2KxdRHYzBSaAI='; style-src 'unsafe-inline'; font-src data:; img-src 'self' data: blob:; media-src blob:; connect-src 'none'; worker-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="referrer" content="no-referrer">
 <title>JAILR Prep – Cue & Energy Lab</title>
@@ -302,12 +302,6 @@ ol.guide b{color:var(--bone)}
   .jumps{order:6;width:100%;display:grid;grid-template-columns:repeat(4,1fr)}
   .jb{width:auto;height:58px}
   #dActs{order:7;width:100%;flex-wrap:wrap}
-  .player{position:fixed;left:0;right:0;bottom:0;z-index:43;max-width:none;background:var(--raised);border-top:1px solid var(--line2);padding:7px 12px calc(7px + env(safe-area-inset-bottom));height:calc(56px + env(safe-area-inset-bottom))}
-  body.haslib{padding-bottom:calc(56px + env(safe-area-inset-bottom))}
-  .viewsw{padding:2px}.viewsw button{padding:6px 8px;font-size:12px}
-  body.haslib .detail{bottom:calc(56px + env(safe-area-inset-bottom))}
-  body.haslib .toasts{bottom:calc(70px + env(safe-area-inset-bottom))}
-  .adj{padding:0 12px 8px}.adjrow .grp button{height:42px;min-width:42px}.adjrow .nm{width:100%}.cuesw{height:42px}
   .tl-wrap{padding:6px 12px}
   canvas#tl{height:130px}
   .dfoot{padding:0 14px 16px}.hint{display:none}
@@ -338,10 +332,10 @@ tr.r:hover .art .pb,.pi:hover .art .pb,.art .pb:focus-visible,.isplay .art .pb{o
 #btnPlay.on{background:var(--ok)}
 .viewsw{flex:none}
 /* marker editing */
-.adj{padding:0 18px 8px;display:grid;gap:8px}.adj[hidden]{display:none}
+.adj{padding:0 18px 8px;display:grid;grid-template-columns:minmax(0,1fr);gap:8px}.adj[hidden]{display:none}
 .adjrow{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
 .adjrow .nm{display:inline-flex;align-items:center;gap:8px;font-weight:600;min-width:150px}.adjrow .nm i{width:11px;height:11px;border-radius:3px;background:var(--c)}
-.adjrow .grp{display:inline-flex;border:1px solid var(--line2);border-radius:10px;overflow:hidden}
+.adjrow .grp{max-width:100%;overflow-x:auto;scrollbar-width:none;display:inline-flex;border:1px solid var(--line2);border-radius:10px;overflow:hidden}
 .adjrow .grp button svg.i{width:15px;height:15px;vertical-align:-3px}.adjrow .grp button:disabled{opacity:.35;cursor:default}.adjrow .grp button{border:0;border-right:1px solid var(--line2);background:var(--raised);height:34px;padding:0 11px;cursor:pointer;font-size:12.5px;white-space:nowrap}.adjrow .grp button:last-child{border-right:0}
 .adjrow .grp button:hover{background:var(--hover)}.adjrow .grp button.on{background:var(--bone);color:var(--night);font-weight:600}
 .adjrow .grp.lbl:before{content:attr(data-l);align-self:center;padding:0 9px;color:var(--dim);font-size:12px}
@@ -379,6 +373,17 @@ canvas#tlz{width:100%;height:80px;display:block;border-radius:12px;background:va
 body.planning aside{display:block}
 @media (max-width:1100px){.plan{grid-template-columns:minmax(0,1fr) 310px}.ptime{display:none}}
 @media (max-width:760px){.plan{grid-column:1;grid-row:2/4;display:block;overflow:auto}.pmain,.pside{overflow:visible;padding:12px}.pside{border-left:0;border-top:1px solid var(--line)}.pi{grid-template-columns:20px 20px 36px minmax(0,1fr) auto;gap:8px;padding:8px}.pmeta{grid-column:4/6;grid-row:2;gap:12px}.pbtn{grid-column:5;grid-row:1}.pbtn [data-up],.pbtn [data-dn]{display:none}.pbtn button{width:38px;height:40px}.pgrip{grid-row:1/3;padding:14px 4px}.pnum{grid-row:1/3}.pi .art{grid-row:1/3}.ptr{padding:6px 8px 6px 14px}canvas#pCv{height:110px}.pgrid{grid-template-columns:1fr 1fr}.ptime{display:inline}}
+@media (max-width:760px){
+  .player{position:fixed;left:0;right:0;bottom:0;z-index:43;max-width:none;background:var(--raised);border-top:1px solid var(--line2);padding:7px 12px calc(7px + env(safe-area-inset-bottom));height:calc(56px + env(safe-area-inset-bottom))}
+  body.haslib{padding-bottom:calc(56px + env(safe-area-inset-bottom))}
+  .viewsw{padding:2px}.viewsw button{padding:6px 8px;font-size:12px}
+  body.haslib .detail{bottom:calc(56px + env(safe-area-inset-bottom))}
+  body.haslib .toasts{bottom:calc(70px + env(safe-area-inset-bottom))}
+  .adj{padding:0 12px 8px}.adjrow .grp{width:100%}.adjrow .grp.lbl:before{display:none}.adjrow .grp button{height:44px;flex:1 0 auto;padding:0 7px}.adjrow .nm{width:100%}.cuesw{height:42px}
+  #btnAnalyze,#btnExport,.menu-wrap{flex:none}
+}
+@media (max-width:760px){.plist .psug{margin:8px 0 4px}}
+@media (max-width:420px){.logo{font-size:0;gap:0;margin:0}}
 /* hero */
 .empty{max-width:1120px}
 .hero{display:grid;grid-template-columns:1.05fr 1fr;gap:48px;align-items:center;margin-bottom:56px}
@@ -1157,9 +1162,9 @@ function renderTop(){
 }
 const musicOk=()=>state.fileCount>0&&[...state.tracks.values()].some(t=>t.file);
 function renderSide(){
-  const el=$('#side');if(!state.source){el.innerHTML='<div class="srcbox only-m"><button class="btn sm primary" data-src="lib">rekordbox XML laden</button><button class="btn sm" data-src="music">Musik oder Stick wählen</button></div><div class="side-h">Playlists</div><div class="pl" style="color:var(--fg3)">Noch keine Library geladen</div>';return}
+  const el=$('#side');if(!state.source){el.innerHTML='<div class="srcbox only-m"><button class="btn sm primary" data-src="lib">rekordbox XML laden</button><button class="btn sm" data-src="music">Musik oder Stick wählen</button><button class="btn sm ghost" data-src="tour">Tutorial</button></div><div class="side-h">Playlists</div><div class="pl" style="color:var(--fg3)">Noch keine Library geladen</div>';return}
   const prog=ids=>{const n=ids.length,d=ids.filter(id=>state.tracks.get(id)?.analysis).length;return`<span class="prog" title="${d}/${n} analysiert"><i style="width:${n?d/n*100:0}%"></i></span>`};
-  let h=`<div class="srcbox only-m"><button class="btn sm" data-src="lib">${esc(state.libName)} · ${state.tracks.size} Tracks</button><button class="btn sm" data-src="music">${musicLabel()}</button>${!musicOk()&&DIRS.list.length?DIRS.list.slice(0,2).map((d,i)=>`<button class="btn sm" data-re="${i}">„${esc(d.name)}“ verbinden</button>`).join(''):''}</div>${!musicOk()&&DIRS.list.length?`<div class="srcbox no-m" style="padding:8px 4px">${DIRS.list.slice(0,2).map((d,i)=>`<button class="btn sm" data-re="${i}" title="Gemerkten Ordner wieder verbinden">„${esc(d.name)}“ verbinden</button>`).join('')}</div>`:''}<div class="side-h">Library</div><div class="pl ${state.cur<0?'active':''}" data-pl="-1" tabindex="0"><svg class="i" viewBox="0 0 24 24"><path d="M4 5h16M4 12h16M4 19h10"/></svg><span class="nm">Collection</span>${prog(state.order)}<span class="ct">${state.order.length}</span></div><div class="side-h">Playlists</div>`;
+  let h=`<div class="srcbox only-m"><button class="btn sm" data-src="lib">${esc(state.libName)} · ${state.tracks.size} Tracks</button><button class="btn sm" data-src="music">${musicLabel()}</button><button class="btn sm ghost" data-src="tour">Tutorial</button>${!musicOk()&&DIRS.list.length?DIRS.list.slice(0,2).map((d,i)=>`<button class="btn sm" data-re="${i}">„${esc(d.name)}“ verbinden</button>`).join(''):''}</div>${!musicOk()&&DIRS.list.length?`<div class="srcbox no-m" style="padding:8px 4px">${DIRS.list.slice(0,2).map((d,i)=>`<button class="btn sm" data-re="${i}" title="Gemerkten Ordner wieder verbinden">„${esc(d.name)}“ verbinden</button>`).join('')}</div>`:''}<div class="side-h">Library</div><div class="pl ${state.cur<0?'active':''}" data-pl="-1" tabindex="0"><svg class="i" viewBox="0 0 24 24"><path d="M4 5h16M4 12h16M4 19h10"/></svg><span class="nm">Collection</span>${prog(state.order)}<span class="ct">${state.order.length}</span></div><div class="side-h">Playlists</div>`;
   const hidden=p=>{for(const c of state.collapsed)if(p===c||p.startsWith(c+'/'))return true;return false};
   for(const n of state.tree){
     if(n.type==='folder'){const par=n.key.split('/').slice(0,-1).join('/');if(par&&hidden(par))continue;
@@ -1724,10 +1729,10 @@ function renderPlan(){
     <div class="pstat">${ts.length?`<span><b>${ts.length}</b> Tracks</span><span><b>${hms(tot)}</b>${PLAN.all?'':` von ${hms(PLAN.min*60)}`}</span>${tr.length?`<span class="sc ${scCls(avg)}">Übergänge <b>${avg}</b></span>`:''}<span class="${warns?'flag':''}">${warns?`⚠ ${warns} Warnung${warns>1?'en':''}`:'keine Warnungen'}</span>`:'<span>Noch leer</span>'}</div>
     <div class="pacts"><button class="btn sm ghost" data-p="undo" ${PLAN.hist.length?'':'disabled'} title="Rückgängig (⌘Z)" aria-label="Rückgängig"><svg class="i" viewBox="0 0 24 24"><path d="M9 14L4 9l5-5M4 9h10a6 6 0 0 1 0 12h-3"/></svg></button><button class="btn sm ghost" data-p="redo" ${PLAN.redo.length?'':'disabled'} title="Wiederholen" aria-label="Wiederholen"><svg class="i" viewBox="0 0 24 24"><path d="M15 14l5-5-5-5M20 9H10a6 6 0 0 0 0 12h3"/></svg></button><button class="btn sm" data-p="xml" ${ts.length?'':'disabled'}>rekordbox-Playlist</button><button class="btn sm" data-p="serato" ${ts.length?'':'disabled'}>Serato-Crate</button></div></div>
    <div class="pcurve"><canvas id="pCv" aria-label="Energiekurve: Linie ziehen, um sie frei zu zeichnen"></canvas><div class="pcl"><span>Linie = Ziel (zum Ändern ziehen), Balken = deine Tracks</span></div></div>
-   ${ts.length?`<div class="plist" id="pList" role="list">${ts.map((t,i)=>(i?trHtml(tr[i-1],i):'')+piHtml(t,i,T[i],cx)).join('')}</div>`:`<div class="pempty"><h3>So baust du ein Set</h3><ol class="guide"><li>Rechts Playlists, Dauer und Energiekurve wählen.</li><li>Auf Wunsch ersten und letzten Track festlegen.</li><li><b>Set vorschlagen</b> drücken. Danach umsortieren, fixieren, austauschen.</li></ol><button class="btn primary lg" data-p="build">Set vorschlagen</button></div>`}
+   ${ts.length?`<div class="plist" id="pList" role="list">${ts.map((t,i)=>(i?trHtml(tr[i-1],i):'')+piHtml(t,i,T[i],cx)+(isM()&&PLAN.sel===t.id?sugHtml(cx,T,tot):'')).join('')}</div>`:`<div class="pempty"><h3>So baust du ein Set</h3><ol class="guide"><li>Rechts Playlists, Dauer und Energiekurve wählen.</li><li>Auf Wunsch ersten und letzten Track festlegen.</li><li><b>Set vorschlagen</b> drücken. Danach umsortieren, fixieren, austauschen.</li></ol><button class="btn primary lg" data-p="build">Set vorschlagen</button></div>`}
   </div>
   <div class="pside" id="pSide">
-   ${PLAN.sel&&PLAN.ids.includes(PLAN.sel)?sugHtml(cx,T,tot):''}
+   ${!isM()&&PLAN.sel&&PLAN.ids.includes(PLAN.sel)?sugHtml(cx,T,tot):''}
    <details data-d="v" ${PLAN.open.v?'open':''}><summary>Vorgaben</summary><div class="pform">
     <label class="pl1">Playlists</label><div class="pchips">${[[-1,'Collection',state.order.length],...state.playlists.map((p,i)=>[i,p.name,p.ids.length])].filter(x=>x[2]).map(([i,n,c])=>`<button class="pchip ${PLAN.pls.has(i)?'on':''}" data-pl1="${i}" aria-pressed="${PLAN.pls.has(i)}">${esc(n)} <small>${c}</small></button>`).join('')}</div>
     <div class="pnote">${pool.length} Tracks zur Auswahl${noA?`, ${noA} noch nicht analysiert. <button class="lnk" data-p="analyze">Jetzt analysieren</button>`:''}</div>
@@ -2040,7 +2045,7 @@ $('#main').addEventListener('click',e=>{
   else if(e.metaKey||e.ctrlKey){state.sel.has(id)?state.sel.delete(id):state.sel.add(id);state.anchor=id}else{state.sel=new Set([id]);state.anchor=id}
   if(state.focus!==id){stop();state.focus=id;renderDetail()}updateSel()});
 $('#main').addEventListener('dblclick',e=>{const tr=e.target.closest('tbody tr.r');if(!tr)return;const t=state.tracks.get(tr.dataset.id);if(t.analysis)jump('A');else analyzeIds([t.id])});
-$('#side').addEventListener('click',e=>{const re=e.target.closest('[data-re]');if(re){reconnect(+re.dataset.re);return}const sb=e.target.closest('[data-src]');if(sb){document.body.classList.remove('showside');sb.dataset.src==='lib'?$('#inXml').click():pickMusic();return}const f=e.target.closest('[data-folder]');if(f){const k=f.dataset.folder;state.collapsed.has(k)?state.collapsed.delete(k):state.collapsed.add(k);renderSide();return}
+$('#side').addEventListener('click',e=>{const re=e.target.closest('[data-re]');if(re){reconnect(+re.dataset.re);return}const sb=e.target.closest('[data-src]');if(sb){document.body.classList.remove('showside');sb.dataset.src==='lib'?$('#inXml').click():sb.dataset.src==='tour'?openModal('tour',{i:0}):pickMusic();return}const f=e.target.closest('[data-folder]');if(f){const k=f.dataset.folder;state.collapsed.has(k)?state.collapsed.delete(k):state.collapsed.add(k);renderSide();return}
   const p=e.target.closest('[data-pl]');if(!p)return;if(PLAN.on)setView('prep');state.cur=+p.dataset.pl;state.sel.clear();state.focus=null;stop();document.body.classList.remove('showside');$('#main').scrollTop=0;renderAll()});
 $('#side').addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();e.target.click()}});
 $('#q').addEventListener('input',e=>{state.q=e.target.value;renderMain()});

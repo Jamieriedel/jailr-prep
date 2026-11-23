@@ -679,22 +679,59 @@ function lufs(chs,sr){
   const z=[];for(let s=0;s+4<=nSteps;s++)z.push((sums[s]+sums[s+1]+sums[s+2]+sums[s+3])/(4*step));
   const L=v=>-0.691+10*Math.log10(v+1e-20);const g1=z.filter(v=>L(v)>-70);if(!g1.length)return -70;
   const thr=L(g1.reduce((a,b)=>a+b,0)/g1.length)-10;const g2=g1.filter(v=>L(v)>thr);return L(g2.reduce((a,b)=>a+b,0)/g2.length)}
-function downbeats(t,dur){
-  const T=t.tempos;if(!T.length)return null;const beats=[];const f=T[0],bl0=60/f.bpm;
+function gridBeats(t,dur){ // every beat of the rekordbox grid: [time, position in bar 1–4] (rekordbox time base)
+  const T=t.tempos;if(!T.length)return[];const beats=[];const f=T[0],bl0=60/f.bpm;
   let x=f.t-bl0,n=((f.beat+2)%4)+1;const pre=[];while(x>=-0.02){pre.push([Math.max(0,x),n]);x-=bl0;n=((n+2)%4)+1}beats.push(...pre.reverse());
-  for(let i=0;i<T.length;i++){const s=T[i],e=i+1<T.length?T[i+1].t:dur,bl=60/s.bpm;let tt=s.t,nb=s.beat;while(tt<e-1e-4){beats.push([tt,nb]);tt+=bl;nb=nb%4+1}}
+  for(let i=0;i<T.length;i++){const s=T[i],e=i+1<T.length?T[i+1].t:dur,bl=60/s.bpm;let tt=s.t,nb=s.beat;while(tt<e-bl*0.5||(i+1>=T.length&&tt<e-1e-4)){beats.push([tt,nb]);tt+=bl;nb=nb%4+1}}
+  return beats}
+function downbeats(t,dur){
+  const beats=gridBeats(t,dur),T=t.tempos;
   const db=beats.filter(b=>b[1]===1).map(b=>b[0]);if(!db.length)return null;const bar=240/T[T.length-1].bpm;if(db[db.length-1]+bar<=dur+0.05)db.push(db[db.length-1]+bar);return db}
+/* MP3 files carry encoder delay. rekordbox counts it, the browser decoder cuts it off – so the decoded audio starts 26 or 52 ms early
+   against the rekordbox grid. Measure the shift on the real onsets (audio time = grid time + off) and use it everywhere. */
+function gridOffset(L,R,sr,beats){
+  const N=256,HOP=64,n=L.length;if(beats.length<40)return{off:0,q:0};
+  const re=new Float32Array(N),im=new Float32Array(N),w=new Float32Array(N);for(let i=0;i<N;i++)w[i]=0.5-0.5*Math.cos(2*Math.PI*i/N);
+  const b0=Math.floor(beats.length*0.2),b1=Math.min(beats.length-2,b0+320),per=beats[b0+1][0]-beats[b0][0],H=Math.floor(per*sr/HOP/2)-1,acc=new Float64Array(2*H+1);
+  let prev=null;
+  for(let b=b0;b<b1;b++){const c=Math.round(beats[b][0]*sr);prev=null;
+    for(let k=-H-1;k<=H;k++){const o=c+k*HOP-N/2;for(let i=0;i<N;i++){const j=o+i;re[i]=j>=0&&j<n?(L[j]+R[j])*0.5*w[i]:0;im[i]=0}fftMag(re,im);
+      const m=new Float32Array(N/2);let fl=0;for(let f=1;f<N/2;f++){m[f]=Math.log1p(60*Math.hypot(re[f],im[f]));if(prev){const d=m[f]-prev[f];if(d>0)fl+=d}}
+      if(prev)acc[k+H]+=fl;prev=m}}
+  const ms=HOP/sr*1000,W=Math.round(75/ms);let mx=0,gi=0;for(let i=0;i<acc.length;i++)if(acc[i]>mx)mx=acc[i];
+  let best=-1,bi=H;for(let k=-W;k<=W;k++){const v=acc[k+H];const t0=k*ms+3;const prior=Math.min(Math.abs(t0),Math.abs(t0+26),Math.abs(t0+52))<7?1.12:1;if(v*prior>best){best=v*prior;bi=k}}
+  const mean=acc.reduce((x,y)=>x+y,0)/acc.length;const q=mean?acc[bi+H]/mean:0;
+  if(q<1.25)return{off:0,q:Math.round(q*100)/100};const m0=bi*ms+2;let o=m0;for(const c of[0,-25.06,-51.18])if(Math.abs(m0-c)<7)o=c; // 1105 or 2257 samples of MP3 delay
+  return{off:Math.round(o*100)/100000,q:Math.round(q*100)/100}}
 const FFTN=1024,NBD=32,KICKB=8,SUB=8,FD=NBD+12,DIM=SUB*FD,CHB=(()=>{const m=new Int8Array(FFTN/2).fill(-1);for(let k=5;k<FFTN/2;k++){const f=k*22050/FFTN;if(f<110||f>4200)continue;m[k]=((Math.round(12*Math.log2(f/440))%12)+12)%12}return m})(),BANDS=(()=>{const e=[];for(let i=0;i<=NBD;i++)e.push(Math.max(i+1,Math.round(40*Math.pow(8000/40,i/NBD)*FFTN/22050)));return e})();
 const HANN=(()=>{const w=new Float32Array(FFTN);for(let i=0;i<FFTN;i++)w[i]=0.5-0.5*Math.cos(2*Math.PI*i/FFTN);return w})();
 function fftMag(re,im){const n=re.length;for(let i=1,j=0;i<n;i++){let b=n>>1;for(;j&b;b>>=1)j^=b;j^=b;if(i<j){let t=re[i];re[i]=re[j];re[j]=t;t=im[i];im[i]=im[j];im[j]=t}}
   for(let len=2;len<=n;len<<=1){const a=-2*Math.PI/len,wr=Math.cos(a),wi=Math.sin(a);for(let i=0;i<n;i+=len){let cr=1,ci=0;for(let k=0;k<len/2;k++){const u=i+k,v=u+len/2,tr=re[v]*cr-im[v]*ci,ti=re[v]*ci+im[v]*cr;re[v]=re[u]-tr;im[v]=im[u]-ti;re[u]+=tr;im[u]+=ti;const nr=cr*wr-ci*wi;ci=cr*wi+ci*wr;cr=nr}}}}
-function beatSpec(L,R,sr,db,nb){ // per beat: 8 sub-frames x (32 log bands + 12 chroma) (dB, Int8) – fingerprint for loop seams
+function beatSpec(L,R,sr,db,nb,off){ // per beat: 8 sub-frames x (32 log bands + 12 chroma) (dB, Int8) – fingerprint for loop seams
   const re=new Float32Array(FFTN),im=new Float32Array(FFTN),out=new Int8Array(nb*4*DIM),n=L.length;let w=0;
-  for(let b=0;b<nb;b++){const T0=db[b],T1=db[b+1];for(let q=0;q<4*SUB;q++){const o=Math.floor((T0+(T1-T0)*q/(4*SUB))*sr);
-    for(let i=0;i<FFTN;i++){const k=o+i;re[i]=k<n?(L[k]+R[k])*0.5*HANN[i]:0;im[i]=0}fftMag(re,im);
+  for(let b=0;b<nb;b++){const T0=db[b],T1=db[b+1];for(let q=0;q<4*SUB;q++){const o=Math.floor((T0+(T1-T0)*q/(4*SUB)+off)*sr);
+    for(let i=0;i<FFTN;i++){const k=o+i;re[i]=k>=0&&k<n?(L[k]+R[k])*0.5*HANN[i]:0;im[i]=0}fftMag(re,im);
     const q8=v=>Math.max(-128,Math.min(127,Math.round(10*Math.log10(v+1e-10))));
     for(let bd=0;bd<NBD;bd++){let e=0;const a=BANDS[bd],z=Math.max(a+1,BANDS[bd+1]);for(let k=a;k<z;k++)e+=re[k]*re[k]+im[k]*im[k];out[w++]=q8(e/(z-a))}
     const ch=new Float64Array(12);for(let k=0;k<FFTN/2;k++)if(CHB[k]>=0)ch[CHB[k]]+=re[k]*re[k]+im[k]*im[k];for(let c=0;c<12;c++)out[w++]=q8(ch[c])}}
+  return out}
+/* Kick per beat (0–100): does a kick start on this beat? Broadband attack compared with the track's own kick template, plus low-end level. */
+function kickBeats(L,R,sr,db,nb,off,rms,body){
+  const N=512,NB=16,n=L.length,re=new Float32Array(N),im=new Float32Array(N),w=new Float32Array(N);for(let i=0;i<N;i++)w[i]=0.5-0.5*Math.cos(2*Math.PI*i/N);
+  const ed=[];for(let i=0;i<=NB;i++)ed.push(Math.max(i+1,Math.round(40*Math.pow(9000/40,i/NB)*N/sr)));
+  const spec=c=>{const o=c-N/2;for(let i=0;i<N;i++){const j=o+i;re[i]=j>=0&&j<n?(L[j]+R[j])*0.5*w[i]:0;im[i]=0}fftMag(re,im);const v=new Float32Array(NB);for(let b=0;b<NB;b++){let e=0;const a=ed[b],z=Math.max(a+1,ed[b+1]);for(let k=a;k<z;k++)e+=re[k]*re[k]+im[k]*im[k];v[b]=10*Math.log10(e/(z-a)+1e-7)}return v};
+  const tot=nb*4,V=[],low=new Float32Array(tot);
+  // low end (40–130 Hz) per beat start: two-pole low-pass energy over the first 35 % of the beat
+  const aL=1-Math.exp(-2*Math.PI*120/sr);let l1=0,l2=0;const lp=new Float32Array(n);for(let i=0;i<n;i++){const x=(L[i]+R[i])*0.5;l1+=aL*(x-l1);l2+=aL*(l1-l2);lp[i]=l2}
+  const bt=q=>{const b=q>>2,f=(q&3)/4;return db[b]+(db[b+1]-db[b])*f+off};
+  for(let q=0;q<tot;q++){const T=bt(q),c=Math.round(T*sr),len=Math.round((bt(q+1>=tot?q:q+1)-T||0.38)*0.35*sr);
+    let e=0;for(let i=0;i<len;i++){const j=c+i;if(j>=0&&j<n)e+=lp[j]*lp[j]}low[q]=10*Math.log10(e/Math.max(1,len)+1e-9);
+    const pre=spec(c-Math.round(0.016*sr));let post=null;for(const d of[0.004,0.010,0.016]){const s=spec(c+Math.round(d*sr));if(!post)post=s;else for(let b=0;b<NB;b++)post[b]=Math.max(post[b],s[b])}
+    const v=new Float32Array(NB);for(let b=0;b<NB;b++)v[b]=Math.max(0,Math.min(30,post[b]-pre[b]));V.push(v)}
+  const bodyQ=[];for(let q=0;q<tot;q++)if(body[q>>2])bodyQ.push(q);if(!bodyQ.length)return new Uint8Array(tot);
+  const lRef=pct(bodyQ.map(q=>low[q]),0.6),tpl=new Float32Array(NB);for(let b=0;b<NB;b++)tpl[b]=pct(bodyQ.map(q=>V[q][b]),0.6);
+  let tt=0;for(let b=0;b<NB;b++)tt+=tpl[b]*tpl[b];const out=new Uint8Array(tot);
+  for(let q=0;q<tot;q++){let vt=0;for(let b=0;b<NB;b++)vt+=Math.min(V[q][b],1.3*tpl[b])*tpl[b];const p=tt>1?clamp(vt/tt):0,l=clamp((low[q]-(lRef-12))/9);out[q]=Math.round(100*Math.min(1,Math.sqrt(p*l)*1.02))}
   return out}
 async function analyzeTrack(t){
   if(!t.file)throw new AErr('nofile');
@@ -706,73 +743,187 @@ async function analyzeTrack(t){
   const L=chs[0],R=chs[1]||chs[0],n=L.length,dur=n/sr;if(dur<20)throw new AErr('decode','Datei zu kurz oder leer');
   const loud=lufs(chs,sr);await sleep(0);
   let pk=0,clip=0;for(const ch of chs)for(let i=0;i<ch.length;i++){const v=Math.abs(ch[i]);if(v>pk)pk=v;if(v>=0.995)clip++}
-  const HOP=1024,nh=Math.floor(n/HOP);const eA=new Float32Array(nh),eL=new Float32Array(nh),eM=new Float32Array(nh),eH=new Float32Array(nh);
+  const HOP=256,nh=Math.floor(n/HOP);const eA=new Float32Array(nh),eL=new Float32Array(nh),eM=new Float32Array(nh),eH=new Float32Array(nh);
   const aLo=1-Math.exp(-2*Math.PI*150/sr),aHi=1-Math.exp(-2*Math.PI*4000/sr);let l1=0,l2=0,h1=0,h2=0;
   for(let k=0,i=0;k<nh;k++){let sa=0,sl=0,sm=0,shh=0;for(let j=0;j<HOP;j++,i++){const x=(L[i]+R[i])*0.5;l1+=aLo*(x-l1);l2+=aLo*(l1-l2);h1+=aHi*(x-h1);h2+=aHi*(h1-h2);const m=h2-l2,h=x-h2;sa+=x*x;sl+=l2*l2;sm+=m*m;shh+=h*h}eA[k]=sa/HOP;eL[k]=sl/HOP;eM[k]=sm/HOP;eH[k]=shh/HOP}
   const db=downbeats(t,dur);if(!db||db.length<9)throw new AErr('grid');
+  const go=gridOffset(L,R,sr,gridBeats(t,dur)),off=go.off;await sleep(0);
   const nb=db.length-1,dB=v=>r1(10*Math.log10(v+1e-12));const rms=[],low=[],mid=[],hi=[];
-  for(let b=0;b<nb;b++){const h0=Math.floor(db[b]*sr/HOP),hx=Math.max(h0+1,Math.min(nh,Math.floor(db[b+1]*sr/HOP)));let a=0,l=0,m=0,h=0,c=0;for(let k=h0;k<hx;k++){a+=eA[k];l+=eL[k];m+=eM[k];h+=eH[k];c++}c=c||1;rms.push(dB(a/c));low.push(dB(l/c));mid.push(dB(m/c));hi.push(dB(h/c))}
-  const bf=beatSpec(L,R,sr,db,nb);await sleep(0);
-  const rB=pct(rms,0.8),body=rms.map(v=>v>=rB-6);let on=0,beatsBody=0,eHb=0,eAb=0;
-  for(let b=0;b<nb;b++){if(!body[b])continue;beatsBody+=4;const h0=Math.floor(db[b]*sr/HOP),hx=Math.min(nh-1,Math.floor(db[b+1]*sr/HOP));let prev=-200,prev2=-200;
-    for(let k=h0;k<hx;k++){eHb+=eH[k];eAb+=eA[k];const v=10*Math.log10(eH[k]+1e-12);if(v-prev>4&&v-prev2>3)on++;prev2=prev;prev=v}}
+  for(let b=0;b<nb;b++){const h0=Math.max(0,Math.floor((db[b]+off)*sr/HOP)),hx=Math.max(h0+1,Math.min(nh,Math.floor((db[b+1]+off)*sr/HOP)));let a=0,l=0,m=0,h=0,c=0;for(let k=h0;k<hx;k++){a+=eA[k];l+=eL[k];m+=eM[k];h+=eH[k];c++}c=c||1;rms.push(dB(a/c));low.push(dB(l/c));mid.push(dB(m/c));hi.push(dB(h/c))}
+  const bf=beatSpec(L,R,sr,db,nb,off);await sleep(0);
+  const rB=pct(rms,0.8),body=rms.map(v=>v>=rB-6);const kk=kickBeats(L,R,sr,db,nb,off,rms,body);await sleep(0);let on=0,beatsBody=0,eHb=0,eAb=0;
+  const HC=4,nc4=Math.floor(nh/HC),h4=new Float32Array(nc4),a4=new Float32Array(nc4);for(let k=0;k<nc4;k++){let x=0,y=0;for(let j=0;j<HC;j++){x+=eH[k*HC+j];y+=eA[k*HC+j]}h4[k]=x/HC;a4[k]=y/HC} // onset density stays on the coarse 46 ms raster the energy scale was calibrated on
+  for(let b=0;b<nb;b++){if(!body[b])continue;beatsBody+=4;const h0=Math.max(0,Math.floor((db[b]+off)*sr/HOP/HC)),hx=Math.min(nc4-1,Math.floor((db[b+1]+off)*sr/HOP/HC));let prev=-200,prev2=-200;
+    for(let k=h0;k<hx;k++){eHb+=h4[k];eAb+=a4[k];const v=10*Math.log10(h4[k]+1e-12);if(v-prev>4&&v-prev2>3)on++;prev2=prev;prev=v}}
   const opb=beatsBody?on/beatsBody:0,hiRatio=10*Math.log10((eHb+1e-12)/(eAb+1e-12)),bpm=t.bpm||t.tempos[0].bpm;
   const full=rms.filter(v=>v>=rB-4).length/Math.max(1,nb),bassRel=pct(low,0.8)-rB;
   const sT=clamp((bpm-120)/55),sD=clamp((opb-0.4)/2.2),sA=clamp((full-0.4)/0.5),sB=clamp((bassRel+7)/6),sH=clamp((hiRatio+30)/22);
   const score=Math.round(100*(0.3*sT+0.25*sD+0.2*sA+0.15*sB+0.1*sH));
-  return{v:ALG_V,dur:r1(dur),db:db.map(x=>Math.round(x*1000)/1000),rms,low,mid,hi,bf,lufs:r1(loud),peak:r1(20*Math.log10(pk+1e-9)),clip:Math.round(clip/(n*nc)*1e5)/1e5,
+  return{v:ALG_V,dur:r1(dur),db:db.map(x=>Math.round(x*1000)/1000),rms,low,mid,hi,bf,kk,off,offQ:go.q,lufs:r1(loud),peak:r1(20*Math.log10(pk+1e-9)),clip:Math.round(clip/(n*nc)*1e5)/1e5,
     opb:Math.round(opb*100)/100,hiRatio:r1(hiRatio),score,parts:[sT,sD,sA,sB,sH].map(x=>Math.round(x*100)),full:Math.round(full*100),bassRel:r1(bassRel)};
 }
 
 /* ================= cue logic ================= */
-function barT(a,b){const d=a.db;if(b<d.length)return d[Math.max(0,b)];const bar=d[d.length-1]-d[d.length-2];return d[d.length-1]+(b-d.length+1)*bar}
+function barI(a,b){const d=a.db;if(b<d.length)return d[Math.max(0,b)];const bar=d[d.length-1]-d[d.length-2];return d[d.length-1]+(b-d.length+1)*bar}
+function barT(a,b){const i=Math.floor(b),f=b-i,t0=barI(a,i);return f?t0+(barI(a,i+1)-t0)*f:t0}
+/* ================= track structure: phrases, sections, kick ================= */
+const structCache=new WeakMap();
+const med=arr=>{const a=[...arr].sort((x,y)=>x-y);const n=a.length;return n?(n&1?a[n>>1]:(a[n/2-1]+a[n/2])/2):0};
+function structure(a){
+  const hit=structCache.get(a);if(hit)return hit;
+  const nb=a.rms.length,B=bRows(a),kk=a.kk;
+  const ref={rms:pct(a.rms,0.8),low:pct(a.low,0.8),mid:pct(a.mid,0.8),hi:pct(a.hi,0.8)};
+  // per beat / per bar: kick presence 0..1
+  const kq=new Float32Array(nb*4);for(let q=0;q<nb*4;q++)kq[q]=kk?clamp((kk[q]-25)/35):1;
+  const kb=new Float32Array(nb);for(let b=0;b<nb;b++){let x=0;for(let i=0;i<4;i++)x+=kq[b*4+i];kb[b]=x/4}
+  // per bar spectral profile (32 bands, dB)
+  const prof=[];for(let b=0;b<nb;b++){const v=new Float32Array(NBD);if(B)for(let q=0;q<4;q++)for(let u=0;u<SUB;u++)for(let j=0;j<NBD;j++)v[j]+=B[b*4+q][u*FD+j]/(4*SUB);prof.push(v)}
+  const top=new Float32Array(NBD);for(let j=0;j<NBD;j++)top[j]=pct(prof.map(v=>v[j]),0.9);
+  for(const v of prof)for(let j=0;j<NBD;j++)v[j]=Math.max(v[j],top[j]-24)-top[j]; // 0 = loudest this band gets, −24 = gone
+  const medProf=(x,y)=>{x=Math.max(0,x);y=Math.min(nb,y);const o=new Float32Array(NBD);if(y<=x)return null;for(let j=0;j<NBD;j++){const t=[];for(let b=x;b<y;b++)t.push(prof[b][j]);o[j]=med(t)}return o};
+  const medK=(x,y)=>{x=Math.max(0,x);y=Math.min(nb,y);if(y<=x)return 0;const t=[];for(let b=x;b<y;b++)t.push(kb[b]);return med(t)};
+  const nv=W=>{const o=new Float32Array(nb+1);for(let b=1;b<nb;b++){const p=medProf(b-W,b),n=medProf(b,b+W);if(!p||!n)continue;let d=0;for(let j=0;j<NBD;j++)d+=Math.abs(n[j]-p[j]);o[b]=d/NBD+5*Math.abs(medK(b,b+W)-medK(b-W,b))}return o};
+  const n8=nv(8),n4=nv(4),raw=new Float32Array(nb+1);for(let b=1;b<nb;b++)raw[b]=0.6*n8[b]+0.4*n4[b];
+  const sc=Math.max(1.5,pct([...raw],0.93)),sco=new Float32Array(nb+1),fill=new Float32Array(nb+1),trans=new Float32Array(nb+1);
+  // kick switches on or off for good (not just a fill)
+  const isOn=b=>kb[b]>=0.55&&a.low[b]>=ref.low-7;
+  for(let b=2;b<nb-1;b++){const on=isOn(b);if(on===isOn(b-1))continue;let p=0,n=0,pc=0,nc=0;for(let i=1;i<=4;i++){if(b-i>=0){pc++;p+=isOn(b-i)!==on}if(b+i-1<nb){nc++;n+=isOn(b+i-1)===on}}if(p/pc>=0.75&&n/nc>=0.66)trans[b]=1}
+  for(let b=1;b<nb;b++){
+    const r0=a.rms[b],rm=a.rms[b-1],r2=b>1?a.rms[b-2]:r0,l2=b*4;
+    const kLast=Math.min((kq[l2-1]+kq[l2-2])/2,kb[b-1]); // kick missing in the second half of the previous bar …
+    fill[b]=kb[b]>0.7?clamp((0.8-kLast)/0.5):0;          // … and back on the downbeat: classic fill → phrase start
+    fill[b]=Math.max(fill[b],clamp((r0-rm-2)/4)*clamp((r2-rm-2)/4+0.3));
+    sco[b]=Math.min(1.6,raw[b]/sc)+0.55*fill[b]+0.9*trans[b]}
+  // phrase segmentation: dynamic programming, musical section lengths are free, odd ones cost
+  const lc=l=>l%8===0?0:l%4===0?0.3:l%2===0?0.75:1.05;
+  const best=new Float64Array(nb+1).fill(-1e9),from=new Int32Array(nb+1).fill(-1);best[0]=0;
+  for(let e=1;e<=nb;e++)for(let x=Math.max(0,e-72);x<e;x++){const l=e-x;if(l<4&&e<nb&&x>0)continue;
+    const c=x===0?lc(l)*0.6:e===nb?lc(l)*0.25:lc(l);const v=best[x]+(e<nb?sco[e]-0.5:0)-c;if(v>best[e]){best[e]=v;from[e]=x}}
+  const bnd=[];for(let e=nb;e>0;e=from[e])bnd.unshift(from[e]);bnd.push(nb);
+  // sections
+  const E=b=>{const p=prof[b];let m=0,h=0,l=0;for(let j=0;j<NBD;j++){if(j<8)l+=p[j];else if(j<22)m+=p[j];else h+=p[j]}return{l:l/8,m:m/14,h:h/10}};
+  const en=[];for(let b=0;b<nb;b++){const e=E(b);en.push(clamp(1+(0.35*e.l+0.4*e.m+0.25*e.h)/14)*0.6+0.4*kb[b])}
+  const seg=[];for(let i=0;i+1<bnd.length;i++){const s0=bnd[i],e0=bnd[i+1];const x=[];for(let b=s0;b<e0;b++)x.push(en[b]);seg.push({s:s0,e:e0,k:medK(s0,e0),en:med(x),p:medProf(s0,e0)})}
+  const hiE=pct(seg.filter(x=>x.k>0.6).map(x=>x.en),0.75)||pct(seg.map(x=>x.en),0.8);
+  for(const x of seg)x.t=x.k>0.6&&x.en>=hiE-0.12?'main':x.k>0.6?'groove':'break';
+  const first=seg.findIndex(x=>x.t==='main'),last=seg.length-1-[...seg].reverse().findIndex(x=>x.t==='main');
+  seg.forEach((x,i)=>{if(first>=0){if(i<first)x.t='intro';else if(i>last)x.t='outro';else if(x.t==='break'&&i+1<seg.length&&seg[i+1].t==='main'&&i>0&&seg[i-1].t==='break')x.t='build'}});
+  const out={nb,ref,kq,kb,prof,raw,sco,fill,bnd,seg,en,medProf,medK,hiE,sc,isOn};structCache.set(a,out);return out;
+}
 const cueCache=new WeakMap();
+const beatNo=x=>Math.round(x*4)/4; // marker positions are bars, quarter steps = beats
+function beatD(x,y){ // spectral distance of two beats in dB (32 bands, 8 sub-frames); bands that are silent in both do not count
+  let s=0,n=0;for(let q=0;q<SUB;q++){const o=q*FD;let m=-128;for(let j=0;j<NBD;j++){if(x[o+j]>m)m=x[o+j];if(y[o+j]>m)m=y[o+j]}const fl=m-42;
+    for(let j=0;j<NBD;j++){const u=Math.max(fl,x[o+j]),v=Math.max(fl,y[o+j]);if(u===fl&&v===fl)continue;s+=Math.min(14,Math.abs(u-v));n++}}return n?s/n:0}
+function barD(B,x,y){let s=0;for(let i=0;i<4;i++){if(!B[x*4+i]||!B[y*4+i])return 14;s+=beatD(B[x*4+i],B[y*4+i])}return s/4}
+const uniqCache=new WeakMap();
+function uniq(a,b){ // how unlike its neighbourhood is this bar? small = steady groove, large = fill, vocal shot, one-off effect
+  let m=uniqCache.get(a);if(!m){m=new Map();uniqCache.set(a,m)}if(m.has(b))return m.get(b);const B=bRows(a),nb=a.rms.length;let best=14;
+  if(B)for(const k of[1,-1,2,-2,4,-4,8,-8])if(b+k>=0&&b+k<nb)best=Math.min(best,barD(B,b,b+k));m.set(b,best);return best}
+/* A: first downbeat of the sustained full kick (not a fade-in or a filtered pre-kick), on a phrase start */
+function findA(st){
+  const{nb,kb,bnd,sco,isOn}=st,run=(b,n)=>{let x=0,c=0;for(let i=0;i<n&&b+i<nb;i++){x+=isOn(b+i);c++}return c?x/c:0};
+  let k=0;while(k<nb&&!(isOn(k)&&run(k,4)>=0.75&&run(k,8)>=0.75))k++;
+  if(k>=nb){k=0;while(k<nb&&!(kb[k]>=0.5&&kb[Math.min(nb-1,k+1)]>=0.5))k++;if(k>=nb)return{bar:0,kick:-1,al:0,vote:0}}
+  // phrase phase of the following sections (mod 8), strongest boundaries vote
+  const v=new Float32Array(8);let tot=0,cnt=0;for(const b of bnd)if(b>k&&b<=k+72&&b<nb){v[b%8]+=sco[b];tot+=sco[b];cnt++}
+  let p=0;for(let i=1;i<8;i++)if(v[i]>v[p])p=i;const share=tot?v[p]/tot:0;
+  let bar=k,al=0;
+  if(tot>1.5&&share>=0.6&&((k-p)%8+8)%8!==0){const d=((p-k)%8+8)%8; // the groove starts inside a phrase
+    if(d<=2)al=d;else if(d>=6&&k-(8-d)>=0&&kb[k-(8-d)]>=0.4)al=d-8;else if(share>=0.75&&cnt>=3&&run(k+d,4)>=0.75)al=d;bar=k+al}
+  return{bar,kick:k,al,vote:share,phase:p}}
+/* H: where the last full-energy section ends. Candidates are section starts; the mix-out window in front must be an unbroken groove. */
+function findH(a,st,bA){
+  const{nb,kb,bnd,seg,medProf,medK}=st,W=S.mixBars,avg=p=>{let x=0;for(let j=0;j<p.length;j++)x+=p[j];return x/p.length};
+  const rich=(x,y)=>{const p=medProf(x,y);return p?avg(p):-24};
+  let tail=nb;while(tail>8&&(a.rms[tail-1]<st.ref.rms-12||kb[tail-1]<0.25))tail--; // last bar that still has music with a kick
+  let mus=nb;while(mus>tail&&a.rms[mus-1]<st.ref.rms-20)mus--; // music after the kick has stopped = beatless outro
+  const cands=[],mainR=pct(seg.filter(x=>x.k>0.6&&x.e-x.s>=4).map(x=>avg(x.p)),0.6);
+  const low=a.low,rms=a.rms,ref=st.ref;
+  for(const b of[...new Set([...bnd.filter(x=>x>0&&x<tail),tail])]){
+    if(b-W<bA||b<Math.max(16,nb*0.25))continue;
+    // window quality: kick on every bar except an optional fill right before H
+    let bad=0;for(let i=b-W;i<b;i++)if(kb[i]<0.6&&i<b-1)bad++;if(kb[b-W]<0.75||bad>Math.max(W>=8?1:0,Math.floor(W/16))||(W>=8&&medK(b-8,b)<0.75))continue;
+    {const wl=[],wr=[];let hole=0;for(let i=b-W;i<b;i++){wl.push(low[i]);wr.push(rms[i]);if(i<b-1&&(low[i]<ref.low-6||rms[i]<ref.rms-5))hole++}if(med(wl)<ref.low-3.5||med(wr)<ref.rms-3.5||hole>Math.max(1,Math.floor(W/12)))continue} // full low end, no hole: never inside a break
+    const si=seg.findIndex(x=>x.s<b&&x.e>=b),prev=seg[si],before=prev?Math.max(rich(b-8,b),prev.e===b&&prev.e-prev.s<=24?avg(prev.p):-24):rich(b-8,b);
+    const a8=b<mus?rich(b,Math.min(nb,b+8)):-24,kL=medK(b-8,b)-(b<tail?medK(b,Math.min(nb,b+4)):0);
+    let fut=-24;for(const x of seg)if(x.s>=b&&x.e-x.s>=4&&x.k>=0.6)fut=Math.max(fut,avg(x.p)); // richest groove still to come
+    const left=Math.max(tail,mus)-b,d=before-Math.max(a8,fut),dk=before-a8,i=bnd.indexOf(b),l0=i>0?b-bnd[i-1]:b-(bnd.filter(x=>x<b).pop()||0);
+    const al=l0%8===0?1:l0%4===0?0.6:0.15;
+    const type=left<4?'end':kL>0.5&&fut>before-1.2?'break':'outro';
+    cands.push({b,type,d,dk,kL,left,al,before,fut,score:0})}
+  const thr=0.8*S.sens/3;
+  for(const c of cands){const v=Math.min(4,c.type==='break'?c.dk:c.d),late=c.b/Math.max(1,tail);
+    if(c.type==='end')c.score=1.1;
+    else if(c.type==='break')c.score=(late>=0.6?0.3:0.1)+0.1*v;
+    else c.score=v>=thr?1.5+0.5*v+(c.kL>0.5?1:0):v>=thr*0.5?0.8+0.3*v+0.4*late:0.15+0.15*late;
+    if(c.type!=='end'){if(c.left>56)c.score=Math.min(c.score-1.6,0.2);else if(c.left>48)c.score-=0.4}
+    c.score-=0.5*Math.max(0,mainR-c.before-1.2);c.score+=0.35*c.al+(c.type!=='break'&&c.left>=8&&c.left<=40?0.25:0)}
+  cands.sort((x,y)=>y.score-x.score);
+  return{cands,tail,thr}}
 function computeCues(t){
-  const a=t.analysis;if(!a)return null;const sig=JSON.stringify([S.mixBars,S.loopMax,S.sens,S.phrase,t.manual]);const cc=cueCache.get(t);if(cc&&cc.sig===sig&&cc.a===a)return cc.c;
-  const nb=a.rms.length,P=S.phrase,flags=[],info=[];let conf=2;
-  const rB=pct(a.rms,0.8),lB=pct(a.low,0.8);
-  let bA=0;while(bA<nb&&(a.rms[bA]<rB-30||a.rms[bA]<-50))bA++;if(bA>=nb)bA=0;
-  if(bA>0){info.push(`A nach ${bA} leisen Intro-Bars gesetzt`);conf=Math.min(conf,1)}
-  const E=a.rms.map((r,i)=>r+a.mid[i]);
-  const hh=new Array(P).fill(0);for(let b=4;b<nb-4;b++){let x=0,y=0;for(let i=0;i<4;i++){x+=E[b+i];y+=E[b-4+i]}const d=Math.abs(x-y)/4;if(d>3)hh[b%P]+=d}
-  let phase=0;const hp=hh.indexOf(Math.max(...hh));if(hp!==0&&hp!==P/2&&hh[hp]>0&&hh[hp]>=1.5*hh[0]){phase=hp;flags.push(`Phrasen starten eher auf Bar ${hp+1} – Downbeat im rekordbox-Grid prüfen`);conf=0}
-  let p0=bA;while(((p0-phase)%P+P)%P!==0)p0++;
-  const ph=[];for(let s=p0;s+P<=nb;s+=P){let m=0;for(let i=s;i<s+P;i++)m+=E[i];ph.push({s,e:m/P})}
-  let bG,drop=0;
-  if(!ph.length){bG=nb;flags.push('Track zu kurz für Phrasen-Analyse');conf=0}
-  else{const peak=Math.max(...ph.map(p=>p.e));let best=-1;
-    for(let j=Math.max(1,Math.floor(ph.length*0.25));j<ph.length;j++){let after=-Infinity;for(let k=j;k<ph.length;k++)after=Math.max(after,ph[k].e);const d=ph[j-1].e-after;if(ph[j-1].e>=peak-6&&d>=S.sens&&d>drop){drop=d;best=j}}
-    if(best<0){bG=p0+ph.length*P;info.push('Kein Outro: Energie bleibt bis zum Ende – G/H liegen auf den letzten Bars')}
-    else{bG=ph[best].s;if(drop<S.sens*1.5){info.push(`Energieabfall eher schwach (${drop.toFixed(1)} dB)`);conf=Math.min(conf,1)}}}
-  let bF=bG-S.mixBars;if(bF<bA){bF=bA;flags.push('Track kürzer als Mix-out-Fenster – G liegt auf A');conf=0}
-  let bL,LBt,lErr;{const r=pickLoop(a,Math.max(bA,bG-32),nb,rB);bL=r.bar;LBt=r.len;lErr=r.err;
-    if(r.err>LOOP_T){info.push(`Kein wirklich sauberer Loop gefunden (Ähnlichkeit ${Math.round(100-10*r.err)} %) – Loop anhören`);conf=Math.min(conf,1)}}
+  const a=t.analysis;if(!a)return null;const sig=JSON.stringify([S.mixBars,S.loopMax,S.sens,S.phrase,S.mixTarget,t.manual]);const cc=cueCache.get(t);if(cc&&cc.sig===sig&&cc.a===a)return cc.c;
+  const nb=a.rms.length,flags=[],info=[];let conf=2;const low=c=>{conf=Math.min(conf,c)};
+  const st=structure(a),rB=st.ref.rms;
+  if(a.offQ!=null&&a.offQ<1.25){info.push('Beatgrid ließ sich am Audio nicht eindeutig prüfen');low(1)}
+  const fa=findA(st);let bA=fa.bar;
+  if(fa.kick<0){flags.push('Kein durchgehender Kick gefunden – A liegt auf dem Trackanfang');low(0)}
+  else{if(bA>0&&!fa.al)info.push(`Kick setzt auf Takt ${bA+1} ein, dort liegt A`);
+    if(fa.al>0){info.push(`Kick ab Takt ${fa.kick+1}, Phrase beginnt auf Takt ${bA+1} – A liegt auf der Phrase`);if(fa.al>2)low(1)}
+    else if(fa.al<0){info.push(`Kick setzt ${-fa.al} Takt(e) nach dem Phrasenbeginn voll ein`)}}
+  const phase=((bA%8)+8)%8;
+  {const ln=st.seg.filter(x=>x.s>=bA&&x.e<nb).map(x=>x.e-x.s);if(ln.length>=4&&ln.filter(l=>l%4).length/ln.length>0.45){flags.push('Abschnitte passen nicht ins Taktraster – Beatgrid bzw. Takt 1 in rekordbox prüfen');low(0)}}
+  // downbeat check: do the big changes fall on beat 1 of the grid?
+  const bp=beatPhase(a,st);if(bp.phase){flags.push(`Downbeat scheint um ${bp.phase} Beat${bp.phase>1?'s':''} verschoben – Grid in rekordbox prüfen`);low(0)}
+  const fh=findH(a,st,bA);let cand=fh.cands;
+  if(S.mixTarget==='break'){const br=cand.filter(c=>c.type==='break');if(br.length)cand=[br.sort((x,y)=>(y.dk+y.al*2)-(x.dk+x.al*2))[0],...cand.filter(c=>c!==br[0])]}
+  let bG,drop=0,hT='';
+  if(!cand.length){bG=fh.tail;const g=Math.max(bA,bG-S.mixBars);flags.push('Kein klares Mix-Out-Fenster gefunden');low(0);bG=Math.max(g+1,bG)}
+  else{const c=cand[0];bG=c.b;drop=c.type==='break'?c.dk:c.d;hT=c.type;
+    if(c.type==='end'){info.push('Kein Outro: volle Energie bis zum Ende, H liegt am Trackende')}
+    else if(c.type==='outro'&&drop<fh.thr*0.5){flags.push('Kein klarer Energieabfall – H bitte selbst prüfen');low(0)}
+    else if(c.type==='outro'&&drop<fh.thr){info.push(`Energieabfall nur schwach (${drop.toFixed(1)} dB)`);low(1)}
+    else if(c.type==='break')info.push('H liegt am Breakdown, danach kommt der Track zurück');
+    if(c.al<0.5){info.push('H liegt nicht auf einer 4-Takt-Phrase');low(1)}
+    const c2=cand[1];if(c2&&c2.score>c.score-0.1&&Math.abs(c2.b-c.b)>=8&&c.score<2){info.push('Mehrere mögliche Mix-Out-Punkte');low(1)}}
+  let bF=bG-S.mixBars;if(bF<bA){bF=bA;flags.push('Track kürzer als das Mix-Out-Fenster – G liegt auf A');low(0)}
+  for(const[nm,b]of[['G',bF],['H',bG]])if(b>0&&b<nb){const v=vocalIn(a,st,b);if(v){info.push(`Bei ${nm} setzt ein Vocal oder Lead ein – kurz anhören`);low(1)}}
+  let bL,LBt,lErr;{const r=pickLoop(a,st,Math.max(bA,bF-8),fh.tail);bL=r.bar;LBt=r.len;lErr=r.err;
+    if(r.err>LOOP_T){info.push(r.err>=99?'Kein sauberer Loop gefunden – bitte anhören':`Loop nicht ganz sauber (Abweichung ${r.err.toFixed(1)} dB) – bitte anhören`);low(r.err>LOOP_T+1.2?0:1);if(r.err>LOOP_T+1.2)flags.push('Emergency Loop unsicher')}}
   const m=t.manual||{},fG=m.G??bG;
-  if(m.L!=null){const r=loopAt(a,m.L*4,rB);LBt=r.len;lErr=r.err}
-  const c={p0,phase,flags,info,drop,LB:LBt,lErr,conf:['low','mid','high'][conf],auto:{A:bA,F:bF,G:bG,L:bL},A:m.A??bA,F:m.F??(m.G!=null?Math.max(m.A??bA,fG-S.mixBars):bF),G:fG,L:m.L??bL,
-    manual:['A','F','G','L'].some(k=>m[k]!=null),ok:!!m.ok};
+  if(m.L!=null){const r=loopAt(a,st,m.L,m.LB);LBt=r.len;lErr=r.err}else if(m.LB){LBt=m.LB;lErr=loopErr(a,st,bL,m.LB).err}
+  const c={p0:bA,phase,flags,info,drop,LB:LBt,lErr,conf:['low','mid','high'][conf],auto:{A:bA,F:bF,G:bG,L:bL},A:m.A??bA,F:m.F??(m.G!=null?Math.max(m.A??bA,fG-S.mixBars):bF),G:fG,L:m.L??bL,
+    manual:['A','F','G','L','LB'].some(k=>m[k]!=null),ok:!!m.ok,hType:hT,seg:st.seg,bnd:st.bnd,hCands:fh.cands.slice(0,6).map(x=>({b:x.b,type:x.type,d:r1(x.type==='break'?x.dk:x.d),score:Math.round(x.score*100)/100}))};
   cueCache.set(t,{sig,a,c});return c;
 }
-const LOOP_T=1.5,LOOP_LENS=[16,8,4];
-function beatT(a,q){const b=Math.floor(q/4),f=(q-b*4)/4,t0=barT(a,b);return f?t0+(barT(a,b+1)-t0)*f:t0}
-const rowsCache=new WeakMap();function bRows(a){if(!a.bf||!(a.bf instanceof Int8Array))return null;let r=rowsCache.get(a);if(!r){r=[];for(let i=0;i*DIM<a.bf.length;i++)r.push(a.bf.subarray(i*DIM,(i+1)*DIM));rowsCache.set(a,r)}return r}
-function cosC(x,o,n,y){let mx=0,my=0;for(let j=0;j<n;j++){mx+=x[o+j];my+=y[o+j]}mx/=n;my/=n;let xy=0,xx=0,yy=0;for(let j=0;j<n;j++){const a=x[o+j]-mx,b=y[o+j]-my;xy+=a*b;xx+=a*a;yy+=b*b}return xy/(Math.sqrt(xx*yy)+1e-9)}
-function beatSim(x,y){let t=0;for(let q=0;q<SUB;q++){const o=q*FD;t+=0.5*cosC(x,o,NBD,y)+0.5*cosC(x,o+NBD,12,y)}return t/SUB}
-function loopErr(B,s,L){ // 0 = perfect seam. Seam: beats before the jump vs. beats that originally lead into the loop start; block: loop vs. what follows
-  if(!B||s<2||s+L>B.length||B[0].length!==DIM)return 99;const ref=s+2*L<=B.length?s+L:(s-L>=0?s-L:-1);if(ref<0)return 99;
-  let seam=0;for(let i=1;i<=2;i++)seam+=beatSim(B[s+L-i],B[s-i]);seam/=2;let blk=0;for(let i=0;i<L;i++)blk+=beatSim(B[s+i],B[ref+i]);blk/=L;
-  return Math.round(100*(1-Math.min(seam,blk)))/10}
-const kickCache=new WeakMap();function loopOk(a,s,L,rB,noKick){const B=bRows(a);if(!B)return false;const kv=r=>{let m=-200;for(let j=0;j<KICKB;j++)m=Math.max(m,r[j]);return m};let kr=kickCache.get(a);if(kr==null){kr=pct(B.map(kv),0.8);kickCache.set(a,kr)}
-  for(let i=s;i<s+L;i++)if(!B[i]||(!noKick&&kv(B[i])<kr-10))return false;for(let b=Math.floor(s/4);b<Math.ceil((s+L)/4);b++)if(a.rms[b]<rB-9)return false;return true}
-function loopAt(a,s,rB){let best=null;for(const L of LOOP_LENS){if(L>S.loopMax)continue;const e=loopOk(a,s,L,rB)?loopErr(bRows(a),s,L):99;if(!best||e<best.err)best={len:L,err:e};if(e<=LOOP_T&&(!best||e<=best.err+0.4))return{len:L,err:e}}return best||{len:4,err:99}}
-function pickLoop(a,fromBar,nb,rB){
-  if(!bRows(a))return{bar:Math.max(0,Math.min(fromBar,nb-2)),len:Math.min(16,S.loopMax),err:99};
-  const cand={};for(let b=Math.max(1,fromBar);b<nb;b++)for(const L of LOOP_LENS){if(L>S.loopMax)continue;const s=b*4;if(!loopOk(a,s,L,rB,pickLoop.nk))continue;(cand[L]=cand[L]||[]).push({bar:b,len:L,err:loopErr(bRows(a),s,L)})}
-  const best={};for(const L in cand){const mn=Math.min(...cand[L].map(x=>x.err));best[L]=cand[L].filter(x=>x.err<=mn+0.15).pop()} // latest of the near-best
-  if(!Object.keys(best).length&&!pickLoop.nk){pickLoop.nk=1;try{return pickLoop(a,fromBar,nb,rB)}finally{pickLoop.nk=0}}
-  const all=Object.values(best);if(!all.length)return{bar:Math.max(1,Math.min(fromBar,nb-2)),len:4,err:99};
-  const mn=Math.min(...all.map(x=>x.err));for(const L of LOOP_LENS)if(best[L]&&best[L].err<=LOOP_T&&best[L].err<=mn+0.4)return best[L];
-  return all.find(x=>x.err===mn)}
+function beatPhase(a,st){ // kick/section onsets per beat position; only report a clearly different beat
+  const{nb,kq,bnd}=st,h=[0,0,0,0];let n=0;
+  for(let q=8;q<nb*4-8;q++){let p=0,f=0;for(let i=1;i<=8;i++)p+=kq[q-i];for(let i=0;i<8;i++)f+=kq[q+i];if(p<1.2&&f>6.2&&kq[q]>0.5&&kq[q-1]<0.4){h[q&3]++;n++}}
+  let m=0;for(let i=1;i<4;i++)if(h[i]>h[m])m=i;return{phase:m&&n>=3&&h[m]>=0.67*n?m:0,h}}
+function vocalIn(a,st,b){ // something new and tonal enters in the mid band on this bar that was not there in the 4 bars before
+  const{prof,nb}=st;if(b<4||b+2>nb)return false;let up=0;for(let j=12;j<22;j++){const p=[];for(let i=b-4;i<b;i++)p.push(prof[i][j]);const n=(prof[b][j]+prof[Math.min(nb-1,b+1)][j])/2;up+=Math.max(0,n-Math.max(...p))}return up/10>3.2}
+/* Emergency loop: seamless means (1) the beats before the loop end sound like the beats before the loop start, (2) what follows the loop end is what the loop starts with,
+   (3) every bar is steady groove (no fill, no vocal fragment), (4) kick on every beat, (5) constant level. Error in dB of spectral distance. */
+const LOOP_T=1.8,LOOP_LENS=[16,8,4];
+function beatT(a,q){const b=Math.floor(q/4),f=(q-b*4)/4,t0=barI(a,b);return f?t0+(barI(a,b+1)-t0)*f:t0}
+const rowsCache=new WeakMap();function bRows(a){if(!a.bf||!ArrayBuffer.isView(a.bf))return null;let r=rowsCache.get(a);if(!r){r=[];for(let i=0;i*DIM<a.bf.length;i++)r.push(a.bf.subarray(i*DIM,(i+1)*DIM));rowsCache.set(a,r)}return r}
+function loopErr(a,st,bar,L){
+  const B=bRows(a),s=Math.round(bar*4),e=s+L;if(!B||s<4||e>st.nb*4)return{err:99};
+  let pre=0,post=0,np=0;for(let i=1;i<=4;i++)pre+=beatD(B[s-i],B[e-i]);pre/=4;
+  for(let i=0;i<4&&e+i<B.length;i++){post+=beatD(B[s+i],B[e+i]);np++}post=np>=2?post/np:9; // loop must not touch the very end of the file
+  let u=0;for(let b=Math.floor(s/4);b<Math.ceil(e/4);b++)u=Math.max(u,uniq(a,b));
+  let kMin=1;for(let q=s;q<e;q++)kMin=Math.min(kMin,st.kq[q]);
+  let lo=99,hi=-99;for(let b=Math.floor(s/4);b<Math.ceil(e/4);b++){lo=Math.min(lo,a.rms[b]);hi=Math.max(hi,a.rms[b])}
+  const seam=Math.max(pre,0.5*(pre+Math.min(post,6)));
+  let err=Math.max(seam,0.9*u)+0.25*Math.max(0,hi-lo-1.2)+(hi<st.ref.rms-8?1.5:0)+(kMin<0.3?3*(0.3-kMin)/0.3:0);
+  return{err:Math.round(err*100)/100,pre,post,u,kMin}}
+function loopAt(a,st,bar,fix){if(fix)return{len:fix,err:loopErr(a,st,bar,fix).err};let best=null;for(const L of LOOP_LENS){if(L>S.loopMax)continue;const e=loopErr(a,st,bar,L).err;if(e<=LOOP_T)return{len:L,err:e};if(!best||e<best.err)best={len:L,err:e}}return best||{len:4,err:99}}
+function pickLoop(a,st,from,to){
+  if(!bRows(a))return{bar:Math.max(0,Math.min(from,st.nb-2)),len:Math.min(16,S.loopMax),err:99};
+  const C=[];for(let b=Math.max(1,Math.floor(from));b<to;b++)for(const L of LOOP_LENS){if(L>S.loopMax||b+L/4>to)continue;const r=loopErr(a,st,b,L);
+    const i=st.bnd.filter(x=>x<=b).pop()||0,onPh=(b-i)%4===0?0:(b-i)%2===0?0.15:0.35;C.push({bar:b,len:L,err:r.err,rank:r.err+onPh+0.5*(to-b)/Math.max(8,to-from)+(b+L/4>to-1?0.8:0)})}
+  for(const L of LOOP_LENS){const ok=C.filter(c=>c.len===L&&c.err<=LOOP_T).sort((x,y)=>x.rank-y.rank);if(ok.length)return ok[0]}
+  return C.sort((x,y)=>x.rank-y.rank)[0]||{bar:Math.max(1,Math.min(from,st.nb-2)),len:4,err:99}}
 function cueTimes(t){const c=computeCues(t);if(!c)return null;const a=t.analysis,cap=x=>Math.min(x,a.dur-0.05);return{A:cap(barT(a,c.A)),F:cap(barT(a,c.F)),G:cap(barT(a,c.G)),L0:cap(barT(a,c.L)),L1:cap(beatT(a,c.L*4+c.LB)),c}}
 function isOurLoop(n){n=n||'';return n.startsWith(CUE.L.name)||n.startsWith('Exit Loop')}
 function slotState(t,k){if(k==='L')return t.marks.some(m=>m.num===-1&&isOurLoop(m.name))?'repl':'set';const ex=t.marks.find(m=>m.num===CUE[k].num);return ex?(S.overwrite?'repl':'kept'):'set'}

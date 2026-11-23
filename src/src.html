@@ -182,7 +182,7 @@ svg.spark{display:block}
 .jb i{display:none}
 .jb .t{color:var(--smoke);font-size:11px;font-weight:500;font-variant-numeric:tabular-nums}
 .tl-wrap{padding:6px 18px 8px;position:relative}
-canvas#tl{width:100%;height:150px;display:block;border-radius:12px;background:var(--night);cursor:crosshair;touch-action:none}
+canvas#tl{width:100%;height:132px;display:block;border-radius:12px;background:var(--night);cursor:crosshair;touch-action:pan-y}
 .tl-tip{position:absolute;top:0;pointer-events:none;background:var(--raised);border:1px solid var(--line2);padding:3px 8px;border-radius:7px;font-size:12px;display:none;white-space:nowrap}
 .dfoot{display:flex;gap:8px;padding:0 18px 14px;color:var(--dim);font-size:12.5px;flex-wrap:wrap;align-items:center}
 .dfoot>span{padding:3px 0}
@@ -302,6 +302,12 @@ ol.guide b{color:var(--bone)}
   .jumps{order:6;width:100%;display:grid;grid-template-columns:repeat(4,1fr)}
   .jb{width:auto;height:58px}
   #dActs{order:7;width:100%;flex-wrap:wrap}
+  .player{position:fixed;left:0;right:0;bottom:0;z-index:43;max-width:none;background:var(--raised);border-top:1px solid var(--line2);padding:7px 12px calc(7px + env(safe-area-inset-bottom));height:calc(56px + env(safe-area-inset-bottom))}
+  body.haslib{padding-bottom:calc(56px + env(safe-area-inset-bottom))}
+  .viewsw{padding:2px}.viewsw button{padding:6px 8px;font-size:12px}
+  body.haslib .detail{bottom:calc(56px + env(safe-area-inset-bottom))}
+  body.haslib .toasts{bottom:calc(70px + env(safe-area-inset-bottom))}
+  .adj{padding:0 12px 8px}.adjrow .grp button{height:42px;min-width:42px}.adjrow .nm{width:100%}.cuesw{height:42px}
   .tl-wrap{padding:6px 12px}
   canvas#tl{height:130px}
   .dfoot{padding:0 14px 16px}.hint{display:none}
@@ -313,6 +319,37 @@ ol.guide b{color:var(--bone)}
   .empty{margin:5vh auto}
   .toasts{left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom))}.toast{max-width:none}
 }
+/* player */
+.player{display:none;align-items:center;gap:10px;min-width:0;max-width:300px;flex:0 1 300px}
+body.haslib .player{display:flex}
+.plbtn{flex:none;width:38px;height:38px;border-radius:50%;border:0;background:var(--bone);color:var(--night);display:grid;place-items:center;cursor:pointer}
+.plbtn:disabled{opacity:.4}.plbtn svg{fill:currentColor;stroke:none;width:17px;height:17px}
+body.playing .plbtn{background:var(--ok)}
+.plx{min-width:0;flex:1}.plt{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12.5px;line-height:1.25}
+.pls{display:flex;gap:8px;color:var(--dim);font-size:11px;font-variant-numeric:tabular-nums}body.playing #plState{color:var(--ok)}
+.plbar{height:3px;border-radius:2px;background:var(--line2);overflow:hidden;margin-top:3px}.plbar i{display:block;height:100%;width:0;background:var(--ok)}
+tr.isplay td.num,.pi.isplay .pnum{color:transparent!important;position:relative}
+tr.isplay td.num:after,.pi.isplay .pnum:after{content:"";position:absolute;right:8px;top:50%;width:12px;height:12px;margin-top:-6px;background:linear-gradient(var(--ok),var(--ok)) 0 100%/3px 60% no-repeat,linear-gradient(var(--ok),var(--ok)) 4.5px 100%/3px 100% no-repeat,linear-gradient(var(--ok),var(--ok)) 9px 100%/3px 45% no-repeat;animation:eq .7s ease-in-out infinite alternate}
+@keyframes eq{to{background-size:3px 100%,3px 40%,3px 85%}}
+tr.isplay .ti,.pi.isplay .ptitle{color:var(--ok)}
+.art .pb{position:absolute;inset:0;display:grid;place-items:center;background:rgba(17,16,15,.62);opacity:0;transition:opacity .12s;border:0;cursor:pointer;color:var(--bone);padding:0}.art .pb svg{fill:currentColor;stroke:none;width:17px;height:17px}
+tr.r:hover .art .pb,.pi:hover .art .pb,.art .pb:focus-visible,.isplay .art .pb{opacity:1}
+@media (hover:none){.art .pb{opacity:.75;background:rgba(17,16,15,.35)}}
+#btnPlay.on{background:var(--ok)}
+.viewsw{flex:none}
+/* marker editing */
+.adj{padding:0 18px 8px;display:grid;gap:8px}.adj[hidden]{display:none}
+.adjrow{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.adjrow .nm{display:inline-flex;align-items:center;gap:8px;font-weight:600;min-width:150px}.adjrow .nm i{width:11px;height:11px;border-radius:3px;background:var(--c)}
+.adjrow .grp{display:inline-flex;border:1px solid var(--line2);border-radius:10px;overflow:hidden}
+.adjrow .grp button{border:0;border-right:1px solid var(--line2);background:var(--raised);height:34px;padding:0 11px;cursor:pointer;font-size:12.5px;white-space:nowrap}.adjrow .grp button:last-child{border-right:0}
+.adjrow .grp button:hover{background:var(--hover)}.adjrow .grp button.on{background:var(--bone);color:var(--night);font-weight:600}
+.adjrow .grp.lbl:before{content:attr(data-l);align-self:center;padding:0 9px;color:var(--dim);font-size:12px}
+canvas#tlz{width:100%;height:92px;display:block;border-radius:12px;background:var(--night);cursor:crosshair;touch-action:pan-y}
+.cuesw{display:inline-flex;align-items:center;gap:9px;border:1px solid var(--line2);border-radius:10px;padding:0 11px;height:34px;cursor:pointer;font-size:12.5px;background:var(--raised)}.cuesw.on{border-color:#2f5a3e;color:var(--ok);background:rgba(76,208,125,.08)}
+.cuesw .kn{width:26px;height:15px;border-radius:99px;background:var(--line2);position:relative;margin:0}.cuesw .kn:after{content:"";position:absolute;left:2px;top:2px;width:11px;height:11px;border-radius:50%;background:var(--bone);transition:.15s}.cuesw.on .kn{background:var(--ok)}.cuesw.on .kn:after{left:13px}
+.ctog{border:1px dashed var(--line2);background:none;border-radius:7px;color:var(--dim);font-size:11.5px;padding:3px 8px;cursor:pointer;white-space:nowrap}.ctog:hover{color:var(--bone);border-color:var(--dim)}
+.cuebar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 /* hero */
 .empty{max-width:1120px}
 .hero{display:grid;grid-template-columns:1.05fr 1fr;gap:48px;align-items:center;margin-bottom:56px}
@@ -353,6 +390,8 @@ ol.guide b{color:var(--bone)}
     <button class="pill" id="pillMusic" title="Musikordner oder USB-Stick verbinden"><span class="dot"></span><span>Musikordner verbinden</span></button>
   </div>
   <div class="spacer"></div>
+  <div class="player" id="player" aria-label="Wiedergabe"><button class="plbtn" id="plBtn" title="Abspielen / Stopp (Leertaste)" aria-label="Abspielen" disabled><svg class="i" viewBox="0 0 24 24" id="plIco"><path d="M8 5.5v13l11-6.5z"/></svg></button><div class="plx"><div class="plt"><b id="plTitle">Nichts ausgewählt</b></div><div class="pls"><span id="plState">gestoppt</span><span id="plTime"></span></div><div class="plbar"><i id="plBar"></i></div></div></div>
+  <div hidden class="viewsw seg" id="viewSw" role="group" aria-label="Ansicht"><button data-view="prep" class="on" aria-pressed="true">Tracks</button><button data-view="plan" aria-pressed="false">Set-Planer</button></div>
   <div class="progress" id="progress" role="status"><span id="progTxt"></span><div class="pbar"><i id="progBar"></i></div><button class="btn ghost" id="btnCancel">Stopp</button></div>
   <button class="btn primary" id="btnAnalyze" disabled title="Auswahl oder ganze Playlist analysieren (Enter)"><svg class="i" viewBox="0 0 24 24"><path d="M3 12h3l3-8 4 16 3-8h5"/></svg><span id="btnAnalyzeTxt">Analysieren</span></button>
   <div class="menu-wrap">
@@ -372,9 +411,10 @@ ol.guide b{color:var(--bone)}
   <button class="curpl" id="curPl" aria-label="Playlist wählen"></button>
   <label class="search"><svg class="i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><input id="q" placeholder="Suchen…" title="Suchen (Taste /)" autocomplete="off" aria-label="Tracks durchsuchen"></label>
   <div class="tools"><div class="seg" id="filt" role="group" aria-label="Filter"></div>
-  <div class="sorts" id="sorts"></div></div>
+  <div class="cuebar" id="cueBar"></div><div class="sorts" id="sorts"></div></div>
 </div>
 <main id="main"></main>
+<section class="plan" id="plan" hidden aria-label="Set-Planer"></section>
 <section class="detail hidden" id="detail" aria-label="Track-Details">
   <div class="grab"></div><button class="btn ghost icon dclose" id="dClose" aria-label="Details schließen"><svg class="i" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
   <div class="dh">
@@ -385,7 +425,8 @@ ol.guide b{color:var(--bone)}
     <div class="jumps" id="dJumps"></div>
     <div id="dActs" style="display:flex;gap:6px"></div>
   </div>
-  <div class="tl-wrap"><canvas id="tl" tabindex="0" aria-label="Energieverlauf mit Cue-Markern. A F G L wählen, Pfeiltasten verschieben"></canvas><div class="tl-tip" id="tlTip"></div></div>
+  <div class="tl-wrap"><canvas id="tl" tabindex="0" aria-label="Energieverlauf mit Cue-Markern. Tasten A, G, H, L wählen einen Marker, Pfeiltasten verschieben ihn"></canvas><div class="tl-tip" id="tlTip"></div></div>
+  <div class="adj" id="dAdj"></div>
   <div class="dfoot" id="dFoot"></div>
 </section>
 <div class="scrim" id="scrim"></div>
@@ -406,17 +447,17 @@ const r1=x=>Math.round(x*10)/10;
 const pct=(arr,p)=>{const a=arr.filter(Number.isFinite).sort((x,y)=>x-y);if(!a.length)return 0;return a[Math.min(a.length-1,Math.floor(p*(a.length-1)))]};
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 const nfc=s=>String(s||'').normalize('NFC');
-function toast(msg,err){const d=document.createElement('div');d.className='toast'+(err?' err':'');d.textContent=msg;$('#toasts').append(d);setTimeout(()=>d.remove(),err?7000:3800)}
+function toast(msg,err,withUndo){const d=document.createElement('div');d.className='toast'+(err?' err':'');d.textContent=msg;if(withUndo){const b=document.createElement('button');b.className='lnk';b.textContent='Rückgängig';b.onclick=()=>{d.remove();undo()};d.append(' ',b)}while($('#toasts').children.length>3)$('#toasts').firstChild.remove();$('#toasts').append(d);setTimeout(()=>d.remove(),err?7000:3800)}
 function download(name,data,type){const b=data instanceof Blob?data:new Blob([data],{type:type||'application/octet-stream'});const url=URL.createObjectURL(b),a=document.createElement('a');a.href=url;a.download=name;a.rel='noopener';a.style.display='none';document.body.append(a);a.click();a.remove();
   /* Blob-URL erst spät freigeben: Chrome liest die Datei teils erst nach Speichern-Dialog/Sicherheitsprüfung – sonst "Fehlgeschlagen" */
   setTimeout(()=>URL.revokeObjectURL(url),10*60*1000)}
 const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
 const safeName=s=>String(s).replace(/[\/\\:*?"<>|%\x00-\x1f]/g,'-').replace(/^\.+/,'').slice(0,120)||'Playlist';
 
-const ALG_V=10;const APP_V='2.5';
+const ALG_V=11;const APP_V='3.0';
 const RATING_VAL=[0,51,102,153,204,255];
 const ENERGY_T=[48,56,63,70];
-const DEFAULTS={mixBars:8,mixV:2,loopMax:16,loopBars:8,sens:3,overwrite:false,energyMode:'abs',writeRating:true,writeComment:true,phrase:8,requireConfirm:true,maxMin:20};
+const DEFAULTS={mixBars:8,mixV:2,loopMax:16,loopBars:8,sens:3,overwrite:false,energyMode:'abs',writeRating:true,writeComment:true,phrase:8,requireConfirm:true,maxMin:20,mixTarget:'outro',playOnDrop:true};
 const CUE={A:{num:0,name:'Start',rgb:[40,226,20],col:'#28E214'},F:{num:6,name:'Mix-Out Start',rgb:[255,154,31],col:'#FF9A1F'},G:{num:7,name:'Mix-Out Ende',rgb:[240,68,58],col:'#F0443A'},L:{name:'Emergency Loop',col:'#3D9BFF'}};
 const LBL={A:'A',F:'G',G:'H',L:'Loop'};const KEY2CUE={A:'A',G:'F',H:'G',L:'L'};
 const ERR={nofile:'Audiodatei nicht gefunden',decode:'Datei nicht lesbar',nogrid:'Kein Beatgrid',grid:'Beatgrid unbrauchbar',toolong:'Zu lang',mem:'Zu wenig Speicher',other:'Analyse fehlgeschlagen'};
@@ -441,8 +482,9 @@ try{Object.assign(S,JSON.parse(localStorage.getItem('jailr-prep-settings')||'{}'
 if(S.mixV!==2){S.mixBars=8;S.mixV=2} // v2.5: Fenster wird in Beats gedacht, Standard 32 Beats
 function saveS(){try{localStorage.setItem('jailr-prep-settings',JSON.stringify(S))}catch(e){}}
 const IDB={db:undefined,
-  open(){if(this.db!==undefined)return Promise.resolve(this.db);return new Promise(res=>{try{const r=indexedDB.open('jailr-prep',2);r.onupgradeneeded=()=>{for(const n of['analysis','manual'])if(!r.result.objectStoreNames.contains(n))r.result.createObjectStore(n)};r.onsuccess=()=>{this.db=r.result;res(this.db)};r.onerror=()=>{this.db=null;res(null)}}catch(e){this.db=null;res(null)}})},
+  open(){if(this.db!==undefined)return Promise.resolve(this.db);return new Promise(res=>{try{const r=indexedDB.open('jailr-prep',3);r.onupgradeneeded=()=>{for(const n of['analysis','manual','handles','sets'])if(!r.result.objectStoreNames.contains(n))r.result.createObjectStore(n)};r.onsuccess=()=>{this.db=r.result;this.db.onversionchange=()=>{this.db.close();this.db=undefined};res(this.db)};r.onblocked=()=>toast('JAILR Prep ist noch in einem anderen Tab offen. Bitte den anderen Tab schließen.',1);r.onerror=()=>{this.db=null;res(null)}}catch(e){this.db=null;res(null)}})},
   async all(st){const db=await this.open();const m=new Map();if(!db)return m;return new Promise(res=>{try{const q=db.transaction(st).objectStore(st).openCursor();q.onsuccess=()=>{const c=q.result;if(c){m.set(c.key,c.value);c.continue()}else res(m)};q.onerror=()=>res(m)}catch(e){res(m)}})},
+  async get(st,k){const db=await this.open();if(!db)return null;return new Promise(res=>{try{const q=db.transaction(st).objectStore(st).get(k);q.onsuccess=()=>res(q.result??null);q.onerror=()=>res(null)}catch(e){res(null)}})},
   async put(st,k,v){const db=await this.open();if(!db)return;return new Promise(res=>{try{const tx=db.transaction(st,'readwrite');v==null?tx.objectStore(st).delete(k):tx.objectStore(st).put(v,k);tx.oncomplete=()=>res();tx.onerror=()=>res()}catch(e){res()}})}
 };
 const mKey=t=>nfc(t.fname).toLowerCase()+'|'+t.size;
@@ -459,32 +501,62 @@ function mkTrack(o){
   t.key=parseKey(t.keyRaw);t.cam=t.key?t.key.n+t.key.l:'';t.keyName=t.key?(CAM2KEY[t.cam]||t.keyRaw):t.keyRaw;
   return t;
 }
-function resetLib(){state.tracks.clear();state.order=[];state.playlists=[];state.tree=[];state.sel.clear();state.focus=null;HIST.length=0}
+function resetLib(){stop();REDO.length=0;PB.last=null;state.lib=null;state.locSet=new Set();state.tracks.clear();state.order=[];state.playlists=[];state.tree=[];state.sel.clear();state.focus=null;HIST.length=0}
 
 /* ================= import: rekordbox XML ================= */
 function locToPath(loc){let s=loc||'';s=s.replace(/^file:\/\/localhost/i,'').replace(/^file:\/\//i,'');try{s=decodeURIComponent(s)}catch(e){}if(/^\/[A-Za-z]:\//.test(s))s=s.slice(1);return nfc(s)}
-function loadXml(text,name){
+function parseLib(text){
   if(/<!DOCTYPE|<!ENTITY/i.test(text.slice(0,4096)))throw new Error('XML mit DOCTYPE/ENTITY wird aus Sicherheitsgründen nicht geladen. Bitte direkt aus rekordbox exportieren.');
   const doc=new DOMParser().parseFromString(text,'application/xml');
   if(doc.querySelector('parsererror')||!doc.querySelector('DJ_PLAYLISTS'))throw new Error('Das ist keine gültige rekordbox-XML-Datei.');
-  resetLib();state.source='xml';state.libName=name;state.product=doc.querySelector('PRODUCT')?.getAttribute('Version')||'';
-  const byLoc=new Map();
+  const tracks=[],byLoc=new Map();
   for(const el of doc.querySelectorAll('COLLECTION > TRACK')){
     const g=a=>el.getAttribute(a)||'';const path=locToPath(g('Location'));
     const t=mkTrack({id:g('TrackID'),el,title:g('Name')||path.split('/').pop(),artist:g('Artist'),album:g('Album'),genre:g('Genre'),bpm:+g('AverageBpm')||0,keyRaw:g('Tonality'),
       dur:+g('TotalTime')||0,size:+g('Size')||0,rating:+g('Rating')||0,comments:g('Comments'),loc:g('Location'),path,fname:path.split('/').pop(),kind:g('Kind'),kbps:+g('BitRate')||0,srate:+g('SampleRate')||0,
       tempos:[...el.querySelectorAll('TEMPO')].map(x=>({t:+x.getAttribute('Inizio'),bpm:+x.getAttribute('Bpm'),beat:+(x.getAttribute('Battito')||1)})).filter(x=>x.bpm>0&&isFinite(x.t)),
       marks:[...el.querySelectorAll('POSITION_MARK')].map(x=>({num:+x.getAttribute('Num'),type:+x.getAttribute('Type'),start:+x.getAttribute('Start'),end:x.hasAttribute('End')?+x.getAttribute('End'):null,name:x.getAttribute('Name')||''}))});
-    if(!t.id)continue;state.tracks.set(t.id,t);state.order.push(t.id);byLoc.set(g('Location'),t.id);
-  }
+    if(!t.id)continue;tracks.push(t);byLoc.set(g('Location'),t.id)}
+  return{doc,tracks,byLoc,product:doc.querySelector('PRODUCT')?.getAttribute('Version')||''}}
+const isStickLoc=loc=>/^file:\/\/(localhost)?\/Volumes\//i.test(loc||'');
+function libInfo(lib){ // is this really the collection – or one of our own exports / a stick-based file?
+  const files=lib.tracks.filter(t=>/^file:\/\/(localhost)?\//i.test(t.loc)),stick=files.filter(t=>isStickLoc(t.loc)).length;
+  const own=[...lib.doc.querySelectorAll('PLAYLISTS NODE')].some(n=>n.getAttribute('Name')==='JAILR Prep')&&lib.doc.querySelectorAll('PLAYLISTS NODE[Type="1"]').length<=2;
+  return{own,stick,files:files.length,stickMost:files.length>0&&stick/files.length>0.5}}
+function loadXml(text,name){
+  const lib=parseLib(text),doc=lib.doc,byLoc=lib.byLoc;
+  if(state.source==='usb'&&state.tracks.size){attachLib(lib,name);return}
+  resetLib();state.source='xml';state.libName=name;state.product=lib.product;state.libInfo=libInfo(lib);
+  for(const t of lib.tracks){if(!state.tracks.has(t.id))state.order.push(t.id);state.tracks.set(t.id,t);state.locSet.add(t.loc)}
   const walk=(node,depth,path)=>{for(const ch of [...node.children].filter(c=>c.tagName==='NODE')){const nm=ch.getAttribute('Name')||'';
     if(ch.getAttribute('Type')==='0'){const fp=[...path,nm];state.tree.push({type:'folder',name:nm,depth,key:fp.join('/')});walk(ch,depth+1,fp)}
     else{const kt=ch.getAttribute('KeyType');const ids=[...ch.children].filter(c=>c.tagName==='TRACK').map(c=>kt==='1'?byLoc.get(c.getAttribute('Key')):c.getAttribute('Key')).filter(id=>state.tracks.has(id));
       const idx=state.playlists.length;state.playlists.push({name:nm,folder:path,ids});state.tree.push({type:'list',name:nm,depth,idx,parent:path.join('/')})}}};
   const root=doc.querySelector('PLAYLISTS > NODE');if(root)walk(root,0,[]);
   afterLoad();
+  if(state.libInfo.own||state.libInfo.stickMost)setTimeout(()=>openModal('libwarn'),900);
 }
-
+/* Stick as source: every track is tied to its entry in the real collection (same Location, TrackID, cues, grid), so rekordbox never sees a second copy */
+function attachLib(lib,name){
+  const inf=libInfo(lib);if(inf.own||inf.stickMost){state.libInfo=inf;openModal('libwarn',{attach:1});return}
+  const stem=n=>nfc(n).toLowerCase().replace(/\.[a-z0-9]{2,4}$/,'').trim(),norm=x=>nfc(x).toLowerCase().replace(/[^\p{L}\p{N}]+/gu,' ').trim(),ext=n=>(n.split('.').pop()||'').toLowerCase();
+  const byName=new Map(),byTitle=new Map(),add=(m,k,t)=>{if(!k)return;if(!m.has(k))m.set(k,[]);m.get(k).push(t)};
+  for(const l of lib.tracks){if(!/^file:\/\/(localhost)?\//i.test(l.loc)||isStickLoc(l.loc))continue;add(byName,nfc(l.fname).toLowerCase(),l);add(byTitle,norm(l.title)+'|'+norm(l.artist),l)}
+  state.lib={name,n:lib.tracks.length,tracks:lib.tracks};state.locSet=new Set(lib.tracks.map(t=>t.loc));state.product=lib.product;
+  let ok=0;const used=new Map();
+  for(const t of state.tracks.values()){
+    const near=l=>!l.dur||!t.dur||Math.abs(l.dur-t.dur)<=2,pick=c=>{c=(c||[]).filter(near);if(c.length>1&&t.size)c=c.filter(l=>l.size===t.size).length?c.filter(l=>l.size===t.size):c;return c.length===1?c[0]:null};
+    let l=pick(byName.get(nfc(t.fname).toLowerCase()));
+    if(!l){const s=stem(t.fname);if(s.length>=12){const c=[];for(const[k,arr]of byName)if(ext(k)===ext(t.fname)&&stem(k).startsWith(s))c.push(...arr);l=pick(c)}}
+    if(!l)l=pick(byTitle.get(norm(t.title)+'|'+norm(t.artist)));
+    if(l&&used.has(l.id)){used.get(l.id).libT=null;l=null}
+    t.libT=l||null;if(l){used.set(l.id,t)}}
+  for(const t of state.tracks.values()){if(!t.libT)continue;ok++;const l=t.libT;t.stick={marks:t.stick?.marks||t.marks,tempos:t.stick?.tempos||t.tempos};
+    t.el=l.el;t.loc=l.loc;t.marks=l.marks;if(l.tempos.length)t.tempos=l.tempos;t.rating=l.rating;t.outId=l.id;t.path=l.path;t.stickPath=t.stickPath||('/Volumes/'+state.volName+t.usbRel);
+    if(!t.orig)t.comments=l.comments;else t.orig.comments=l.comments;applyMeta(t)}
+  afterLoad(true);
+  const miss=state.tracks.size-ok;toast(`Collection verknüpft: ${ok} von ${state.tracks.size} Stick-Tracks zugeordnet${miss?`, ${miss} ohne Treffer`:''}. Exporte zeigen jetzt auf deine Library.`,miss>ok);
+}
 /* ================= import: rekordbox USB export (export.pdb + ANLZ) ================= */
 const RB={
   str(dv,o){const b=dv.getUint8(o);
@@ -532,10 +604,10 @@ const RB={
       p+=lt}
     return{beats,cob,co2,pv}}
 };
-async function loadUsb(files){
+async function loadUsb(files,volHint){
   const pdbF=files.find(f=>/(^|\/)PIONEER\/rekordbox\/export\.pdb$/i.test(relOf(f)));
   const rp=relOf(pdbF);const root=rp.slice(0,rp.search(/PIONEER\/rekordbox\/export\.pdb$/i));
-  const vol=(root.split('/').filter(Boolean)[0])||'USB';
+  const vol=volHint||(root.split('/').filter(Boolean).pop())||'USB';
   const lib=RB.parse(await pdbF.arrayBuffer());
   if(!lib.tracks.length)throw new Error('Keine Tracks in export.pdb gefunden.');
   const fm=new Map(files.map(f=>[nfc(relOf(f)).toLowerCase(),f]));
@@ -585,20 +657,21 @@ async function loadArt(t){
   ART.set(t.id,url);return url}
 function pumpArt(){while(artBusy<4&&ARTQ.size){const id=ARTQ.values().next().value;ARTQ.delete(id);const t=state.tracks.get(id);if(!t)continue;artBusy++;
   loadArt(t).then(url=>{artBusy--;for(const img of $$(`img[data-art="${CSS.escape(id)}"]`)){if(url){img.src=url;img.classList.add('on')}}pumpArt()})}}
-function artTag(t,cls){const u=ART.get(t.id);if(u===undefined&&(t.artFile||t.file))ARTQ.add(t.id);return`<span class="art ${cls||''}">${u?`<img class="on" src="${u}" alt="">`:`<img data-art="${esc(t.id)}" alt="">`}<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="2"/></svg></span>`}
-async function afterLoad(){
-  state.cur=state.playlists.length?0:-1;state.sel.clear();state.focus=null;
+function artTag(t,cls,play){const u=ART.get(t.id);if(u===undefined&&(t.artFile||t.file))ARTQ.add(t.id);return`<span class="art ${cls||''}">${u?`<img class="on" src="${u}" alt="">`:`<img data-art="${esc(t.id)}" alt="">`}<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="2"/></svg>${play?`<button class="pb" data-play="${esc(t.id)}" tabindex="-1" aria-label="Abspielen oder stoppen" title="Abspielen / Stopp"><svg viewBox="0 0 24 24">${PB.id===t.id&&PB.st!=='stop'?ICO_STOP:ICO_PLAY}</svg></button>`:''}</span>`}
+async function afterLoad(keep){
+  if(!keep){state.cur=state.playlists.length?0:-1;state.sel.clear();state.focus=null}
   if(state.source==='xml')matchFiles();
   const[an,mn]=await Promise.all([IDB.all('analysis'),IDB.all('manual')]);let n=0;
-  for(const t of state.tracks.values()){const m=mn.get(mKey(t));if(m){t.manual=m;applyMeta(t)}const a=an.get(aKey(t));if(a&&a.v===ALG_V){t.analysis=a;t.status='done';n++}}
+  for(const t of state.tracks.values()){const m=mn.get(mKey(t));if(m){t.manual=m;applyMeta(t)}const a=an.get(aKey(t));if(a&&a.v===ALG_V){t.analysis=a;t.status='done';n++}else if(keep&&t.analysis){t.analysis=null;t.status='idle'}}
   renderAll();
   const nf=[...state.tracks.values()].filter(t=>!t.tempos.length).length;
-  toast(`${state.tracks.size} Tracks · ${state.playlists.length} Playlists geladen${n?` · ${n} frühere Analysen wiederhergestellt`:''}${nf?` · ${nf} ohne Beatgrid`:''}`);
+  if(!keep)toast(`${state.tracks.size} Tracks · ${state.playlists.length} Playlists geladen${n?` · ${n} frühere Analysen wiederhergestellt`:''}${nf?` · ${nf} ohne Beatgrid`:''}`);
 }
 
 /* ================= music files ================= */
 const AUDIO_RE=/\.(mp3|wav|aiff?|flac|m4a|aac|mp4|ogg)$/i;
 const relOf=f=>(f.webkitRelativePath||f._rel||f.name);
+function linkUsbAudio(){const m=new Map();for(const arr of state.files.values())for(const x of arr)m.set(x.rp.toLowerCase(),x.f);for(const t of state.tracks.values()){if(t.file)continue;const r=nfc(t.usbRel).toLowerCase();for(const[k,f]of m)if(('/'+k).endsWith(r)){t.file=f;break}}}
 function addFiles(list,quiet){
   let n=0;
   for(const f of list){if(!AUDIO_RE.test(f.name)||/(^|\/)\._/.test(relOf(f)))continue;
@@ -629,14 +702,65 @@ async function readDropEntries(items){
   for(const it of items){const e=it.webkitGetAsEntry&&it.webkitGetAsEntry();if(e)await walk(e,'')}
   return out;
 }
-async function handleFiles(files){
+async function handleFiles(files,vol){
   const xml=files.find(f=>/\.xml$/i.test(f.name)&&!/(^|\/)\._/.test(relOf(f)));
   const pdb=files.some(f=>/(^|\/)PIONEER\/rekordbox\/export\.pdb$/i.test(relOf(f)));
   if(xml&&!pdb){await readXmlFile(xml)}
-  if(pdb&&!state.source){try{await loadUsb(files);return}catch(e){toast('USB-Stick konnte nicht gelesen werden: '+e.message,1)}}
-  if(pdb&&state.source==='xml')toast('Stick erkannt – Audiodateien werden genutzt, die geladene XML bleibt Grundlage.');
+  if(pdb&&!state.source){try{await loadUsb(files,vol);return}catch(e){toast('USB-Stick konnte nicht gelesen werden: '+e.message,1)}}
+  if(pdb&&state.source==='xml')toast('Stick erkannt. Die Audiodateien werden genutzt, deine Collection-XML bleibt Grundlage.');
+  if(!pdb&&state.source==='usb'&&files.some(f=>AUDIO_RE.test(f.name))){addFiles(files,true);linkUsbAudio();renderAll();toast(`${[...state.tracks.values()].filter(t=>t.file).length} von ${state.tracks.size} Stick-Tracks mit Musik verbunden`);return}
   if(files.some(f=>AUDIO_RE.test(f.name)))addFiles(files);
 }
+
+/* ----- folder access without the "upload?" prompt (Chrome/Edge): read-only directory handles, remembered for next time ----- */
+const dirApi=()=>typeof window.showDirectoryPicker==='function'&&!matchMedia('(pointer:coarse)').matches;
+const DIRS={list:[],
+  async init(){this.list=((await IDB.get('handles','dirs'))||[]).filter(h=>h&&h.kind==='directory')},
+  async save(h){const keep=[];for(const o of this.list){try{if(!(await o.isSameEntry(h)))keep.push(o)}catch(e){}}this.list=[h,...keep].slice(0,4);await IDB.put('handles','dirs',this.list)},
+  async rootOf(h){for(const o of this.list){try{const p=await o.resolve(h);if(p&&p.length&&await o.queryPermission({mode:'read'})==='granted')return o}catch(e){}}return null}};
+async function childDir(h,name){for await(const[n,c]of h.entries())if(c.kind==='directory'&&n.toLowerCase()===name.toLowerCase())return c;return null}
+async function stickParts(h){ // find PIONEER and Contents from whatever folder was chosen
+  const nm=h.name.toLowerCase();
+  let pio=await childDir(h,'PIONEER'),con=await childDir(h,'Contents');if(pio||con)return{root:h,pio,con};
+  if(nm==='pioneer'||await childDir(h,'USBANLZ'))return{root:null,pio:h,con:null};
+  if(nm==='contents')return{root:null,pio:null,con:h};
+  let n=0;for await(const[,c]of h.entries()){if(c.kind!=='directory'||n++>40)continue;try{pio=await childDir(c,'PIONEER');if(pio)return{root:c,pio,con:await childDir(c,'Contents')}}catch(e){}}
+  return{root:null,pio:null,con:null}}
+async function walkDir(h,path,want,onN){
+  const out=[],jobs=[];
+  const rec=async(d,p,depth)=>{if(depth>12)return;const fs=[];try{for await(const[n,c]of d.entries()){if(n.startsWith('.'))continue;if(c.kind==='directory')fs.push(rec(c,p+n+'/',depth+1));else if(want(p+n))jobs.push([c,p+n])}}catch(e){}await Promise.all(fs)};
+  await rec(h,path,0);let i=0;
+  const work=async()=>{while(i<jobs.length){const[c,p]=jobs[i++];try{const f=await c.getFile();f._rel=p;out.push(f)}catch(e){}if(out.length%100===0&&onN)onN(out.length,jobs.length)}};
+  await Promise.all(Array.from({length:12},work));return out}
+let picking=false;
+function scanMsg(on,txt){$('#progress').classList.toggle('on',on);if(on){$('#progTxt').textContent=txt;$('#progBar').style.width='100%'}$('#btnCancel').hidden=on}
+async function openDir(h,remember=true){
+  if(remember){const r=await DIRS.rootOf(h);if(r){const sp=await stickParts(r);if(sp.pio&&/^(pioneer|contents)$/i.test(h.name))h=r}}
+  scanMsg(true,'Ordner wird gelesen…');
+  try{
+    const sp=await stickParts(h);const tick=(a,b)=>scanMsg(true,`${a} von ${b} Dateien…`);
+    if(sp.pio||sp.con){
+      const pre=sp.root?sp.root.name+'/':'',files=[];
+      if(sp.pio)files.push(...await walkDir(sp.pio,pre+'PIONEER/',p=>/PIONEER\/(rekordbox\/export\.pdb|USBANLZ\/.+\.(DAT|EXT)|Artwork\/.+\.(jpg|png))$/i.test(p),tick));
+      if(sp.con)files.push(...await walkDir(sp.con,pre+'Contents/',p=>AUDIO_RE.test(p),tick));
+      else if(sp.root)files.push(...await walkDir(sp.root,pre,p=>AUDIO_RE.test(p)&&!/(^|\/)(PIONEER|_JAILR Serato)\//.test(p),tick));
+      if(remember)await DIRS.save(sp.root||h);scanMsg(false);state.stickHandle=sp.root||h;
+      await handleFiles(files,sp.root?sp.root.name:'');
+      if(sp.pio&&!sp.con&&!sp.root&&state.source==='usb'&&!files.some(f=>AUDIO_RE.test(f.name)))openModal('needdir',{what:'Contents',h});
+      else if(sp.con&&!sp.pio&&!state.source)openModal('needdir',{what:'PIONEER',h});
+      return}
+    const files=await walkDir(h,h.name+'/',p=>AUDIO_RE.test(p)||/\.xml$/i.test(p)&&p.split('/').length<=3,tick);scanMsg(false);
+    const audio=files.filter(f=>AUDIO_RE.test(f.name));if(!audio.length){toast('In diesem Ordner liegt keine Musik und kein rekordbox-Stick.',1);return}
+    if(remember)await DIRS.save(h);await handleFiles(audio);
+  }catch(e){toast('Ordner konnte nicht gelesen werden: '+(e.message||e.name),1)}finally{scanMsg(false)}
+}
+async function pickDir(startIn){
+  if(picking)return;picking=true;
+  try{const o={id:'jailr-music',mode:'read'};if(startIn)o.startIn=startIn;const h=await window.showDirectoryPicker(o);await openDir(h)}
+  catch(e){if(e.name!=='AbortError')toast(e.name==='SecurityError'?'Dieser Ordner ist vom Browser gesperrt. Bitte den Stick oder den Musikordner selbst wählen.':'Auswahl fehlgeschlagen: '+e.message,1)}
+  finally{picking=false}
+}
+async function reconnect(i){const h=DIRS.list[i];if(!h)return;try{let p=await h.queryPermission({mode:'read'});if(p!=='granted')p=await h.requestPermission({mode:'read'});if(p!=='granted'){toast('Zugriff nicht erlaubt.');return}await openDir(h,false)}catch(e){toast(`„${h.name}“ ist gerade nicht erreichbar – Stick eingesteckt?`,1)}}
 
 /* ================= audio decoding ================= */
 function parseAiff(ab){
@@ -888,7 +1012,7 @@ function computeCues(t){
     const c2=cand[1];if(c2&&c2.score>c.score-0.1&&Math.abs(c2.b-c.b)>=8&&c.score<2){info.push('Mehrere mögliche Mix-Out-Punkte');low(1)}}
   let bF=bG-S.mixBars;if(bF<bA){bF=bA;flags.push('Track kürzer als das Mix-Out-Fenster – G liegt auf A');low(0)}
   for(const[nm,b]of[['G',bF],['H',bG]])if(b>0&&b<nb){const v=vocalIn(a,st,b);if(v){info.push(`Bei ${nm} setzt ein Vocal oder Lead ein – kurz anhören`);low(1)}}
-  let bL,LBt,lErr;{const r=pickLoop(a,st,Math.max(bA,bF-8),fh.tail);bL=r.bar;LBt=r.len;lErr=r.err;
+  let bL,LBt,lErr;{let r=pickLoop(a,st,Math.max(bA,bF-8),fh.tail);if(r.err>LOOP_T){const r2=pickLoop(a,st,Math.max(bA,bF-40),fh.tail);if(r2.err<r.err-0.3)r=r2}bL=r.bar;LBt=r.len;lErr=r.err;
     if(r.err>LOOP_T){info.push(r.err>=99?'Kein sauberer Loop gefunden – bitte anhören':`Loop nicht ganz sauber (Abweichung ${r.err.toFixed(1)} dB) – bitte anhören`);low(r.err>LOOP_T+1.2?0:1);if(r.err>LOOP_T+1.2)flags.push('Emergency Loop unsicher')}}
   const m=t.manual||{},fG=m.G??bG;
   if(m.L!=null){const r=loopAt(a,st,m.L,m.LB);LBt=r.len;lErr=r.err}else if(m.LB){LBt=m.LB;lErr=loopErr(a,st,bL,m.LB).err}
@@ -950,10 +1074,19 @@ function autoStars(t){const a=t.analysis;if(!a)return 0;
 function stars(t){return t.manual&&t.manual.E?t.manual.E:autoStars(t)}
 
 /* ================= manual edits + undo ================= */
-const HIST=[];
-function snap(t){HIST.push({id:t.id,m:t.manual?JSON.parse(JSON.stringify(t.manual)):null});if(HIST.length>300)HIST.shift()}
-function setManual(t,patch,noSnap){if(!noSnap)snap(t);t.manual=Object.assign({},t.manual||{},patch);for(const k in t.manual)if(t.manual[k]==null)delete t.manual[k];if(!Object.keys(t.manual).length)t.manual=null;IDB.put('manual',mKey(t),t.manual);refreshTrack(t)}
-function undo(){const h=HIST.pop();if(!h){toast('Nichts zum Rückgängigmachen');return}const t=state.tracks.get(h.id);if(!t)return;t.manual=h.m;IDB.put('manual',mKey(t),t.manual);applyMeta(t);if(state.focus!==t.id){state.focus=t.id;state.sel=new Set([t.id])}refreshTrack(t);toast('Rückgängig: '+t.title)}
+const HIST=[],REDO=[];
+const cloneM=m=>m?JSON.parse(JSON.stringify(m)):null;
+function pushHist(list){HIST.push(list);REDO.length=0;if(HIST.length>300)HIST.shift()}
+function snap(t){pushHist([{id:t.id,m:cloneM(t.manual)}])}
+function cleanM(t){if(!t.manual)return;for(const k in t.manual)if(t.manual[k]==null)delete t.manual[k];if(!Object.keys(t.manual).length)t.manual=null}
+function setManual(t,patch,noSnap){if(!noSnap)snap(t);t.manual=Object.assign({},t.manual||{},patch);cleanM(t);IDB.put('manual',mKey(t),t.manual);refreshTrack(t)}
+function setMany(ids,patch,msg){const ts=ids.map(id=>state.tracks.get(id)).filter(Boolean);if(!ts.length)return;pushHist(ts.map(t=>({id:t.id,m:cloneM(t.manual)})));for(const t of ts){t.manual=Object.assign({},t.manual||{},typeof patch==='function'?patch(t):patch);cleanM(t);IDB.put('manual',mKey(t),t.manual)}renderAll();if(msg)toast(msg,0,1)}
+function stepHist(from,to,word){const h=from.pop();if(!h){toast(word==='Rückgängig'?'Nichts zum Rückgängigmachen':'Nichts zum Wiederholen');return}
+  const back=[];for(const x of h){const t=state.tracks.get(x.id);if(!t)continue;back.push({id:x.id,m:cloneM(t.manual)});t.manual=cloneM(x.m);IDB.put('manual',mKey(t),t.manual);applyMeta(t)}
+  to.push(back);if(h.length===1){const t=state.tracks.get(h[0].id);if(t&&state.focus!==t.id&&state.view.includes(t.id)){stop();state.focus=t.id;state.sel=new Set([t.id])}}
+  renderAll();const t=state.tracks.get(h[0].id);toast(`${word}: ${h.length>1?h.length+' Tracks':t?t.title:''}`)}
+function undo(){stepHist(HIST,REDO,'Rückgängig')}
+function redo(){stepHist(REDO,HIST,'Wiederholt')}
 function refreshTrack(t){relCache=null;updateRow(t);if(t.id===state.focus)renderDetail();renderBar()}
 
 /* ================= quality / status ================= */
@@ -961,7 +1094,7 @@ function gainOf(t){if(!t.analysis||state.refLufs==null)return null;return Math.r
 function qFlags(t){const f=[];if(t.kbps&&t.kbps<160)f.push(`Niedrige Bitrate: ${t.kbps} kbps${t.kbps<128?' – deutlich hörbar, besser neu besorgen':' – auf großer Anlage hörbar'}`);
   if(t.fileAmb)f.push('Mehrere Dateien mit gleichem Namen – Zuordnung prüfen (Pfad im Tooltip)');
   const a=t.analysis;if(a){const g=gainOf(t);if(g!=null&&Math.abs(g)>=3)f.push(`Lautstärke weicht ${g>0?'+':''}${g.toFixed(1)} dB vom Playlist-Schnitt ab – Gain anpassen`);if(a.clip>0.0005)f.push(`Übersteuert: ${(a.clip*100).toFixed(2)} % der Samples am Anschlag`)}return f}
-function statusOf(t){if(t.status==='busy')return'busy';if(t.status==='error')return'err';if(!t.analysis)return t.file?'open':'nofile';const c=computeCues(t);if(needsConfirm(t)||c.flags.length&&!c.ok||qFlags(t).length)return'warn';return'done'}
+function statusOf(t){if(t.status==='busy')return'busy';if(t.status==='error')return'err';if(!t.analysis)return t.file?'open':'nofile';const c=computeCues(t);if(cuesOn(t)&&(needsConfirm(t)||c.flags.length&&!c.ok)||qFlags(t).length)return'warn';return'done'}
 
 /* ================= views ================= */
 function listIds(){return state.cur<0?state.order:(state.playlists[state.cur]?.ids||[])}
@@ -987,16 +1120,17 @@ function renderAll(){renderTop();renderSide();renderBar();renderMain();renderDet
 function musicLabel(){const all=[...state.tracks.values()],found=all.filter(t=>t.file).length;return state.fileCount?(all.length?`Musik: ${found}/${all.length} gefunden`:`${state.fileCount} Dateien`):'Musik verbinden'}
 function renderTop(){
   const pl=$('#pillLib'),pm=$('#pillMusic'),all=[...state.tracks.values()],found=all.filter(t=>t.file).length;
-  pl.className='pill'+(state.source?' ok':'');pl.lastElementChild.textContent=state.source?`${state.libName} · ${state.tracks.size} Tracks`:'Library laden';
+  pl.className='pill'+(state.source?' ok':'');pl.className='pill'+(state.source==='usb'&&!state.lib?' warn':state.source?' ok':'');pl.lastElementChild.textContent=state.source==='usb'?(state.lib?`${state.volName} · Collection verknüpft`:`${state.volName} · Collection fehlt`):state.source?`${state.libName} · ${state.tracks.size} Tracks`:'Library laden';
   pm.className='pill'+(state.fileCount?(found===all.length?' ok':' warn'):'');
   pm.lastElementChild.textContent=state.fileCount?(all.length?`Musik: ${found}/${all.length} gefunden`:`${state.fileCount} Dateien`):'Musikordner verbinden';
   $('#btnAnalyze').disabled=!state.source||state.busy;$('#btnExport').disabled=!state.source;
   const n=state.sel.size>1?state.sel.size:0;$('#btnAnalyzeTxt').textContent=n?`${n} analysieren`:'Playlist analysieren';
 }
+const musicOk=()=>state.fileCount>0&&[...state.tracks.values()].some(t=>t.file);
 function renderSide(){
   const el=$('#side');if(!state.source){el.innerHTML='<div class="srcbox only-m"><button class="btn sm primary" data-src="lib">rekordbox XML laden</button><button class="btn sm" data-src="music">Musik oder Stick wählen</button></div><div class="side-h">Playlists</div><div class="pl" style="color:var(--fg3)">Noch keine Library geladen</div>';return}
   const prog=ids=>{const n=ids.length,d=ids.filter(id=>state.tracks.get(id)?.analysis).length;return`<span class="prog" title="${d}/${n} analysiert"><i style="width:${n?d/n*100:0}%"></i></span>`};
-  let h=`<div class="srcbox only-m"><button class="btn sm" data-src="lib">${esc(state.libName)} · ${state.tracks.size} Tracks</button><button class="btn sm" data-src="music">${musicLabel()}</button></div><div class="side-h">Library</div><div class="pl ${state.cur<0?'active':''}" data-pl="-1" tabindex="0"><svg class="i" viewBox="0 0 24 24"><path d="M4 5h16M4 12h16M4 19h10"/></svg><span class="nm">Collection</span>${prog(state.order)}<span class="ct">${state.order.length}</span></div><div class="side-h">Playlists</div>`;
+  let h=`<div class="srcbox only-m"><button class="btn sm" data-src="lib">${esc(state.libName)} · ${state.tracks.size} Tracks</button><button class="btn sm" data-src="music">${musicLabel()}</button>${!musicOk()&&DIRS.list.length?DIRS.list.slice(0,2).map((d,i)=>`<button class="btn sm" data-re="${i}">„${esc(d.name)}“ verbinden</button>`).join(''):''}</div>${!musicOk()&&DIRS.list.length?`<div class="srcbox no-m" style="padding:8px 4px">${DIRS.list.slice(0,2).map((d,i)=>`<button class="btn sm" data-re="${i}" title="Gemerkten Ordner wieder verbinden">„${esc(d.name)}“ verbinden</button>`).join('')}</div>`:''}<div class="side-h">Library</div><div class="pl ${state.cur<0?'active':''}" data-pl="-1" tabindex="0"><svg class="i" viewBox="0 0 24 24"><path d="M4 5h16M4 12h16M4 19h10"/></svg><span class="nm">Collection</span>${prog(state.order)}<span class="ct">${state.order.length}</span></div><div class="side-h">Playlists</div>`;
   const hidden=p=>{for(const c of state.collapsed)if(p===c||p.startsWith(c+'/'))return true;return false};
   for(const n of state.tree){
     if(n.type==='folder'){const par=n.key.split('/').slice(0,-1).join('/');if(par&&hidden(par))continue;
@@ -1011,6 +1145,8 @@ function renderBar(){
   const ids=listIds().map(id=>state.tracks.get(id)).filter(Boolean),cnt={all:ids.length,open:0,done:0,warn:0,err:0};
   for(const t of ids){const s=statusOf(t);if(s==='done')cnt.done++;else if(s==='warn')cnt.warn++;else if(s==='open')cnt.open++;else if(s==='err'||s==='nofile')cnt.err++}
   $('#filt').innerHTML=[['all','Alle'],['open','Offen'],['done','Fertig'],['warn','Prüfen'],['err','Fehler']].map(([k,l])=>`<button data-f="${k}" class="${state.filter===k?'on':''}" aria-pressed="${state.filter===k}">${l}<span class="n">${cnt[k]}</span></button>`).join('');
+  {const an=ids.filter(t=>t.analysis),on=an.filter(cuesOn).length;const sel=state.sel.size>1?[...state.sel].map(id=>state.tracks.get(id)).filter(t=>t&&t.analysis):null,scope=sel||an,sOn=scope.filter(cuesOn).length;
+   $('#cueBar').innerHTML=scope.length?`<button class="cuesw ${sOn===scope.length?'on':''}" id="cueAll" title="${sel?'Cues für die Auswahl':'Cues für alle analysierten Tracks dieser Playlist'} an- oder ausschalten"><span class="kn"></span>Cues ${sel?'(Auswahl)':'(Playlist)'}: ${sOn} von ${scope.length}</button>`:''}
   const used=new Set(state.sort.map(s=>s.k));
   $('#sorts').innerHTML=`<span class="lbl">Sortierung</span>`+state.sort.map((s,i)=>`<span class="chip" draggable="true" data-i="${i}" title="Ziehen zum Umsortieren"><span class="lv">${i+1}</span>${SORTS[s.k].l}<button class="dir" data-dir="${i}" aria-label="Richtung umkehren">${s.d>0?'↑':'↓'}</button>${state.sort.length>1||s.k!=='idx'?`<button class="x" data-rm="${i}" aria-label="Ebene entfernen">×</button>`:''}</span>`).join('')
    +`<select class="add" id="addSort" aria-label="Sortierebene hinzufügen"><option value="">+ Ebene</option>${Object.entries(SORTS).filter(([k])=>!used.has(k)).map(([k,v])=>`<option value="${k}">${v.l}</option>`).join('')}<option disabled>──────</option><option value="p:harm">Preset: Harmonisch</option><option value="p:build">Preset: Energie-Aufbau</option><option value="p:peak">Preset: Peak zuerst</option></select>`;
@@ -1019,21 +1155,21 @@ const STI={busy:'<span class="st"><span class="spin"></span>läuft</span>',done:
 function gainCell(t){const g=gainOf(t);if(g==null)return'–';const ab=Math.abs(g);return`<span class="gn ${ab>=3?'bad':ab>=1.5?'mid':''}" title="Gain-Korrektur ggü. Playlist-Schnitt (${state.refLufs} LUFS)">${ab<0.5?'±0':(g>0?'+':'−')+ab.toFixed(1)}</span>`}
 function rowHtml(t,pos){
   const a=t.analysis,s=stars(t),ct=a?computeCues(t):null;
-  const cb=k=>{if(!ct)return`<span class="cb ${k}">${LBL[k]}</span>`;const st=slotState(t,k);return`<span class="cb ${k} ${st==='kept'?'kept':'on'}" title="${k==='L'?'Emergency Loop':CUE[k].name}${st==='kept'?' – vorhandener Cue bleibt':st==='repl'?' – ersetzt vorhandenen':''}">${LBL[k]}</span>`};
-  const cls=['r',state.sel.has(t.id)?'sel':'',state.focus===t.id?'focus':''].join(' ');
-  return`<tr data-id="${esc(t.id)}" class="${cls}"><td class="num">${pos}</td><td class="tt" title="${esc(t.path)}"><div class="ttw">${artTag(t)}<div class="ttx"><div class="ti">${esc(t.title)}${hasMeta(t)?'<span class="edt" title="Infos bearbeitet">●</span>':''}</div><div class="ar">${esc(t.artist)||'&nbsp;'}</div></div></div></td>
+  const cb=k=>{if(!ct||!con)return`<span class="cb ${k}">${LBL[k]}</span>`;const st=slotState(t,k);return`<span class="cb ${k} ${st==='kept'?'kept':'on'}" title="${k==='L'?'Emergency Loop':CUE[k].name}${st==='kept'?' – vorhandener Cue bleibt':st==='repl'?' – ersetzt vorhandenen':''}">${LBL[k]}</span>`};
+  const cls=['r',state.sel.has(t.id)?'sel':'',state.focus===t.id?'focus':'',PB.id===t.id&&PB.st!=='stop'?'isplay':''].join(' ');const con=cuesOn(t);
+  return`<tr data-id="${esc(t.id)}" class="${cls}"><td class="num">${pos}</td><td class="tt" title="${esc(t.path)}"><div class="ttw">${artTag(t,'',t.file)}<div class="ttx"><div class="ti">${esc(t.title)}${hasMeta(t)?'<span class="edt" title="Infos bearbeitet">●</span>':''}</div><div class="ar">${esc(t.artist)||'&nbsp;'}</div></div></div></td>
   <td class="r">${t.bpm?t.bpm.toFixed(1):'–'}</td>
   <td>${t.key?`<span class="kc" style="--h:${(t.key.n-1)*30}">${t.cam}</span><span class="kn">${esc(t.keyName)}</span>`:`<span class="kn">${esc(t.keyRaw)||'–'}</span>`}</td>
   <td>${a?`<span class="meter" data-s="${s}"><i></i><i></i><i></i><i></i><i></i></span>${t.manual&&t.manual.E?'<span class="man" title="manuell gesetzt">●</span>':''}<span class="esc">${a.score}</span>`:'<span class="meter"><i></i><i></i><i></i><i></i><i></i></span>'}</td>
   <td class="r lu">${a?a.lufs.toFixed(1):'–'}</td><td class="r">${gainCell(t)}</td><td class="r lu">${t.kbps?`<span class="kb ${t.kbps<128?'bad':t.kbps<160?'mid':''}">${t.kbps}</span>`:'–'}</td><td class="r du">${fmtT(t.dur)}</td>
-  <td><span class="cues">${['A','F','G','L'].map(cb).join('')}</span></td>
-  <td class="sp">${a?spark(t,ct):t.pwav?pspark(t):''}</td><td>${STI[statusOf(t)]}${ct&&ct.ok?' <span class="st ok" title="von dir bestätigt">✓</span>':''}</td></tr>`;
+  <td>${a&&!con?`<button class="ctog" data-cue="${esc(t.id)}" title="Vorschlag ansehen und Cues für diesen Track aktivieren">+ Cues</button>`:`<span class="cues" ${a?`data-cue="${esc(t.id)}" role="button" style="cursor:pointer" title="Klick: Cues für diesen Track ausschalten"`:''}>${['A','F','G','L'].map(cb).join('')}</span>`}</td>
+  <td class="sp">${a?spark(t,con?ct:null):t.pwav?pspark(t):''}</td><td>${STI[statusOf(t)]}${con&&ct&&ct.ok?' <span class="st ok" title="von dir bestätigt">✓</span>':''}</td></tr>`;
 }
 function pspark(t){const v=t.pwav,W=120,H=22,n=v.length;let d='M0 '+H;for(let i=0;i<n;i++)d+=` L${(i/n*W).toFixed(1)} ${(H-1-v[i]/31*(H-3)).toFixed(1)}`;d+=` L${W} ${H}Z`;return`<svg class="spark" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" aria-hidden="true"><title>Vorschau aus rekordbox – noch nicht analysiert</title><path d="${d}" fill="#736D63" opacity=".55"/></svg>`}
 function spark(t,c){
   const a=t.analysis,W=120,H=22,n=a.rms.length;if(n<2)return'';const top=pct(a.rms,0.95),lo=top-24;const x=i=>i/n*W,y=v=>H-1-clamp((v-lo)/24)*(H-3);
   let d='M0 '+H;for(let i=0;i<n;i++)d+=` L${x(i).toFixed(1)} ${y(a.rms[i]).toFixed(1)} L${x(i+1).toFixed(1)} ${y(a.rms[i]).toFixed(1)}`;d+=` L${W} ${H}Z`;
-  return`<svg class="spark" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" aria-hidden="true"><rect x="${x(c.F)}" y="0" width="${Math.max(1,x(c.G)-x(c.F))}" height="${H}" fill="#FF9A1F" opacity=".16"/><rect x="${x(c.L)}" y="0" width="${Math.max(1,x(c.L+c.LB/4)-x(c.L))}" height="${H}" fill="#3D9BFF" opacity=".28"/><path d="${d}" fill="#BDB6AA" opacity=".55"/><rect x="${x(c.A)}" y="0" width="1.5" height="${H}" fill="#28E214"/><rect x="${x(c.F)}" y="0" width="1.5" height="${H}" fill="#FF9A1F"/><rect x="${x(c.G)}" y="0" width="1.5" height="${H}" fill="#F0443A"/></svg>`;
+  return`<svg class="spark" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" aria-hidden="true">${c?`<rect x="${x(c.F)}" y="0" width="${Math.max(1,x(c.G)-x(c.F))}" height="${H}" fill="#FF9A1F" opacity=".16"/><rect x="${x(c.L)}" y="0" width="${Math.max(1,x(c.L+c.LB/4)-x(c.L))}" height="${H}" fill="#3D9BFF" opacity=".28"/>`:''}<path d="${d}" fill="#BDB6AA" opacity=".55"/>${c?`<rect x="${x(c.A)}" y="0" width="1.5" height="${H}" fill="#28E214"/><rect x="${x(c.F)}" y="0" width="1.5" height="${H}" fill="#FF9A1F"/><rect x="${x(c.G)}" y="0" width="1.5" height="${H}" fill="#F0443A"/>`:''}</svg>`;
 }
 const isM=()=>matchMedia('(max-width:760px)').matches;let ROWH=52,HEADH=36;const rowDims=()=>{ROWH=isM()?66:52;HEADH=isM()?0:36};
 const ASSETS={hero:false,usb:false}; // set true once the Higgsfield images are in /assets
@@ -1055,11 +1191,11 @@ function renderMain(){
   if(!state.source){
     const coarse=matchMedia('(pointer:coarse)').matches;
     m.innerHTML=`<div class="empty"><section class="hero"><div class="hero-txt"><h1>Jeder Track bereit für den Mix.</h1>
-    <p>Hot Cue A auf den Start, G und H als 32-Beat-Fenster vor dem Energieabfall, ein Emergency Loop, der sauber loopt, Energie und Lautstärke. Für die ganze Playlist auf einmal, zurück nach rekordbox oder Serato. Alles läuft in deinem Browser, deine Musik verlässt nie den Rechner.</p>
+    <p>Energie, Lautheit und auf Wunsch Cues für die ganze Playlist. Danach ein Set planen, das harmonisch und im Tempo passt. Zurück nach rekordbox oder Serato. Alles läuft in deinem Browser, deine Musik verlässt nie den Rechner.</p>
     <div class="row"><button class="btn primary lg" data-act="xml">rekordbox XML laden</button><button class="btn lg" data-act="dir">${coarse?'Audiodateien wählen':'USB-Stick wählen'}</button></div></div>${heroDeck()}</section>
     <div class="steps"><div class="step"><b>Empfohlen</b><h3>rekordbox XML</h3><p>In rekordbox Datei → Collection im xml-Format exportieren, hier laden und den Musikordner verbinden. Die Cues gehen danach sauber in deine Library zurück.</p><div class="row"><button class="btn" data-act="xml">XML laden</button><button class="btn ghost" data-act="dir">Musikordner</button></div></div>
-    <div class="step img">${ASSETS.usb?'<img data-opt class="cardimg" src="assets/usb-960.webp" alt="">':''}<b>Schneller Weg</b><h3>USB-Stick</h3><p>Den ganzen Stick mit PIONEER-Ordner wählen: Playlists, Beatgrids, Cover und Musik in einem Schritt. Chrome fragt nach „Hochladen“, es bleibt trotzdem alles lokal.</p><div class="row"><button class="btn" data-act="dir">Stick wählen</button></div></div>
-    <div class="step"><b>Danach</b><h3>Prüfen und exportieren</h3><p>Analysieren, Cues anhören und mit Maus, Pfeiltasten oder Finger verschieben. Jeder Export wird vorher geprüft und zeigt dir, was sich ändert.</p><div class="row"><button class="btn" data-act="tour">Tutorial starten</button><button class="btn ghost" data-act="help">Kurzanleitung</button></div></div></div>
+    <div class="step img">${ASSETS.usb?'<img data-opt class="cardimg" src="assets/usb-960.webp" alt="">':''}<b>Schneller Weg</b><h3>USB-Stick</h3><p>${dirApi()?'Stick wählen, fertig: Playlists, Beatgrids, Cover und Musik in einem Schritt. Egal ob du den Stick, PIONEER oder Contents anklickst.':'Den ganzen Stick mit PIONEER-Ordner wählen. Dein Browser fragt dabei nach „Hochladen“, es bleibt trotzdem alles lokal. In Chrome oder Edge entfällt die Frage.'} Für den Rückweg nach rekordbox braucht die App einmal deine Collection-XML.</p><div class="row"><button class="btn" data-act="dir">Stick wählen</button>${DIRS.list.map((d,i)=>`<button class="btn ghost" data-re="${i}">„${esc(d.name)}“ wieder verbinden</button>`).slice(0,2).join('')}</div></div>
+    <div class="step"><b>Danach</b><h3>Prüfen, planen, exportieren</h3><p>Analysieren, Cues bewusst einschalten und anhören, mit dem Set-Planer die Reihenfolge bauen. Jeder Export wird vorher geprüft und zeigt dir, was sich ändert.</p><div class="row"><button class="btn" data-act="tour">Tutorial starten</button><button class="btn ghost" data-act="help">Kurzanleitung</button></div></div></div>
     <p class="foot-tip">${coarse?'Am Handy lassen sich XML und einzelne Audiodateien wählen, ganze Ordner und Sticks nur am Rechner.':'Tipp: XML, Musikordner oder Stick einfach ins Fenster ziehen.'}</p></div>`;
     $$('#main img[data-opt]').forEach(i=>{i.addEventListener('error',()=>i.remove());i.addEventListener('load',()=>i.classList.add('on'));if(i.complete&&i.naturalWidth)i.classList.add('on')});return}
   computeView();
@@ -1080,33 +1216,48 @@ function updateSel(){for(const tr of $$('#main tbody tr.r')){const id=tr.dataset
 function scrollToId(id){rowDims();const i=state.view.indexOf(id);if(i<0)return;const m=$('#main'),y=HEADH+i*ROWH;if(y<m.scrollTop+HEADH)m.scrollTop=y-HEADH;else if(y+ROWH>m.scrollTop+m.clientHeight)m.scrollTop=y+ROWH-m.clientHeight;renderRows()}
 
 /* ================= detail ================= */
-const TL={drag:null,hover:-1,sel:'G'};
+const TL={drag:null,hover:-1,sel:'G',zc:null,dx:0};
 function renderDetail(){
-  const d=$('#detail'),t=state.focus&&state.tracks.get(state.focus);if(!t){d.classList.add('hidden');return}d.classList.remove('hidden');
+  const d=$('#detail'),t=state.focus&&state.tracks.get(state.focus);if(!t){d.classList.add('hidden');renderPlayer();return}d.classList.remove('hidden');
   $('#dTitle').textContent=t.title;$('#dArtist').textContent=t.artist;$('#dArt').innerHTML=artTag(t,'big');pumpArt();const a=t.analysis,ct=a?cueTimes(t):null;
   const es=stars(t);
   $('#dFacts').innerHTML=`<span><b>${t.bpm?t.bpm.toFixed(1):'–'}</b> BPM</span><span>${t.key?`<span class="kc" style="--h:${(t.key.n-1)*30}">${t.cam}</span>`:'–'} ${esc(t.keyName||'')}</span>`
     +(a?`<span title="Klick auf die Balken = eigene Bewertung">Energie <span class="estars">${[1,2,3,4,5].map(i=>`<button data-e="${i}" class="${i<=es?'on':''}" aria-label="Energie ${i}"></button>`).join('')}</span> <b>${es}</b>${t.manual&&t.manual.E?` <button class="lnk" data-e="0">auto ${autoStars(t)}</button>`:''}</span><span><b>${a.lufs.toFixed(1)}</b> LUFS</span><span>Gain ${gainCell(t)}</span>`:'')
     +(t.kbps?`<span><b>${t.kbps}</b> kbps</span>`:'');
-  $('#dJumps').innerHTML=ct?[['A',ct.A,CUE.A.col],['F',ct.F,CUE.F.col],['G',ct.G,CUE.G.col],['L',ct.L0,CUE.L.col]].map(([k,tm,col])=>`<button class="jb ${TL.sel===k?'sel':''}" style="--c:${col}" data-jump="${k}" title="${k==='L'?'Emergency Loop anspielen (loopt)':CUE[k].name+' anspielen'} – Taste ${LBL[k]}, dann ←/→ verschieben">${LBL[k]}<span class="t">${fmtT(tm)}</span></button>`).join(''):'';
+  const con=cuesOn(t);$('#dJumps').innerHTML=ct?[['A',ct.A,CUE.A.col],['F',ct.F,CUE.F.col],['G',ct.G,CUE.G.col],['L',ct.L0,CUE.L.col]].map(([k,tm,col])=>`<button class="jb ${TL.sel===k?'sel':''}" style="--c:${col}${con?'':';opacity:.55'}" data-jump="${k}" title="${k==='L'?'Emergency Loop anspielen (loopt)':CUE[k].name+' anspielen'} – Taste ${LBL[k]}, dann ←/→ verschieben">${LBL[k]}<span class="t">${fmtT(tm)}</span></button>`).join(''):'';
   let acts='';
-  if(ct&&!ct.c.ok&&(ct.c.conf!=='high'||ct.c.flags.length))acts+=`<button class="btn sm okb" data-act="confirm" title="Cues geprüft und ok (C)">✓ Bestätigen</button>`;
-  if(ct&&ct.c.ok)acts+=`<button class="btn sm ghost" data-act="unconfirm" title="Bestätigung zurücknehmen">Bestätigt ✓</button>`;
-  if(ct&&ct.c.manual)acts+=`<button class="btn sm ghost" data-act="reset" title="Cues auf Automatik zurücksetzen (R)">Auto</button>`;
+  if(ct)acts+=`<button class="cuesw ${con?'on':''}" data-act="cues" title="Nur wenn Cues an sind, schreibt der Export A, G, H und Loop"><span class="kn"></span>${con?'Cues an':'Cues aus'}</button>`;
+  if(ct&&con&&!ct.c.ok&&(ct.c.conf!=='high'||ct.c.flags.length))acts+=`<button class="btn sm okb" data-act="confirm" title="Cues geprüft und ok (C)">✓ Bestätigen</button>`;
+  if(ct&&con&&ct.c.ok)acts+=`<button class="btn sm ghost" data-act="unconfirm" title="Bestätigung zurücknehmen">Bestätigt ✓</button>`;
+  
   acts+=`<button class="btn sm ghost" data-act="edit" title="Titel, Artist, Key usw. bearbeiten">Infos bearbeiten</button>`;
   if(t.file&&(a||t.status==='error'))acts+=`<button class="btn sm ghost" data-act="reanalyze">${t.status==='error'?'Erneut versuchen':'Neu analysieren'}</button>`;
   $('#dActs').innerHTML=acts;
   let foot='';
-  if(a){const c=ct.c;foot+=`<span class="tag">Sicherheit <b style="color:${c.conf==='high'?'var(--ok)':c.conf==='mid'?'var(--warn)':'var(--err)'}">${{high:'hoch',mid:'mittel',low:'niedrig'}[c.conf]}</b></span><span class="tag" title="Bar-Nummern der Cues">Bars A ${c.A+1}, G ${c.F+1}, H ${c.G+1}, Loop ab ${c.L+1} (${c.LB} Beats)</span><span class="tag" title="Anteile am Energie-Score (0–100), gesamt ${a.score}">Tempo ${a.parts[0]}, Dichte ${a.parts[1]}, Drive ${a.parts[2]}, Bass ${a.parts[3]}, Höhen ${a.parts[4]}</span><span class="tag">Peak <b>${a.peak}</b> dBFS</span>`;
-    for(const k of['A','F','G'])if(slotState(t,k)==='kept')foot+=`<span>Hot Cue ${LBL[k]} ist schon belegt und bleibt</span>`;
-    {const pb=pairBlocked(t,ct);if(pb)foot+=`<span class="flag">G/H werden nicht gesetzt: ${esc(pb)}</span>`}
+  if(a){const c=ct.c;foot+=`<span class="tag">Sicherheit <b style="color:${c.conf==='high'?'var(--ok)':c.conf==='mid'?'var(--warn)':'var(--err)'}">${{high:'hoch',mid:'mittel',low:'niedrig'}[c.conf]}</b></span><span class="tag" title="Taktnummern der Cues">A ${posTxt(c.A)}, G ${posTxt(c.F)}, H ${posTxt(c.G)}, Loop ab ${posTxt(c.L)} (${c.LB} Beats)</span><span class="tag" title="Anteile am Energie-Score (0–100), gesamt ${a.score}">Tempo ${a.parts[0]}, Dichte ${a.parts[1]}, Drive ${a.parts[2]}, Bass ${a.parts[3]}, Höhen ${a.parts[4]}</span><span class="tag">Peak <b>${a.peak}</b> dBFS</span>`;
+    if(!con)foot+='<span>Vorschlag, noch nicht aktiv: Cues werden erst geschrieben, wenn du sie einschaltest</span>';
+    for(const k of['A','F','G'])if(con&&slotState(t,k)==='kept')foot+=`<span>Hot Cue ${LBL[k]} ist schon belegt und bleibt</span>`;
+    {const pb=con&&pairBlocked(t,ct);if(pb)foot+=`<span class="flag">G/H werden nicht gesetzt: ${esc(pb)}</span>`}
     for(const f of[...c.flags,...qFlags(t)])foot+=`<span class="flag">⚠ ${esc(f)}</span>`;for(const f of c.info)foot+=`<span>ℹ ${esc(f)}</span>`;
     for(const v of validate(t))foot+=`<span class="flag e">✕ ${esc(v)} – wird nicht exportiert</span>`;
-    if(needsConfirm(t))foot+='<span class="flag">Wird erst nach Bestätigung exportiert</span>';
-    foot+='<span class="hint">Marker ziehen oder mit ←/→ schieben, Klick spielt ab da, ⌘Z macht rückgängig</span>'}
+    if(con&&needsConfirm(t))foot+='<span class="flag">Cues werden erst nach Bestätigung exportiert</span>'}
   else if(t.status==='error')foot=`<span class="flag e">✕ ${esc(t.error)}</span><span>Was tun: ${esc(FIX[t.errCode]||FIX.other)}</span>`;
   else foot=t.file?(t.tempos.length?'<span>Noch nicht analysiert – Enter drücken</span>':`<span class="flag">⚠ Kein Beatgrid</span><span>Was tun: ${esc(FIX.nogrid)}</span>`):`<span class="flag e">✕ Audiodatei nicht gefunden</span><span>Was tun: ${esc(FIX.nofile)}</span>`;
-  $('#dFoot').innerHTML=foot;drawTL();
+  $('#dFoot').innerHTML=foot;renderAdj(t,ct);renderPlayer();
+}
+const CNAME={A:'A – Start',F:'G – Mix-Out beginnt',G:'H – Energieabfall',L:'Emergency Loop'};
+const HTYPE={outro:'Outro',break:'Breakdown',end:'Trackende'};
+function renderAdj(t,ct){
+  const el=$('#dAdj');if(!ct){el.innerHTML='';return}
+  const k=TL.sel,c=ct.c,col=CUE[k].col,v=c[k],a=t.analysis;
+  const alt=k==='G'?c.hCands.filter(h=>h.score>-0.3).slice(0,4).sort((x,y)=>x.b-y.b).map(h=>`<button data-set="G:${h.b}" class="${c.G===h.b?'on':''}" title="Energieabfall ${h.d} dB">${HTYPE[h.type]} ${fmtT(barT(a,h.b))}</button>`).join(''):'';
+  el.innerHTML=`<canvas id="tlz" aria-label="Zoom um den gewählten Marker, ziehen verschiebt in Beats"></canvas>
+  <div class="adjrow"><span class="nm" style="--c:${col}"><i></i>${CNAME[k]}<span class="kn">${posTxt(v)}</span></span>
+   <span class="grp lbl" data-l="Schieben"><button data-mv="-8" title="8 Takte zurück (Shift ←)">« 8</button><button data-mv="-1" title="1 Takt zurück (←)">‹ Takt</button><button data-mv="-0.25" title="1 Beat zurück (Alt ←)">‹ Beat</button><button data-mv="0.25" title="1 Beat vor (Alt →)">Beat ›</button><button data-mv="1" title="1 Takt vor (→)">Takt ›</button><button data-mv="8" title="8 Takte vor (Shift →)">8 »</button></span>
+   ${k==='L'?`<span class="grp lbl" data-l="Länge">${[16,8,4].map(n=>`<button data-lb="${n}" class="${c.LB===n?'on':''}">${n}</button>`).join('')}</span>`:''}
+   ${alt?`<span class="grp lbl" data-l="Vorschläge">${alt}</span>`:''}
+   <span class="grp"><button data-adj="undo" title="Rückgängig (⌘Z)" ${HIST.length?'':'disabled'} aria-label="Rückgängig">↶</button><button data-adj="redo" title="Wiederholen (⇧⌘Z)" ${REDO.length?'':'disabled'} aria-label="Wiederholen">↷</button>${c.manual?`<button data-adj="reset" title="Alle Marker dieses Tracks auf Automatik (R)">Auto</button>`:''}</span></div>`;
+  bindZoom();
 }
 function tlGeom(){const cv=$('#tl'),w=cv.clientWidth,h=cv.clientHeight,t=state.tracks.get(state.focus),a=t&&t.analysis,dur=a?a.dur:(t?t.dur:1)||1;return{cv,w,h,t,a,dur,x:s=>s/dur*w,s:x=>x/w*dur}}
 function drawTL(){
@@ -1118,9 +1269,12 @@ function drawTL(){
   if(!a){c.fillStyle='#736D63';c.font=`13px ${F}`;c.fillText(t.status==='error'?'Analyse fehlgeschlagen':t.file?'Noch keine Analyse – Enter drücken':'Keine Audiodatei verbunden',14,h/2+4);return}
   const ct=cueTimes(t),cc=ct.c,n=a.rms.length,TOP=24,BOT=h-14,mid=TOP+(BOT-TOP)*0.62,up=mid-TOP-2,dn=BOT-mid-2;
   const rT=pct(a.rms,0.97),lT=pct(a.low,0.97),m9=pct(a.mid,0.9),nv=(v,top)=>clamp((v-(top-30))/30);
+  const SC={intro:'#5B8CFF',main:'#F0443A',groove:'#FFB224',break:'#736D63',build:'#B07CFF',outro:'#4CD07D'},SN={intro:'Intro',main:'Drop',groove:'Groove',break:'Break',build:'Build',outro:'Outro'};
+  {let i=0;const sg=cc.seg;while(i<sg.length){let j=i;while(j+1<sg.length&&sg[j+1].t===sg[i].t)j++;const x0=x(barT(a,sg[i].s)),x1=x(barT(a,sg[j].e));c.globalAlpha=.75;c.fillStyle=SC[sg[i].t];c.fillRect(x0+.5,h-3,Math.max(1,x1-x0-1),3);c.globalAlpha=1;if(x1-x0>46){c.fillStyle='#8d867b';c.font=`10.5px ${F}`;c.fillText(SN[sg[i].t],x0+4,h-6)}i=j+1}}
+  c.globalAlpha=cuesOn(t)?1:.45;
   c.fillStyle='rgba(255,154,31,.10)';c.fillRect(x(ct.F),TOP,x(ct.G)-x(ct.F),BOT-TOP);
-  c.fillStyle='rgba(61,155,255,.16)';c.fillRect(x(ct.L0),TOP,x(ct.L1)-x(ct.L0),BOT-TOP);
-  for(let b=0;b<=n;b++){const rel=b-cc.p0;if(rel%S.phrase)continue;const X=Math.round(x(barT(a,b)));c.fillStyle=rel%32===0?'#34312c':'#1f1d1b';c.fillRect(X,TOP,1,BOT-TOP);if(rel%32===0&&rel>=0){c.fillStyle='#736D63';c.font=`10.5px ${F}`;c.fillText(String(b+1),X+4,h-3)}}
+  c.fillStyle='rgba(61,155,255,.16)';c.fillRect(x(ct.L0),TOP,x(ct.L1)-x(ct.L0),BOT-TOP);c.globalAlpha=1;
+  for(let b=0;b<=n;b++){const rel=b-cc.p0;if(rel%S.phrase)continue;const X=Math.round(x(barT(a,b)));c.fillStyle=rel%32===0?'#34312c':'#1f1d1b';c.fillRect(X,TOP,1,BOT-TOP)}
   for(let b=0;b<n;b++){const x0=x(a.db[b]),bw=Math.max(1,x(a.db[b+1])-x0-0.8),inLoop=a.db[b]>=ct.L0-0.01&&a.db[b]<ct.L1-0.01,inFG=a.db[b]>=ct.F-0.01&&a.db[b]<ct.G-0.01;
     const hu=Math.max(1,nv(a.rms[b],rT)*up),hd=Math.max(1,nv(a.low[b],lT)*dn),mn=clamp((a.mid[b]-(m9-24))/24);
     c.fillStyle=inLoop?`rgba(120,182,255,${0.45+0.5*mn})`:inFG?`rgba(255,190,120,${0.4+0.55*mn})`:`rgba(244,240,232,${0.25+0.65*mn})`;
@@ -1130,26 +1284,79 @@ function drawTL(){
   const mk=(k,tm,col)=>{const X=Math.round(x(tm));c.fillStyle=col;c.fillRect(X-1,TOP-2,2,BOT-TOP+2);const lw=k==='L'?34:20,lx=Math.min(Math.max(0,X-1),w-lw);
     c.beginPath();c.roundRect?c.roundRect(lx,2,lw,18,5):c.rect(lx,2,lw,18);c.fill();if(TL.sel===k){c.strokeStyle='#F4F0E8';c.lineWidth=1.5;c.beginPath();c.roundRect?c.roundRect(lx-1.5,0.5,lw+3,21,6):c.rect(lx-1.5,0.5,lw+3,21);c.stroke()}
     c.fillStyle='#11100F';c.font=`700 11px ${F}`;c.fillText(LBL[k],lx+(k==='L'?5:6),15)};
-  mk('L',ct.L0,CUE.L.col);mk('A',ct.A,CUE.A.col);mk('F',ct.F,CUE.F.col);mk('G',ct.G,CUE.G.col);
+  c.globalAlpha=cuesOn(t)?1:.5;mk('L',ct.L0,CUE.L.col);mk('A',ct.A,CUE.A.col);mk('F',ct.F,CUE.F.col);mk('G',ct.G,CUE.G.col);c.globalAlpha=1;
   if(TL.hover>=0){c.fillStyle='rgba(244,240,232,.4)';c.fillRect(x(barT(a,TL.hover)),TOP,1,BOT-TOP)}
   if(PB.id===t.id&&PB.src){const X=x(PB.pos());c.fillStyle='#fff';c.fillRect(X-0.75,TOP-2,1.5,BOT-TOP+2);c.beginPath();c.moveTo(X-5,TOP-6);c.lineTo(X+5,TOP-6);c.lineTo(X,TOP);c.fill()}
+  drawZoom();
 }
-function nearestBar(a,s){let best=0,bd=1e9;for(let b=0;b<a.db.length;b++){const d=Math.abs(a.db[b]-s);if(d<bd){bd=d;best=b}}return best}
-function moveMarker(k,delta){const t=state.tracks.get(state.focus);if(!t||!t.analysis)return;const c=computeCues(t);const nb=t.analysis.rms.length;const nv=clamp(c[k]+delta,0,k==='L'?nb-1:nb);if(nv===c[k])return;const p={[k]:nv,ok:true};if(k==='G'&&(t.manual?.F==null))p.F=null;setManual(t,p)}
+function nearestBar(a,s){return nearestPos(a,s,1)}
+function nearestPos(a,s,step){let best=0,bd=1e9;for(let b=0;b<a.db.length;b++){const d=Math.abs(a.db[b]-s);if(d<bd){bd=d;best=b}}
+  if(step<1)for(let q=best*4-4;q<=best*4+4;q++){if(q<0)continue;const d=Math.abs(barT(a,q/4)-s);if(d<bd){bd=d;best=q/4}}return best}
+const posTxt=b=>`Takt ${Math.floor(b)+1}${b%1?'.'+(Math.round((b%1)*4)+1):''}`;
+function markerPatch(t,k,nv){const nb=t.analysis.rms.length;nv=clamp(beatNo(nv),0,k==='L'?nb-1:nb);const p={[k]:nv,ok:true};if(k==='G'&&t.manual?.F==null)p.F=null;if(t.manual?.cue==null)p.cue=true;return p}
+function moveMarker(k,delta){const t=state.tracks.get(state.focus);if(!t||!t.analysis)return;const c=computeCues(t),p=markerPatch(t,k,c[k]+delta);if(p[k]===c[k])return;setManual(t,p);previewMarker(t,k)}
+function setMarker(k,v){const t=state.tracks.get(state.focus);if(!t||!t.analysis)return;setManual(t,markerPatch(t,k,v));previewMarker(t,k)}
+function previewMarker(t,k){if(!S.playOnDrop||PB.st==='stop'||PB.id!==t.id)return;const ct=cueTimes(t);if(k==='L')play(ct.L0,[ct.L0,ct.L1],t.id);else play(ct[k],null,t.id)} // keeps playing from the new spot
+/* zoom view: ±6 bars around the chosen marker, eighth-of-a-beat resolution from the fingerprint */
+const ZB=6;
+function zGeom(){const cv=$('#tlz'),t=state.tracks.get(state.focus),a=t&&t.analysis;if(!a||!cv)return null;const w=cv.clientWidth,h=cv.clientHeight,c=computeCues(t);const mid=TL.drag&&TL.zc!=null?TL.zc:c[TL.sel];return{cv,w,h,t,a,c,b0:mid-ZB,x:b=>(b-(mid-ZB))/(2*ZB)*w,b:x=>(mid-ZB)+x/w*2*ZB,mid}}
+function drawZoom(){
+  const g=zGeom();if(!g||!g.w)return;const{cv,w,h,t,a,c}=g,dpr=window.devicePixelRatio||1;
+  if(cv.width!==Math.round(w*dpr)||cv.height!==Math.round(h*dpr)){cv.width=Math.round(w*dpr);cv.height=Math.round(h*dpr)}
+  const x=cv.getContext('2d');x.setTransform(dpr,0,0,dpr,0,0);x.clearRect(0,0,w,h);const F='"Space Grotesk",sans-serif',B=bRows(a),nb=a.rms.length,TOP=20,BOT=h-14,mid=TOP+(BOT-TOP)*0.6;
+  if(!B)return;const peak=pct(a.rms,0.9);
+  const q0=Math.max(0,Math.floor(g.b0*4)),q1=Math.min(nb*4,Math.ceil((g.b0+2*ZB)*4));
+  const L0=c.L,L1=c.L+c.LB/4;x.fillStyle='rgba(61,155,255,.14)';x.fillRect(g.x(L0),TOP,g.x(L1)-g.x(L0),BOT-TOP);x.fillStyle='rgba(255,154,31,.10)';x.fillRect(g.x(c.F),TOP,g.x(c.G)-g.x(c.F),BOT-TOP);
+  for(let q=q0;q<q1;q++){const X=Math.round(g.x(q/4));x.fillStyle=q%4===0?'#3a3732':'#22201d';x.fillRect(X,TOP,1,BOT-TOP);if(q%4===0){x.fillStyle='#736D63';x.font=`10px ${F}`;x.fillText(String(q/4+1),X+3,h-3)}}
+  const cw=g.w/(2*ZB*4*SUB);
+  for(let q=q0;q<q1;q++)for(let u=0;u<SUB;u++){const r=B[q],o=u*FD;let lo=-128,hi=-128;for(let j=0;j<8;j++)if(r[o+j]>lo)lo=r[o+j];for(let j=8;j<NBD;j++)if(r[o+j]>hi)hi=r[o+j];
+    const top=zTop(a),hu=Math.max(1,clamp((hi-(top.hi-36))/36)*(mid-TOP-2)),hd=Math.max(1,clamp((lo-(top.lo-30))/30)*(BOT-mid-2)),X=g.x(q/4+u/(4*SUB));
+    x.fillStyle=a.kk&&a.kk[q]>=50&&u<2?'#F4F0E8':'rgba(244,240,232,.5)';x.fillRect(X,mid-hu,Math.max(1,cw-0.4),hu);x.fillStyle=a.kk&&a.kk[q]>=50&&u<3?'#ABA499':'rgba(171,164,153,.4)';x.fillRect(X,mid+1,Math.max(1,cw-0.4),hd)}
+  for(const b of c.bnd)if(b>g.b0&&b<g.b0+2*ZB){x.fillStyle='rgba(47,212,78,.55)';x.fillRect(Math.round(g.x(b))-1,BOT-5,3,5)}
+  const on=cuesOn(t);for(const[k,b,col]of[['L',c.L,CUE.L.col],['A',c.A,CUE.A.col],['F',c.F,CUE.F.col],['G',c.G,CUE.G.col]]){if(b<g.b0-.1||b>g.b0+2*ZB+.1)continue;const X=Math.round(g.x(b));x.globalAlpha=on?1:.45;x.fillStyle=col;x.fillRect(X-1,TOP-2,TL.sel===k?3:2,BOT-TOP+2);const lw=k==='L'?34:20,lx=clamp(X-lw/2,0,w-lw);x.beginPath();x.roundRect?x.roundRect(lx,1,lw,18,5):x.rect(lx,1,lw,18);x.fill();if(TL.sel===k){x.strokeStyle='#F4F0E8';x.lineWidth=1.5;x.stroke()}x.fillStyle='#11100F';x.font=`700 11px ${F}`;x.fillText(LBL[k],lx+(k==='L'?5:6),14);x.globalAlpha=1}
+  if(PB.id===t.id&&PB.src){const s=PB.pos();let b=0;while(b+1<a.db.length&&a.db[b+1]<=s)b++;const f=(s-a.db[b])/((a.db[b+1]??a.db[b]+1.5)-a.db[b]);const X=g.x(b+f);if(X>=0&&X<=w){x.fillStyle='#fff';x.fillRect(X-.75,TOP-2,1.5,BOT-TOP+2)}}
+}
+const zTopC=new WeakMap();function zTop(a){let v=zTopC.get(a);if(v)return v;const B=bRows(a),lo=[],hi=[];for(let q=0;q<B.length;q+=3){let l=-128,h=-128;for(let j=0;j<8;j++)l=Math.max(l,B[q][FD+j]);for(let j=8;j<NBD;j++)h=Math.max(h,B[q][FD+j]);lo.push(l);hi.push(h)}v={lo:pct(lo,0.95),hi:pct(hi,0.95)};zTopC.set(a,v);return v}
 
-/* ================= playback ================= */
-const PB={src:null,id:null,buf:new Map(),t0:0,off:0,loop:null,raf:0,
-  pos(){if(!this.src)return 0;const el=getCtx().currentTime-this.t0+this.off;if(this.loop){const[ls,le]=this.loop;if(el>le)return ls+((el-ls)%(le-ls))}return el}};
+/* ================= playback: exactly one track at a time ================= */
+const PB={src:null,gain:null,id:null,buf:new Map(),t0:0,off:0,loop:null,raf:0,req:0,st:'stop',last:null,aoff:0,
+  raw(){if(!this.src)return 0;const el=getCtx().currentTime-this.t0+this.off;if(this.loop){const[ls,le]=this.loop;if(el>le)return ls+((el-ls)%(le-ls))}return el},
+  pos(){return this.src?Math.max(0,this.raw()-this.aoff):(this.last&&this.last.id===this.id?this.last.at:0)}}; // position in rekordbox time
+const offOf=t=>t&&t.analysis&&t.analysis.off||0;
 async function getPreview(t){if(PB.buf.has(t.id))return PB.buf.get(t.id);const b=await decodeFile(t.file,0);PB.buf.set(t.id,b);if(PB.buf.size>2)PB.buf.delete(PB.buf.keys().next().value);return b}
-function stop(){if(PB.src){try{PB.src.stop()}catch(e){}PB.src=null}cancelAnimationFrame(PB.raf);$('#playIco').innerHTML='<path d="M8 5.5v13l11-6.5z"/>';drawTL()}
-async function play(at,loop){
-  const t=state.tracks.get(state.focus);if(!t||!t.file){toast('Keine Audiodatei verbunden',1);return}
-  stop();const ctx=getCtx();if(ctx.state==='suspended')await ctx.resume();let buf;try{buf=await getPreview(t)}catch(e){toast(e.message,1);return}
-  if(state.focus!==t.id)return;const s=ctx.createBufferSource();s.buffer=buf;s.connect(ctx.destination);if(loop){s.loop=true;s.loopStart=loop[0];s.loopEnd=loop[1]}
-  s.start(0,Math.max(0,at));PB.src=s;PB.id=t.id;PB.t0=ctx.currentTime;PB.off=Math.max(0,at);PB.loop=loop||null;s.onended=()=>{if(PB.src===s)stop()};
-  $('#playIco').innerHTML='<path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z"/>';const tick=()=>{drawTL();PB.raf=requestAnimationFrame(tick)};tick();
+function killSrc(){const s=PB.src,g=PB.gain;PB.src=null;PB.gain=null;if(!s)return;s.onended=null;try{const c=getCtx();g.gain.cancelScheduledValues(c.currentTime);g.gain.setTargetAtTime(0,c.currentTime,0.004);s.stop(c.currentTime+0.03)}catch(e){try{s.stop()}catch(e2){}}}
+function stop(){PB.req++;if(PB.src&&PB.id)PB.last={id:PB.id,at:PB.pos()};killSrc();PB.st='stop';PB.loop=null;cancelAnimationFrame(PB.raf);renderPlayer()}
+async function play(at,loop,id){ // at/loop in rekordbox time; the MP3 delay of the decoder is added here
+  const t=state.tracks.get(id||state.focus);if(!t){toast('Erst einen Track wählen.');return}if(!t.file){toast('Keine Audiodatei verbunden',1);return}
+  stop();const r=PB.req;PB.id=t.id;PB.st='load';renderPlayer();
+  let buf;try{const ctx=getCtx();if(ctx.state==='suspended')await ctx.resume();buf=await getPreview(t)}catch(e){if(r===PB.req){PB.st='stop';renderPlayer();toast(e.message,1)}return}
+  if(r!==PB.req)return; // something else was started or stopped meanwhile
+  const ctx=getCtx(),o=offOf(t),s=ctx.createBufferSource(),g=ctx.createGain();s.buffer=buf;s.connect(g);g.connect(ctx.destination);
+  const st=clamp(at+o,0,Math.max(0,buf.duration-0.05));if(loop){s.loop=true;s.loopStart=Math.max(0,loop[0]+o);s.loopEnd=Math.min(buf.duration,loop[1]+o)}
+  g.gain.setValueAtTime(0,ctx.currentTime);g.gain.linearRampToValueAtTime(1,ctx.currentTime+0.004);
+  s.start(0,st);PB.src=s;PB.gain=g;PB.t0=ctx.currentTime;PB.off=st;PB.aoff=o;PB.loop=loop?[s.loopStart,s.loopEnd]:null;PB.st='play';PB.last={id:t.id,at};
+  s.onended=()=>{if(PB.src===s){PB.src=null;PB.st='stop';PB.last={id:t.id,at:0};cancelAnimationFrame(PB.raf);renderPlayer()}};
+  renderPlayer();let n=0;const tick=()=>{if(PB.src!==s)return;drawTL();if(n++%6===0)playerTime();PB.raf=requestAnimationFrame(tick)};tick();
 }
-function jump(k){const t=state.tracks.get(state.focus);if(!t||!t.analysis)return;TL.sel=k;const ct=cueTimes(t);if(k==='L')play(ct.L0,[ct.L0,ct.L1]);else play(ct[k]);renderDetail()}
+function togglePlay(){
+  if(PB.st!=='stop'){stop();return}
+  const id=state.focus||(PB.last&&PB.last.id)||state.view[0];if(!id){toast('Erst einen Track wählen.');return}
+  if(!state.focus&&state.tracks.has(id)&&!PLAN.on){state.focus=id;state.sel=new Set([id]);renderDetail();updateSel()}
+  const t=state.tracks.get(id),ct=t&&t.analysis?cueTimes(t):null;
+  play(PB.last&&PB.last.id===id?PB.last.at:ct?ct.A:0,null,id)}
+function playId(id){if(PB.id===id&&PB.st!=='stop'){stop();return}const t=state.tracks.get(id);if(!t)return;const ct=t.analysis?cueTimes(t):null;play(PB.last&&PB.last.id===id?PB.last.at:ct?ct.A:0,null,id)}
+const ICO_PLAY='<path d="M8 5.5v13l11-6.5z"/>',ICO_STOP='<path d="M7 7h10v10H7z"/>';
+function playerTime(){const t=state.tracks.get(PB.id||'');if(!t)return;const d=t.analysis?t.analysis.dur:t.dur||1;$('#plTime').textContent=`${fmtT(PB.pos())} / ${fmtT(d)}`;$('#plBar').style.width=clamp(PB.pos()/d)*100+'%'}
+function renderPlayer(){
+  const on=PB.st!=='stop',t=state.tracks.get(PB.id||''),cur=t||state.tracks.get(state.focus||'');
+  document.body.classList.toggle('playing',on);document.body.classList.toggle('haslib',!!state.source);
+  $('#plIco').innerHTML=on?ICO_STOP:ICO_PLAY;$('#plBtn').setAttribute('aria-label',on?'Stopp':'Abspielen');$('#plBtn').disabled=!state.source;
+  $('#plTitle').textContent=on&&t?t.title:cur?cur.title:'Nichts ausgewählt';$('#plState').textContent=PB.st==='load'?'lädt…':on?(PB.loop?'Loop läuft':'läuft'):'gestoppt';
+  if(on&&t)playerTime();else{$('#plTime').textContent='';$('#plBar').style.width='0'}
+  const mine=on&&PB.id===state.focus;$('#playIco').innerHTML=mine?ICO_STOP:ICO_PLAY;$('#btnPlay').classList.toggle('on',mine);
+  for(const tr of $$('[data-id].isplay'))tr.classList.remove('isplay');if(on&&PB.id)for(const tr of $$(`[data-id="${CSS.escape(PB.id)}"]`))tr.classList.add('isplay');
+  drawTL()}
+function jump(k,id){const t=state.tracks.get(id||state.focus);if(!t||!t.analysis)return;TL.sel=k;const ct=cueTimes(t);if(k==='L')play(ct.L0,[ct.L0,ct.L1]);else play(ct[k]);renderDetail()}
 
 /* ================= batch analysis ================= */
 async function analyzeIds(ids,force){
@@ -1170,18 +1377,25 @@ async function analyzeIds(ids,force){
 }
 
 /* ================= export plan / diff ================= */
+const cuesOn=t=>{const m=t.manual||{};return m.cue!=null?!!m.cue:(!!m.ok||['A','F','G','L'].some(k=>m[k]!=null))}; // cues are opt-in per track; edited or confirmed tracks count as on
 function planTrack(t){
-  const p={t,changed:false,reason:'',rows:[],ratingOld:Math.round((t.rating||0)/51),ratingNew:null};
+  const p={t,changed:false,cues:false,reason:'',cueReason:'',rows:[],ratingOld:Math.round((t.rating||0)/51),ratingNew:null};
+  if(state.source==='usb'&&!t.libT&&!state.forceStick){p.reason='nicht in deiner Collection gefunden';p.excluded=true;return p}
   if(t.status==='error')p.reason=ERR[t.errCode]||'Fehler';
   else if(!t.analysis)p.reason=t.file?'nicht analysiert':'keine Datei';
-  else{const v=validate(t);if(v.length)p.reason='Prüfung: '+v[0];else if(needsConfirm(t))p.reason='unsicher, nicht bestätigt'}
   if(p.reason)return p;
-  const ct=cueTimes(t);p.changed=true;p.ct=ct;
-  const pb=pairBlocked(t,ct);p.pairNote=pb;
-  for(const k of['A','F','G']){const st=slotState(t,k),old=t.marks.find(m=>m.num===CUE[k].num);const skip=pb&&k!=='A'&&st!=='kept';p.rows.push({k,act:skip?'übersprungen':st==='set'?'neu':st==='repl'?'ersetzt':'bleibt',old:old?old.start:null,nw:st==='kept'||skip?null:ct[k]})}
-  p.rows.push({k:'L',act:slotState(t,'L')==='repl'?'ersetzt':'neu',nw:ct.L0});
+  if(!cuesOn(t))p.cueReason='Cues aus';
+  else{const v=validate(t);if(v.length)p.cueReason='Prüfung: '+v[0];else if(needsConfirm(t))p.cueReason='unsicher, nicht bestätigt'}
+  p.cues=!p.cueReason;p.changed=p.cues||S.writeRating||S.writeComment;
+  if(p.cues){const ct=cueTimes(t);p.ct=ct;const pb=pairBlocked(t,ct);p.pairNote=pb;
+    for(const k of['A','F','G']){const st=slotState(t,k),old=t.marks.find(m=>m.num===CUE[k].num);const skip=pb&&k!=='A'&&st!=='kept';p.rows.push({k,act:skip?'übersprungen':st==='set'?'neu':st==='repl'?'ersetzt':'bleibt',old:old?old.start:null,nw:st==='kept'||skip?null:ct[k]})}
+    p.rows.push({k:'L',act:slotState(t,'L')==='repl'?'ersetzt':'neu',nw:ct.L0})}
   if(S.writeRating)p.ratingNew=stars(t);return p;
 }
+/* comment: short and readable, e.g. "Energie 4/5 · Gain +3 dB". Own text stays in front, older tags of this app are replaced. */
+const TAG_RE=/\s*(?:\[E\d[^\]]*\]|(?:·\s*)?Energie [1-5]\/5(?: · (?:Lautheit ok|Gain [+\-−]\s?\d+(?:[.,]\d+)? dB))?)/g;
+function commentTag(t){const g=gainOf(t),r=g==null?0:Math.round(g);return`Energie ${stars(t)}/5 · ${Math.abs(r)<2?'Lautheit ok':`Gain ${r>0?'+':'−'}${Math.abs(r)} dB`}`}
+function withTag(old,tagTxt){const own=String(old||'').replace(TAG_RE,' ').replace(/\s{2,}/g,' ').replace(/^[\s·]+|[\s·]+$/g,'').trim();return own?own+' · '+tagTxt:tagTxt}
 function buildTrackEl(doc,t,plan,locOverride){
   let el;
   if(t.el){el=doc.importNode(t.el,true)}
@@ -1191,65 +1405,92 @@ function buildTrackEl(doc,t,plan,locOverride){
     for(const m of t.marks){const e=doc.createElement('POSITION_MARK');e.setAttribute('Name',m.name||'');e.setAttribute('Type',String(m.type||0));e.setAttribute('Start',m.start.toFixed(3));if(m.end!=null)e.setAttribute('End',m.end.toFixed(3));e.setAttribute('Num',String(m.num));el.appendChild(e)}}
   if(locOverride)el.setAttribute('Location',locOverride);
   if(hasMeta(t)){const map={title:'Name',artist:'Artist',album:'Album',genre:'Genre',keyRaw:'Tonality',comments:'Comments'};for(const[k,attr]of Object.entries(map))if(t.manual.meta[k]!=null)el.setAttribute(attr,t.manual.meta[k])}
-  if(plan&&plan.changed){const ct=plan.ct;
+  if(plan&&plan.changed){const ct=plan.ct;if(plan.cues){
     for(const pm of[...el.querySelectorAll('POSITION_MARK')]){const num=+pm.getAttribute('Num'),nm=pm.getAttribute('Name')||'';if((num===-1&&isOurLoop(nm))||(S.overwrite&&[0,6,7].includes(num)))pm.remove()}
     const add=attrs=>{const pm=doc.createElement('POSITION_MARK');for(const[k,v]of Object.entries(attrs))pm.setAttribute(k,String(v));el.appendChild(pm)};
     for(const r of plan.rows)if(r.k!=='L'&&r.act!=='bleibt'&&r.act!=='übersprungen'){const C=CUE[r.k];add({Name:C.name,Type:0,Start:ct[r.k].toFixed(3),Num:C.num,Red:C.rgb[0],Green:C.rgb[1],Blue:C.rgb[2]})}
-    add({Name:`${CUE.L.name} ${ct.c.LB} Beats`,Type:4,Start:ct.L0.toFixed(3),End:ct.L1.toFixed(3),Num:-1});
+    add({Name:`${CUE.L.name} ${ct.c.LB} Beats`,Type:4,Start:ct.L0.toFixed(3),End:ct.L1.toFixed(3),Num:-1})}
     const st=stars(t);if(S.writeRating)el.setAttribute('Rating',String(RATING_VAL[st]));
-    if(S.writeComment){const g=gainOf(t);const tag=`[E${st} ${t.analysis.score} | ${t.analysis.lufs.toFixed(1)} LUFS${g!=null&&Math.abs(g)>=1.5?` | Gain ${g>0?'+':''}${g.toFixed(1)}`:''}]`;const old=(el.getAttribute('Comments')||'').replace(/\s*\[E\d[^\]]*\]\s*/g,' ').trim();el.setAttribute('Comments',(old?old+' ':'')+tag)}}
+    if(S.writeComment)el.setAttribute('Comments',withTag(el.getAttribute('Comments'),commentTag(t)))}
   return el;
 }
 const encLoc=p=>'file://localhost'+p.split('/').map(s=>encodeURIComponent(s)).join('/');
+function makeCtx(cx){const all=cx.ids.map(id=>planTrack(state.tracks.get(id)));cx.excluded=all.filter(p=>p.excluded);cx.plans=all.filter(p=>!p.excluded);return cx}
+const outId=t=>t.outId||t.id;
 function exportCtx(){
   const mode=$('input[name=xmode]:checked')?.value||'new';const pl=state.cur>=0?state.playlists[state.cur]:null;
   const scope=mode==='over'?'all':($('input[name=xscope]:checked')?.value||'all');
   const ids=scope==='view'?state.view:sortedIds(listIds());
   const name=mode==='over'&&pl?pl.name:(($('#xName')?.value||'').trim()||((pl?pl.name:'Collection')+' Edited'));
   const root=(($('#xRoot')?.value||'').trim()||('/Volumes/'+state.volName)).replace(/\/+$/,'');
-  return{mode,pl,ids,name,root,plans:ids.map(id=>planTrack(state.tracks.get(id)))};
+  return makeCtx({mode,pl,ids,name,root});
 }
 function buildXmlDoc(cx){
   const doc=document.implementation.createDocument(null,'DJ_PLAYLISTS',null);const R=doc.documentElement;R.setAttribute('Version','1.0.0');
   const nl=(p,d)=>p.appendChild(doc.createTextNode('\n'+'  '.repeat(d)));
   nl(R,1);const pr=doc.createElement('PRODUCT');pr.setAttribute('Name','rekordbox');pr.setAttribute('Version',state.product||'7.0.0');pr.setAttribute('Company','AlphaTheta');R.appendChild(pr);
-  nl(R,1);const col=doc.createElement('COLLECTION');col.setAttribute('Entries',String(cx.plans.length));R.appendChild(col);
-  for(const p of cx.plans){nl(col,2);col.appendChild(buildTrackEl(doc,p.t,p,state.source==='usb'?encLoc(cx.root+p.t.usbRel):null))}
+  nl(R,1);const col=doc.createElement('COLLECTION');const uniqPlans=[...new Map(cx.plans.map(p=>[outId(p.t),p])).values()];col.setAttribute('Entries',String(uniqPlans.length));R.appendChild(col);
+  for(const p of uniqPlans){nl(col,2);col.appendChild(buildTrackEl(doc,p.t,p,state.source==='usb'&&!p.t.libT?encLoc(cx.root+p.t.usbRel):null))}
   nl(col,1);nl(R,1);const pls=doc.createElement('PLAYLISTS');R.appendChild(pls);nl(pls,2);
   const root=doc.createElement('NODE');root.setAttribute('Type','0');root.setAttribute('Name','ROOT');root.setAttribute('Count','1');pls.appendChild(root);
   const folders=cx.mode==='over'&&cx.pl?cx.pl.folder:['JAILR Prep'];let parent=root,d=3;
   for(const f of folders){nl(parent,d);const n=doc.createElement('NODE');n.setAttribute('Name',f);n.setAttribute('Type','0');n.setAttribute('Count','1');parent.appendChild(n);parent=n;d++}
   nl(parent,d);const pn=doc.createElement('NODE');pn.setAttribute('Name',cx.name);pn.setAttribute('Type','1');pn.setAttribute('KeyType','0');pn.setAttribute('Entries',String(cx.plans.length));parent.appendChild(pn);
-  for(const p of cx.plans){nl(pn,d+1);const tr=doc.createElement('TRACK');tr.setAttribute('Key',p.t.id);pn.appendChild(tr)}
+  for(const p of cx.plans){nl(pn,d+1);const tr=doc.createElement('TRACK');tr.setAttribute('Key',outId(p.t));pn.appendChild(tr)}
   nl(pn,d);nl(pls,1);nl(R,0);
   return'<?xml version="1.0" encoding="UTF-8"?>\n'+new XMLSerializer().serializeToString(doc);
 }
-function selfCheckXml(xml,cx){ // parse what we produced and verify it before download
+function selfCheckXml(xml,cx){ // parse what we produced and verify it before it is written
   const d=new DOMParser().parseFromString(xml,'application/xml');if(d.querySelector('parsererror'))return['XML nicht wohlgeformt'];
-  const e=[];const trs=d.querySelectorAll('COLLECTION > TRACK');if(trs.length!==cx.plans.length)e.push('Track-Anzahl stimmt nicht');
-  trs.forEach(tr=>{const dur=+tr.getAttribute('TotalTime')||1e9;const m={};tr.querySelectorAll('POSITION_MARK').forEach(p=>{const s=+p.getAttribute('Start');if(!(s>=0&&s<=dur+1))e.push(`${tr.getAttribute('Name')}: Cue außerhalb`);if(p.hasAttribute('End')&&!(+p.getAttribute('End')>s))e.push(`${tr.getAttribute('Name')}: Loop ohne Länge`);m[p.getAttribute('Num')+'|'+(p.getAttribute('Name')||'')]=s});
-    const g=m['6|Mix-Out Start'],h=m['7|Mix-Out Ende'];if(g!=null&&h!=null&&!(g<h))e.push(`${tr.getAttribute('Name')}: Reihenfolge G/H`)});
+  const e=[];const trs=d.querySelectorAll('COLLECTION > TRACK');if(trs.length!==new Set(cx.plans.map(p=>outId(p.t))).size)e.push('Track-Anzahl stimmt nicht');
+  const keys=[...d.querySelectorAll('PLAYLISTS NODE[Type="1"] > TRACK')].map(x=>x.getAttribute('Key'));if(keys.join()!==cx.plans.map(p=>outId(p.t)).join())e.push('Reihenfolge der Playlist stimmt nicht');
+  const byId=new Map(cx.plans.map(p=>[outId(p.t),p])),locs=new Set();
+  trs.forEach(tr=>{const nm=tr.getAttribute('Name'),loc=tr.getAttribute('Location'),p=byId.get(tr.getAttribute('TrackID')),dur=+tr.getAttribute('TotalTime')||1e9;const m={};
+    if(!p){e.push(`${nm}: unbekannte TrackID`);return}
+    if(locs.has(loc))e.push(`${nm}: Location doppelt`);locs.add(loc);
+    if(!state.forceStick&&!state.locSet.has(loc))e.push(`${nm}: Pfad steht nicht in deiner Collection`);
+    tr.querySelectorAll('POSITION_MARK').forEach(x=>{const st=+x.getAttribute('Start');if(!(st>=0&&st<=dur+1.5))e.push(`${nm}: Cue außerhalb`);if(x.hasAttribute('End')&&!(+x.getAttribute('End')>st))e.push(`${nm}: Loop ohne Länge`);m[x.getAttribute('Num')+'|'+(x.getAttribute('Name')||'')]=st});
+    for(const o of p.t.marks){if((o.num===-1&&isOurLoop(o.name))||(p.cues&&S.overwrite&&[0,6,7].includes(o.num)))continue; // every existing cue must survive: the import replaces all cues of a track
+      if(![...tr.querySelectorAll('POSITION_MARK')].some(x=>+x.getAttribute('Num')===o.num&&Math.abs(+x.getAttribute('Start')-o.start)<0.002&&(+x.getAttribute('Type'))===o.type))e.push(`${nm}: vorhandener Cue fehlt`)}
+    const g=m['6|Mix-Out Start'],h=m['7|Mix-Out Ende'];if(g!=null&&h!=null&&!(g<h))e.push(`${nm}: Reihenfolge G/H`);
+    const hot=[...tr.querySelectorAll('POSITION_MARK')].map(x=>+x.getAttribute('Num')).filter(n=>n>=0);if(new Set(hot).size!==hot.length&&new Set(p.t.marks.filter(o=>o.num>=0).map(o=>o.num)).size===p.t.marks.filter(o=>o.num>=0).length)e.push(`${nm}: Hot Cue doppelt belegt`)});
   return e;
 }
-function exportXml(){
-  const cx=exportCtx();if(!cx.plans.length){toast('Keine Tracks im Export',1);return}
-  if(!cx.plans.some(p=>p.changed||hasMeta(p.t))&&!confirmNoChange){toast('Kein Track mit gültigen Cues – nichts zu exportieren. Erst analysieren bzw. bestätigen.',1);return}
+/* ----- one and the same XML file: handle is remembered, every export overwrites it ----- */
+const XMLF={handle:null,name:'JAILR Prep.xml',
+  async init(){this.handle=await IDB.get('handles','xml')},
+  async pick(){const h=await window.showSaveFilePicker({id:'jailr-xml',suggestedName:this.name,types:[{description:'rekordbox XML',accept:{'application/xml':['.xml']}}]});this.handle=h;await IDB.put('handles','xml',h);return h},
+  async write(xml){
+    let h=this.handle,fresh=false;
+    if(h){let pm='denied';try{pm=await h.queryPermission({mode:'readwrite'});if(pm!=='granted')pm=await h.requestPermission({mode:'readwrite'})}catch(e){}if(pm!=='granted'){h=null;toast('Kein Schreibzugriff auf die gemerkte Datei – bitte neu wählen.')}}
+    for(let i=0;i<2;i++){
+      if(!h){h=await this.pick();fresh=true}
+      try{const w=await h.createWritable();await w.write(xml);await w.close();const back=await(await h.getFile()).text();if(back!==xml)throw new Error('Die Datei wurde nicht vollständig geschrieben');return{name:h.name,fresh}}
+      catch(e){if(i===0&&(e.name==='NotFoundError'||e.name==='InvalidStateError')){h=null;this.handle=null;toast('Die gemerkte Datei gibt es nicht mehr – bitte neu wählen.');continue}throw e}}
+  }};
+const xmlApi=()=>typeof window.showSaveFilePicker==='function';
+async function exportXml(cxIn){
+  const cx=cxIn||exportCtx();if(!cx.plans.length){toast(cx.excluded&&cx.excluded.length?'Kein Track dieser Auswahl ist in deiner Collection – erst die Collection-XML laden.':'Keine Tracks im Export',1);return false}
+  if(!cxIn&&!cx.plans.some(p=>p.changed||hasMeta(p.t))){toast('Nichts zu exportieren. Erst analysieren oder Cues aktivieren.',1);return false}
   const xml=buildXmlDoc(cx);const errs=selfCheckXml(xml,cx);
-  if(errs.length){toast('Export abgebrochen – Selbstprüfung fehlgeschlagen: '+errs.slice(0,2).join('; '),1);return}
-  download(`${safeName(cx.name)}.xml`,xml,'application/xml');closeModal();
-  setTimeout(()=>openModal('guide',{n:cx.plans.filter(p=>p.changed).length,total:cx.plans.length,name:cx.name,mode:cx.mode}),300);
+  if(errs.length){toast(`Export abgebrochen, Selbstprüfung: ${errs.slice(0,2).join('; ')}${errs.length>2?` (+${errs.length-2})`:''}`,1);return false}
+  let res=null;
+  if(xmlApi()){try{res=await XMLF.write(xml)}catch(e){if(e.name==='AbortError'){toast('Abgebrochen – nichts gespeichert.');return false}toast('Speichern fehlgeschlagen: '+(e.message||e.name),1);return false}}
+  else download(XMLF.name,xml,'application/xml');
+  closeModal();
+  setTimeout(()=>openModal('guide',{n:cx.plans.filter(p=>p.cues).length,total:cx.plans.length,name:cx.name,mode:cx.mode,file:res}),250);return true;
 }
-let confirmNoChange=false;
 
 /* ================= export: Serato ================= */
 const enc16=s=>{const b=new Uint8Array(s.length*2);for(let i=0;i<s.length;i++){const c=s.charCodeAt(i);b[2*i]=c>>8;b[2*i+1]=c&255}return b};
 function tag(name,payload){const p=payload instanceof Uint8Array?payload:enc16(String(payload));const b=new Uint8Array(8+p.length);for(let i=0;i<4;i++)b[i]=name.charCodeAt(i);new DataView(b.buffer).setUint32(4,p.length);b.set(p,8);return b}
 const cat=arrs=>{const n=arrs.reduce((a,b)=>a+b.length,0),o=new Uint8Array(n);let p=0;for(const a of arrs){o.set(a,p);p+=a.length}return o};
 const u32=v=>{const b=new Uint8Array(4);new DataView(b.buffer).setUint32(0,v>>>0);return b};
+const sPath=t=>state.source==='usb'?(t.stickPath||'/Volumes/'+state.volName+t.usbRel):t.path;
 function seratoLoc(path){let m=path.match(/^\/Volumes\/([^/]+)\/(.*)$/);if(m)return{vol:m[1],rel:m[2]};m=path.match(/^([A-Za-z]):\/(.*)$/);if(m)return{vol:m[1].toUpperCase()+'-Laufwerk',rel:m[2]};return{vol:'Systemlaufwerk',rel:path.replace(/^\//,'')}}
 function crateBytes(rels){return cat([tag('vrsn','1.0/Serato ScratchLive Crate'),tag('osrt',cat([tag('tvcn','song'),tag('brev',new Uint8Array([0]))])),...['song','artist','bpm','key'].map(c=>tag('ovct',cat([tag('tvcn',c),tag('tvcw','0')]))),...rels.map(r=>tag('otrk',tag('ptrk',r)))])}
 function dbBytes(tracks){const parts=[tag('vrsn','2.0/Serato Scratch LIVE Database')];const now=Math.floor(Date.now()/1000);
-  for(const t of tracks){const L=seratoLoc(t.path),f=[tag('ttyp',(t.fname.split('.').pop()||'').toLowerCase()),tag('pfil',L.rel),tag('tsng',t.title)];
+  for(const t of tracks){const L=seratoLoc(sPath(t)),f=[tag('ttyp',(t.fname.split('.').pop()||'').toLowerCase()),tag('pfil',L.rel),tag('tsng',t.title)];
     if(t.artist)f.push(tag('tart',t.artist));if(t.album)f.push(tag('talb',t.album));if(t.genre)f.push(tag('tgen',t.genre));if(t.bpm)f.push(tag('tbpm',t.bpm.toFixed(2)));if(t.key)f.push(tag('tkey',CAM2KEY[t.cam]||t.keyRaw));
     if(t.dur)f.push(tag('tlen',`${String(Math.floor(t.dur/60)).padStart(2,'0')}:${String(Math.floor(t.dur%60)).padStart(2,'0')}.00`));f.push(tag('tadd',String(now)),tag('uadd',u32(now)),tag('bmis',new Uint8Array([0])));parts.push(tag('otrk',cat(f)))}
   return cat(parts)}
@@ -1282,7 +1523,7 @@ function buildM2(entries){
 const cueEntry=(idx,ms,rgb,name)=>({name:'CUE',data:cat([new Uint8Array([0,idx]),be32(ms),new Uint8Array([0,...rgb,0,0]),asc(name),new Uint8Array([0])])});
 const loopEntry=(idx,s,e,name)=>({name:'LOOP',data:cat([new Uint8Array([0,idx]),be32(s),be32(e),new Uint8Array([0xff,0xff,0xff,0xff,0x00,0x27,0xaa,0xe1,0,0]),asc(name),new Uint8Array([0])])});
 function seratoEntries(t,existing){
-  const ct=t.analysis&&!validate(t).length&&!needsConfirm(t)?cueTimes(t):null;
+  const ct=t.analysis&&cuesOn(t)&&!validate(t).length&&!needsConfirm(t)?cueTimes(t):null;
   const keep=[],cues=new Map(),loops=new Map();
   for(const e of existing){if(e.name==='CUE')cues.set(e.data[1],e);else if(e.name==='LOOP')loops.set(e.data[1],e);else keep.push(e)}
   // rekordbox hot cues → Serato (only where Serato slot is empty)
@@ -1325,11 +1566,11 @@ async function exportSerato(){
   const cueMode=$('input[name=scue]:checked')?.value||'none';
   const crates=[],groups=new Map(),names=[];
   for(const idx of chosen){const p=state.playlists[idx];const ids=useSort?sortedIds(p.ids):p.ids;const nm=mode==='over'?p.name:p.name+suffix;names.push(nm);
-    crates.push({cname:[...p.folder,nm].map(safeName).join('%%'),ids});for(const id of ids){const t=state.tracks.get(id),L=seratoLoc(t.path);if(!groups.has(L.vol))groups.set(L.vol,new Map());groups.get(L.vol).set(id,t)}}
+    crates.push({cname:[...p.folder,nm].map(safeName).join('%%'),ids});for(const id of ids){const t=state.tracks.get(id),L=seratoLoc(sPath(t));if(!groups.has(L.vol))groups.set(L.vol,new Map());groups.get(L.vol).set(id,t)}}
   const vols=[...groups.keys()];
   if(cueMode==='none'){ // ZIP like before
     const multi=vols.length>1,files=[];
-    for(const c of crates){const byVol=new Map();for(const id of c.ids){const L=seratoLoc(state.tracks.get(id).path);if(!byVol.has(L.vol))byVol.set(L.vol,[]);byVol.get(L.vol).push(L.rel)}for(const[vol,rels]of byVol)files.push({vol,name:`_Serato_/Subcrates/${c.cname}.crate`,data:crateBytes(rels)})}
+    for(const c of crates){const byVol=new Map();for(const id of c.ids){const L=seratoLoc(sPath(state.tracks.get(id)));if(!byVol.has(L.vol))byVol.set(L.vol,[]);byVol.get(L.vol).push(L.rel)}for(const[vol,rels]of byVol)files.push({vol,name:`_Serato_/Subcrates/${c.cname}.crate`,data:crateBytes(rels)})}
     if(withDb)for(const[vol,m]of groups)files.push({vol,name:'_Serato_/database V2',data:dbBytes([...m.values()])});
     const readme=`JAILR Prep – Serato Export (${today()})\n\nCrates: ${names.join(', ')}\n\n`+vols.map(v=>v==='Systemlaufwerk'?`• "${multi?v+'/':''}_Serato_" → in deinen Musik-Ordner (Mac: ~/Music/_Serato_) kopieren.`:`• "${multi?v+'/':''}_Serato_" → ins Hauptverzeichnis von "${v}" kopieren (neben PIONEER und Contents).`).join('\n')+
       `\n\nVorher einen vorhandenen _Serato_-Ordner sichern. ${mode==='over'?'Crates mit gleichem Namen werden ersetzt.':'Bestehende Crates bleiben, die neuen haben den Zusatz "'+suffix.trim()+'".'}${withDb?' Die "database V2" wird ersetzt.':''}\nOhne Cues exportiert.\n`;
@@ -1342,10 +1583,10 @@ async function exportSerato(){
   const vol=drives[0];let root;
   try{toast(`Bitte jetzt das Hauptverzeichnis von „${vol}“ wählen und Schreibzugriff erlauben.`);root=await window.showDirectoryPicker({id:'jailr-serato',mode:'readwrite'})}catch(e){toast('Abgebrochen – nichts wurde geschrieben.');return}
   const tracks=[...groups.get(vol).values()];
-  try{await readFileAt(root,seratoLoc(tracks[0].path).rel)}catch(e){toast(`Im gewählten Ordner fehlt „${seratoLoc(tracks[0].path).rel}“. Bitte das Hauptverzeichnis von „${vol}“ wählen.`,1);return}
+  try{await readFileAt(root,seratoLoc(sPath(tracks[0])).rel)}catch(e){toast(`Im gewählten Ordner fehlt „${seratoLoc(sPath(tracks[0])).rel}“. Bitte das Hauptverzeichnis von „${vol}“ wählen.`,1);return}
   closeModal();state.busy=true;renderTop();$('#progress').classList.add('on');
   const relMap=new Map(),rep={ok:0,cues:0,skip:[],err:[]};let done=0;
-  for(const t of tracks){if(state.cancel)break;const rel=seratoLoc(t.path).rel;relMap.set(t.id,rel);
+  for(const t of tracks){if(state.cancel)break;const rel=seratoLoc(sPath(t)).rel;relMap.set(t.id,rel);
     $('#progTxt').textContent=`Serato-Cues ${++done}/${tracks.length}`;$('#progBar').style.width=(done/tracks.length*100)+'%';
     if(!/\.mp3$/i.test(rel)){rep.skip.push(`${t.title}: nur MP3 unterstützt`);continue}
     try{const src=await readFileAt(root,rel);const r=writeSeratoMp3(await src.arrayBuffer(),t);if(!r.count){rep.skip.push(`${t.title}: keine Cues`);continue}
@@ -1353,7 +1594,7 @@ async function exportSerato(){
     catch(e){rep.err.push(`${t.title}: ${e.name==='NotFoundError'?'Datei nicht auf dem Laufwerk gefunden':e.name==='QuotaExceededError'?'Laufwerk ist voll':e.name==='NotAllowedError'?'Kein Schreibzugriff':e.message||e}`)}
     await sleep(0)}
   try{for(const c of crates)await writeFileAt(root,`_Serato_/Subcrates/${c.cname}.crate`,crateBytes(c.ids.filter(id=>relMap.has(id)).map(id=>relMap.get(id))));
-    if(withDb)await writeFileAt(root,'_Serato_/database V2',dbBytes(tracks.map(t=>Object.assign(Object.create(t),{path:'/Volumes/'+vol+'/'+relMap.get(t.id)}))))}
+    if(withDb)await writeFileAt(root,'_Serato_/database V2',dbBytes(tracks.map(t=>Object.assign(Object.create(t),{path:'/Volumes/'+vol+'/'+relMap.get(t.id),stickPath:'/Volumes/'+vol+'/'+relMap.get(t.id)}))))}
   catch(e){rep.err.push('Crates: '+(e.message||e))}
   state.busy=false;$('#progress').classList.remove('on');renderTop();
   const log=`JAILR Prep – Serato-Cues (${today()})\nModus: ${cueMode==='copy'?'Kopien in "_JAILR Serato"':'Originaldateien ergänzt'}\n${rep.ok} Dateien mit Cues, ${rep.cues} neue Cues/Loops\n\nÜbersprungen:\n${rep.skip.join('\n')||'–'}\n\nFehler:\n${rep.err.join('\n')||'–'}\n`;
@@ -1361,6 +1602,7 @@ async function exportSerato(){
   toast(`Serato: ${rep.ok} Dateien mit Cues, ${names.length} Crates geschrieben${rep.err.length?` · ${rep.err.length} Fehler (Log in _Serato_)`:''}`,rep.err.length>0);
 }
 
+const PLAN={on:false};function planKey(){}function setView(){}
 /* ================= problem list (CSV) ================= */
 function exportCsv(){
   const rows=[['Titel','Artist','Status','Problem','Was tun']];
@@ -1378,17 +1620,21 @@ function exportCsv(){
 
 /* ================= modals ================= */
 let lastFocus=null;
+function diffHtml(cx){
+  const cu=cx.plans.filter(p=>p.cues),sk=cx.plans.filter(p=>!p.cues),un=sk.filter(p=>p.cueReason&&p.cueReason!=='Cues aus');let nNew=0,nRep=0,nKeep=0;
+  for(const p of cu)for(const r of p.rows){if(r.act==='neu')nNew++;else if(r.act==='ersetzt')nRep++;else nKeep++}
+  const fmt=x=>x==null?'–':fmtT(x),old=cx.plans.reduce((n,p)=>n+p.t.marks.length,0);
+  const rows=cx.plans.map(p=>{const rt=p.ratingNew!=null?`${p.ratingOld}★→${p.ratingNew}★`:'–',cm=p.changed&&S.writeComment?esc(withTag(p.t.comments,commentTag(p.t))):'–';
+    return p.cues?`<tr><td>${esc(p.t.title)}</td>${p.rows.map(r=>`<td><span class="${r.act==='neu'?'neu':r.act==='ersetzt'?'ers':'blb'}" ${r.act==='übersprungen'?`title="${esc(p.pairNote)}"`:''}>${LBL[r.k]} ${r.act==='bleibt'?'bleibt '+fmt(r.old):r.act==='übersprungen'?'übersprungen':r.act==='ersetzt'&&r.old!=null?fmt(r.old)+'→'+fmt(r.nw):fmt(r.nw)}</span></td>`).join('')}<td>${rt}</td><td>${cm}</td></tr>`
+    :`<tr><td>${esc(p.t.title)}</td><td colspan="4">${hasMeta(p.t)?'<span class="ers">Infos geändert</span>, ':''}<span class="${p.cueReason==='Cues aus'?'blb':'skip'}">${esc(p.cueReason||p.reason)}</span></td><td>${rt}</td><td>${cm}</td></tr>`}).join('');
+  return`<div class="sum"><div><b>${cu.length}</b><span>Tracks mit Cues</span></div><div><b>${nNew}</b><span>neue Cues</span></div><div><b>${nRep}</b><span>ersetzte Cues</span></div><div><b>${old}</b><span>eigene Cues bleiben${nRep?' (ohne ersetzte)':''}</span></div></div>
+    ${cx.excluded&&cx.excluded.length?`<div class="note err"><b>${cx.excluded.length} Tracks</b> stehen nicht in deiner Collection und kommen nicht in die XML, sonst würde rekordbox sie doppelt anlegen: ${esc(cx.excluded.slice(0,4).map(p=>p.t.title).join(', '))}${cx.excluded.length>4?' …':''}</div>`:''}
+    ${un.length?`<div class="note warn">${un.length} Tracks bekommen keine neuen Cues (unsicher und nicht bestätigt, oder Prüfung nicht bestanden). Sie bleiben mit ihrem bisherigen Stand in der Playlist.</div>`:''}
+    ${!cu.length&&cx.plans.some(p=>p.t.analysis)?'<div class="note">Cues sind für diese Tracks aus. Exportiert werden nur Energie, Kommentar und Reihenfolge. Cues schaltest du über „Cues (Playlist)“ oder pro Track ein.</div>':''}
+    <div class="diff"><table><thead><tr><th>Track</th><th>A</th><th>G</th><th>H</th><th>Loop</th><th>Rating</th><th>Kommentar</th></tr></thead><tbody>${rows}</tbody></table></div>`}
 function renderXmlDiff(){
-  const cx=exportCtx(),ch=cx.plans.filter(p=>p.changed),sk=cx.plans.filter(p=>!p.changed);let nNew=0,nRep=0,nKeep=0;
-  for(const p of ch)for(const r of p.rows){if(r.act==='neu')nNew++;else if(r.act==='ersetzt')nRep++;else nKeep++}
-  const fmt=x=>x==null?'–':fmtT(x);
-  const rows=cx.plans.map(p=>p.changed?`<tr><td>${esc(p.t.title)}</td>${p.rows.map(r=>`<td><span class="${r.act==='neu'?'neu':r.act==='ersetzt'?'ers':'blb'}" ${r.act==='übersprungen'?`title="${esc(p.pairNote)}"`:''}>${LBL[r.k]} ${r.act==='bleibt'?'bleibt '+fmt(r.old):r.act==='übersprungen'?'übersprungen':r.act==='ersetzt'&&r.old!=null?fmt(r.old)+'→'+fmt(r.nw):fmt(r.nw)}</span></td>`).join('')}<td>${p.ratingNew!=null?`${p.ratingOld}★→${p.ratingNew}★`:'–'}</td></tr>`
-    :`<tr><td>${esc(p.t.title)}</td><td colspan="5">${hasMeta(p.t)?'<span class="ers">nur Infos geändert</span>, ':''}<span class="skip">keine neuen Cues – ${esc(p.reason)}</span></td></tr>`).join('');
-  $('#xDiff').innerHTML=`<div class="sum"><div><b>${ch.length}</b><span>Tracks mit Cues</span></div><div><b>${sk.length}</b><span>unverändert</span></div><div><b>${nNew}</b><span>neue Cues</span></div><div><b>${nRep}</b><span>ersetzte Cues</span></div></div>
-    ${nKeep?`<div class="note">${nKeep} vorhandene Hot Cues bleiben unangetastet (Einstellung „überschreiben“ ist aus).</div>`:''}
-    ${sk.length?`<div class="note warn">${sk.length} Tracks bekommen keine neuen Cues (Fehler, nicht analysiert oder unbestätigt). Sie sind trotzdem in der Playlist, damit sie vollständig bleibt – mit ihrem bisherigen Stand.</div>`:''}
-    <div class="diff"><table><thead><tr><th>Track</th><th>A</th><th>G</th><th>H</th><th>Loop</th><th>Rating</th></tr></thead><tbody>${rows}</tbody></table></div>`;
-  const nm=cx.plans.filter(p=>hasMeta(p.t)).length;$('#xGo').disabled=!ch.length&&!nm;$('#xInfo').textContent=ch.length||nm?(nm?`${nm} Tracks mit geänderten Infos`:''):'Nichts zu exportieren';
+  if(!$('#xDiff'))return;const cx=exportCtx();$('#xDiff').innerHTML=diffHtml(cx);
+  const nm=cx.plans.filter(p=>hasMeta(p.t)).length,ok=cx.plans.some(p=>p.changed)||nm;$('#xGo').disabled=!ok||(state.source==='usb'&&!state.lib&&!state.forceStick);$('#xInfo').textContent=ok?(nm?`${nm} Tracks mit geänderten Infos`:''):'Nichts zu exportieren';
 }
 let tourDj='rb';
 const TOUR=[
@@ -1426,55 +1672,73 @@ const TOUR=[
   <li>Fehlen Cues bei schon geladenen Tracks: Track neu laden oder in den Serato-Einstellungen die ID3-Tags neu einlesen.</li></ol>
   <div class="note warn">Cues können nur in MP3-Dateien geschrieben werden. WAV/AIFF/FLAC bekommen Crates, aber keine Cues. Ohne „Mit Cues“ bekommst du nur ein ZIP mit Crates.</div>`)}
 ];
+function fileBox(){
+  if(!xmlApi())return`<div class="note warn">Dieser Browser kann keine feste Datei überschreiben. Die XML landet als <b>JAILR Prep.xml</b> im Download-Ordner. Damit rekordbox sie findet: <b>alte „JAILR Prep.xml“ vorher löschen</b> oder die neue Datei („JAILR Prep (1).xml“) so umbenennen und die alte ersetzen. Mit Chrome oder Edge geht das automatisch.</div>`;
+  return`<div class="note" id="xFile">${XMLF.handle?`Überschreibt immer <b>${esc(XMLF.handle.name)}</b>. Der Pfad in rekordbox bleibt gleich. <button class="lnk" data-act="xmlOther">Andere Datei wählen</button>`:'Beim ersten Mal wählst du den Speicherort. Die App merkt ihn sich und überschreibt danach immer dieselbe Datei. Den Pfad in rekordbox stellst du nur einmal ein.'}</div>`}
 function openModal(kind,ctx){
   lastFocus=document.activeElement;const m=$('#modal');let h='';const pl=state.cur>=0?state.playlists[state.cur]:null;
   const sw=(id,on)=>`<label class="switch"><input type="checkbox" id="${id}" ${on?'checked':''}><span></span></label>`;
   if(kind==='settings'){
-    h=`<h2>Einstellungen</h2><p class="sub">Gilt sofort. Manuell verschobene Cues und eigene Energie-Werte bleiben.</p><div class="body">
+    h=`<h2>Einstellungen</h2><p class="sub">Gilt sofort. Verschobene Cues und eigene Energie-Werte bleiben.</p><div class="body">
     <div class="field"><label>Mix-Out-Fenster G → H<small>H sitzt am Ende der letzten Energiephase.</small></label><select id="sMix">${[4,8,16,32].map(v=>`<option ${S.mixBars===v?'selected':''} value="${v}">${v*4} Beats (${v} Takte)</option>`).join('')}</select></div>
     <div class="field"><label>Emergency Loop: maximale Länge<small>Die App nimmt die längste Länge, die sauber loopt (16, 8 oder 4 Beats).</small></label><select id="sLoop">${[16,8,4].map(v=>`<option ${S.loopMax===v?'selected':''} value="${v}">${v} Beats</option>`).join('')}</select></div>
-    <div class="field"><label>Mindest-Energieabfall für G<small>dB. Kleiner = auch sanfte Outros zählen. Standard 3.</small></label><input type="number" id="sSens" min="1" max="12" step="0.5" value="${S.sens}"></div>
+    <div class="field"><label>Wo soll der Mix-Out liegen?<small>Outro: am letzten Energieabfall. Breakdown: am deutlichsten Break, wenn du früher rausmischst.</small></label><select id="sTgt"><option value="outro" ${S.mixTarget!=='break'?'selected':''}>Outro (letzter Abfall)</option><option value="break" ${S.mixTarget==='break'?'selected':''}>Haupt-Breakdown</option></select></div>
+    <div class="field"><label>Empfindlichkeit für den Energieabfall<small>Fein: auch sanfte Outros zählen. Deutlich: nur klare Abfälle.</small></label><select id="sSens"><option value="1.5" ${S.sens<2.5?'selected':''}>Fein</option><option value="3" ${S.sens>=2.5&&S.sens<4.5?'selected':''}>Normal</option><option value="6" ${S.sens>=4.5?'selected':''}>Deutlich</option></select></div>
+    <div class="field"><label>Nach dem Verschieben weiterspielen<small>Läuft der Track, springt die Wiedergabe beim Loslassen zum neuen Marker.</small></label>${sw('sDrop',S.playOnDrop)}</div>
     <div class="field"><label>Energie-Skala<small>Fest: gleicher Maßstab für alle Tracks (empfohlen fürs Rating). Relativ: 1–5 gleichmäßig verteilt in der aktuellen Playlist.</small></label><select id="sMode"><option value="abs" ${S.energyMode==='abs'?'selected':''}>Fest</option><option value="rel" ${S.energyMode==='rel'?'selected':''}>Relativ zur Playlist</option></select></div>
     <div class="field"><label>Unsichere Tracks nur nach Bestätigung exportieren<small>Empfohlen. Betrifft Tracks mit Sicherheit „niedrig“.</small></label>${sw('sConf',S.requireConfirm)}</div>
     <div class="field"><label>Vorhandene Hot Cues A/G/H überschreiben<small>Aus: bestehende Cues auf A, G oder H bleiben.</small></label>${sw('sOver',S.overwrite)}</div>
     <div class="field"><label>Energie als Rating (1–5 ★) schreiben</label>${sw('sRate',S.writeRating)}</div>
-    <div class="field"><label>Energie, LUFS und Gain in Kommentar<small>Hängt z.B. „[E4 68 | -7.9 LUFS]“ an, dein Kommentar bleibt.</small></label>${sw('sCom',S.writeComment)}</div>
+    <div class="field"><label>Energie und Lautheit in den Kommentar<small>Zum Beispiel „Energie 4/5 · Gain +3 dB“. Dein eigener Kommentar bleibt davor stehen.</small></label>${sw('sCom',S.writeComment)}</div>
     <div class="field"><label>Maximale Tracklänge<small>Längere Dateien (Mixe) werden übersprungen, damit der Browser nicht abstürzt.</small></label><select id="sMax">${[10,20,30].map(v=>`<option ${S.maxMin===v?'selected':''} value="${v}">${v} Minuten</option>`).join('')}</select></div>
     </div><div class="foot"><button class="btn primary" data-close>Fertig</button></div>`;
   }else if(kind==='xml'){
-    const usb=state.source==='usb';
-    h=`<h2>rekordbox XML exportieren</h2><p class="sub">Vor dem Download prüft die App jede Cue und die fertige Datei. Fehlerhafte oder unbestätigte Tracks bekommen keine neuen Cues.</p><div class="body">
+    const usb=state.source==='usb',needLib=usb&&!state.lib;
+    h=`<h2>Nach rekordbox exportieren</h2><p class="sub">Vorher prüft die App jede Cue, jeden Pfad und die fertige Datei.</p><div class="body">
+    ${needLib?`<div class="note err"><b>Erst deine Collection-XML laden.</b> Du arbeitest vom Stick. Ohne deine Collection würde rekordbox jeden Track <b>doppelt</b> anlegen, weil die Pfade auf den Stick zeigen.<br><br>rekordbox → Datei → Collection im xml-Format exportieren, dann hier laden. Die App ordnet die Tracks selbst zu.<div class="row" style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap"><button class="btn sm primary" data-act="loadLib">Collection-XML laden</button></div>
+      <label style="display:flex;gap:8px;margin-top:12px;align-items:flex-start"><input type="checkbox" id="xForce" ${state.forceStick?'checked':''}> <span>Trotzdem mit Stick-Pfaden exportieren (nur für einen Rechner, auf dem die Tracks nicht in der Library sind)</span></label></div>`:''}
+    <div id="xForceBox" ${needLib&&!state.forceStick?'hidden':''}>
     <h3>Ziel-Playlist</h3><div class="opts">
-      <label><input type="radio" name="xmode" value="new" checked> Als neue Playlist speichern <input class="inp" id="xName" value="${esc((pl?pl.name:'Collection')+' Edited')}" aria-label="Name der neuen Playlist"></label>
+      <label><input type="radio" name="xmode" value="new" checked> Als neue Playlist <input class="inp" id="xName" value="${esc((pl?pl.name:'Collection')+' Edited')}" aria-label="Name der neuen Playlist"></label>
       ${pl?`<label><input type="radio" name="xmode" value="over"> Bestehende Playlist „${esc(pl.name)}“ überschreiben<span class="c">ganze Playlist, aktuelle Sortierung</span></label>`:''}</div>
-    <div id="xOverNote" class="note warn" hidden>Die Playlist kommt mit gleichem Namen und Ordner in die XML. Beim Import über „Playlist importieren“ ersetzt rekordbox sie. Falls rekordbox eine zweite gleichnamige anlegt, die alte löschen. Vorher Library-Backup machen.</div>
+    <div id="xOverNote" class="note warn" hidden>Die Playlist kommt mit gleichem Namen und Ordner in die XML. Legt rekordbox beim Import eine zweite an, die alte löschen. Vorher Library sichern.</div>
     <div id="xScope"><h3>Umfang</h3><div class="opts"><label><input type="radio" name="xscope" value="all" checked> Ganze Playlist in aktueller Sortierung<span class="c">${listIds().length} Tracks</span></label><label><input type="radio" name="xscope" value="view"> Nur aktuelle Ansicht (Filter/Suche)<span class="c">${state.view.length} Tracks</span></label></div></div>
-    ${usb?`<h3>Pfad zum Stick</h3><div class="field"><label>Wo liegt der Stick auf dem Rechner, an dem du importierst?<small>Mac: /Volumes/Name · Windows: z.B. D:</small></label><input class="inp" id="xRoot" value="/Volumes/${esc(state.volName)}"></div>
-      <div class="note err"><b>Achtung bei Stick-Quelle:</b> Die XML zeigt auf die Dateien auf dem Stick. Liegen die Tracks in deiner rekordbox-Library woanders (z.B. im Musik-Ordner), legt rekordbox sie beim Import <b>doppelt</b> an. Für deine Haupt-Library besser: Collection als XML exportieren und Weg 1 nutzen.</div>`:''}
-    <h3>Vorschau der Änderungen</h3><div id="xDiff"></div>
-    </div><div class="foot"><span class="info" id="xInfo"></span><button class="btn ghost" data-close>Abbrechen</button><button class="btn primary" id="xGo" data-act="doXml">Prüfen &amp; herunterladen</button></div>`;
+    ${needLib?`<div class="field"><label>Pfad zum Stick<small>Mac: /Volumes/Name · Windows: z.B. D:</small></label><input class="inp" id="xRoot" value="/Volumes/${esc(state.volName)}"></div>`:''}
+    <h3>Datei</h3>${fileBox()}
+    <h3>Vorschau der Änderungen</h3><div id="xDiff"></div></div>
+    </div><div class="foot"><span class="info" id="xInfo"></span><button class="btn ghost" data-close>Abbrechen</button><button class="btn primary" id="xGo" data-act="doXml">${xmlApi()?'Prüfen & speichern':'Prüfen & herunterladen'}</button></div>`;
+  }else if(kind==='libwarn'){const inf=state.libInfo||{};
+    h=`<h2>Das sieht nicht nach deiner Collection aus</h2><p class="sub">${inf.own?'Diese XML hat JAILR Prep selbst exportiert.':`${inf.stick} von ${inf.files} Tracks zeigen auf ein Laufwerk unter /Volumes.`}</p><div class="body">
+    <div class="note warn">Importierst du damit nach rekordbox, kann es deine Tracks <b>doppelt</b> anlegen. rekordbox erkennt Tracks nur am exakten Pfad.</div>
+    <p style="color:var(--smoke);line-height:1.6">So bekommst du die richtige Datei: rekordbox → <b>Datei → Collection im xml-Format exportieren</b>. Liegt deine Library wirklich auf einer externen Platte, kannst du weitermachen.</p>
+    </div><div class="foot"><button class="btn ghost" data-close>${ctx?.attach?'Abbrechen':'Trotzdem weiter'}</button><button class="btn primary" data-act="loadLib">Andere XML laden</button></div>`;
+  }else if(kind==='needdir'){const c=ctx.what==='Contents';
+    h=`<h2>${c?'Noch die Musik verbinden':'Noch die Playlists verbinden'}</h2><p class="sub">Der Browser darf nur in Ordner schauen, die du auswählst. Aus „${esc(ctx.h.name)}“ kommt er nicht heraus.</p><div class="body">
+    <p style="color:var(--smoke);line-height:1.6">${c?'Playlists, Beatgrids und Cues sind geladen. Es fehlt der Ordner <b>Contents</b> mit der Musik.':'Die Musik ist verbunden. Es fehlt der Ordner <b>PIONEER</b> mit Playlists und Beatgrids (oder deine Collection-XML).'}</p>
+    <div class="note">Am einfachsten: einmal den <b>Stick selbst</b> wählen (oberste Ebene). Die App merkt ihn sich, danach reicht jeder Ordner.</div>
+    </div><div class="foot"><button class="btn ghost" data-close>Später</button>${c?'':'<button class="btn" data-act="loadLib">Collection-XML laden</button>'}<button class="btn primary" data-act="pickMore">Stick oder ${c?'Contents':'PIONEER'} wählen</button></div>`;
   }else if(kind==='tour'){
     const i=clamp(ctx?.i||0,0,TOUR.length-1),st=TOUR[i];TOUR.cur=i;
     h=`<div class="tour"><div class="kick">Tutorial · Schritt ${i+1} von ${TOUR.length}</div><h2>${st.t}</h2><div class="dots">${TOUR.map((_,k)=>`<i class="${k<=i?'on':''}"></i>`).join('')}</div>
     <div class="body slide">${typeof st.b==='function'?st.b():st.b}</div>
     <div class="foot"><label>Jederzeit oben über „Tutorial“ wieder aufrufbar</label>
     ${i?`<button class="btn ghost" data-tour="${i-1}">Zurück</button>`:''}${i<TOUR.length-1?`<button class="btn primary" data-tour="${i+1}">Weiter</button>`:`<button class="btn primary" data-close>Los geht's</button>`}</div></div>`;
-  }else if(kind==='guide'){
-    h=`<h2>${ctx?`Export fertig: ${ctx.n} von ${ctx.total} Tracks mit neuen Cues`:'Anleitung'}</h2><p class="sub">${ctx?`Playlist „${esc(ctx.name)}“. So kommt sie in rekordbox:`:'Einmal einrichten, danach dauert der Import 20 Sekunden.'}</p><div class="body">
-    <div class="note warn"><b>Vorher:</b> rekordbox → Datei → Library → Library sichern. Der Import ersetzt bei den betroffenen Tracks die Cues durch den Stand aus der XML.</div>
-    <ol class="guide"><li>rekordbox → <b>Voreinstellungen → Betrachten → Layout</b>: „rekordbox xml“ anhaken.</li>
-    <li><b>Voreinstellungen → Erweitert → Datenbank → rekordbox xml</b>: bei „Importierte Bibliothek“ die heruntergeladene Datei wählen. Immer gleicher Name und Ort, dann nur einmal nötig.</li>
-    <li>Links auf das <b>&lt;/&gt;-Symbol</b> (rekordbox xml) und auf <b>↻</b> klicken, sonst liest rekordbox die alte Datei → ${ctx&&ctx.mode==='over'?'deine Playlist':'<b>JAILR Prep</b>'} → „${esc(ctx?ctx.name:'Playlist')}“.</li>
-    <li>In der Playlist <b>alle Tracks markieren</b> (⌘A / Strg+A) → Rechtsklick → <b>In Sammlung importieren</b> → Ja („Diese Frage nicht mehr stellen“ anhaken).</li>
-    <li>Dann die Playlist selbst per Rechtsklick → <b>Wiedergabeliste importieren</b>.${ctx&&ctx.mode==='over'?' Falls danach zwei gleichnamige existieren: die alte löschen.':''}</li></ol>
-    <div class="note">Schritt 4 mit markierten Tracks ist wichtig – nur so aktualisiert rekordbox bereits vorhandene Tracks zuverlässig.<br>Teste beim ersten Mal mit 2–3 Tracks und prüfe die Cues am Gerät.</div>
-    <h3>Wenn etwas nicht klappt</h3><div style="color:var(--fg2);font-size:12px;line-height:1.6">Tracks mit <b>Fehler</b> (keine Datei, nicht lesbar, kein Beatgrid, zu lang) werden nie verändert – Filter „Fehler“ zeigt sie, Export → Problemliste sagt, was zu tun ist. Tracks mit <b>niedriger Sicherheit</b> erst anhören, ggf. Marker verschieben und mit <kbd>C</kbd> bestätigen.</div>
-    <h3>Energie (1–5)</h3><div style="color:var(--fg2);font-size:12px;line-height:1.6">Tempo 30 % · Dichte (Percussion pro Beat) 25 % · Drive (Anteil voller Energie) 20 % · Bass/Kick-Druck 15 % · Höhen 10 %. Lautstärke zählt bewusst nicht – die regelst du mit dem Gain. Klick auf die Balken im Detail setzt deinen eigenen Wert.</div>
-    <h3>Shortcuts</h3><div style="display:grid;grid-template-columns:auto 1fr;gap:6px 12px;color:var(--fg2);font-size:12px">
-    <span><kbd>↑</kbd> <kbd>↓</kbd></span><span>Track wechseln (Shift: Auswahl erweitern)</span><span><kbd>Enter</kbd></span><span>Auswahl bzw. Playlist analysieren</span>
-    <span><kbd>Leertaste</kbd></span><span>Abspielen / Stopp</span><span><kbd>A</kbd> <kbd>G</kbd> <kbd>H</kbd> <kbd>L</kbd></span><span>Marker wählen + anhören (L loopt)</span>
-    <span><kbd>←</kbd> <kbd>→</kbd></span><span>Gewählten Marker 1 Bar verschieben (Shift: 8 Bars)</span><span><kbd>C</kbd></span><span>Cues bestätigen</span>
-    <span><kbd>R</kbd></span><span>Cues auf Automatik</span><span><kbd>⌘Z</kbd> / <kbd>Strg+Z</kbd></span><span>Rückgängig</span><span><kbd>/</kbd></span><span>Suche</span></div>
+  }else if(kind==='guide'){const f=ctx&&ctx.file;
+    h=`<h2>${ctx?`Export fertig: „${esc(ctx.name)}“`:'Anleitung'}</h2><p class="sub">${ctx?`${ctx.total} Tracks, davon ${ctx.n} mit Cues.${f?` Gespeichert in „${esc(f.name)}“ und zurückgelesen: stimmt.`:''}`:'Einmal einrichten, danach dauert der Import 20 Sekunden.'}</p><div class="body">
+    ${ctx&&!f?`<div class="note warn"><b>Datei ersetzen:</b> Im Download-Ordner liegt jetzt „JAILR Prep.xml“ oder „JAILR Prep (1).xml“. Damit rekordbox immer dieselbe Datei liest: die alte löschen und die neue genau <b>JAILR Prep.xml</b> nennen.</div>`:''}
+    <div class="note warn"><b>Vorher:</b> rekordbox → Datei → Library → Library sichern. Der Import ersetzt bei den Tracks alle Cues durch den Stand aus der XML. Deine eigenen Cues sind darin enthalten.</div>
+    <h3>${ctx&&f&&!f.fresh?'In rekordbox':'Einmal einrichten'}</h3>
+    ${ctx&&f&&!f.fresh?'':`<ol class="guide"><li><b>Voreinstellungen → Betrachten → Layout</b>: „rekordbox xml“ anhaken.</li><li><b>Voreinstellungen → Erweitert → Datenbank → rekordbox xml</b>: bei „Importierte Bibliothek“ ${f?`<b>${esc(f.name)}</b>`:'<b>JAILR Prep.xml</b>'} wählen.</li></ol><h3>Jedes Mal</h3>`}
+    <ol class="guide"><li>Links auf <b>&lt;/&gt;</b> (rekordbox xml) und auf <b>↻</b> klicken. <b>Ohne ↻ liest rekordbox die alte Datei.</b></li>
+    <li>${ctx&&ctx.mode==='over'?'Deine Playlist':'Ordner <b>JAILR Prep</b>'} → „${esc(ctx?ctx.name:'Playlist')}“ öffnen, <b>alle Tracks markieren</b> (⌘A / Strg+A) → Rechtsklick → <b>In Sammlung importieren</b> → Ja („Diese Frage nicht mehr stellen“ anhaken).</li>
+    <li>Rechtsklick auf die Playlist → <b>Wiedergabeliste importieren</b>.${ctx&&ctx.mode==='over'?' Gibt es danach zwei gleichnamige: die alte löschen.':''}</li></ol>
+    ${ctx?'':`<h3>Wenn etwas nicht klappt</h3><div style="color:var(--fg2);font-size:12.5px;line-height:1.6">Tracks mit <b>Fehler</b> werden nie verändert. Filter „Fehler“ zeigt sie, Export → Problemliste sagt, was zu tun ist. Tracks mit <b>niedriger Sicherheit</b> erst anhören, Marker anpassen und mit <kbd>C</kbd> bestätigen.</div>
+    <h3>Energie (1–5)</h3><div style="color:var(--fg2);font-size:12.5px;line-height:1.6">Tempo 30 %, Dichte 25 %, Drive 20 %, Bass 15 %, Höhen 10 %. Lautstärke zählt bewusst nicht, die regelst du mit dem Gain. Klick auf die Balken im Detail setzt deinen eigenen Wert.</div>
+    <h3>Tasten</h3><div style="display:grid;grid-template-columns:auto 1fr;gap:6px 12px;color:var(--fg2);font-size:12.5px">
+    <span><kbd>Leertaste</kbd></span><span>Abspielen / Stopp, überall</span><span><kbd>↑</kbd> <kbd>↓</kbd></span><span>Track wechseln (Shift: Auswahl erweitern)</span><span><kbd>Enter</kbd></span><span>Auswahl bzw. Playlist analysieren</span>
+    <span><kbd>A</kbd> <kbd>G</kbd> <kbd>H</kbd> <kbd>L</kbd></span><span>Marker wählen und anhören (L loopt)</span>
+    <span><kbd>←</kbd> <kbd>→</kbd></span><span>Marker 1 Takt schieben (Shift: 8 Takte, Alt: 1 Beat)</span><span><kbd>C</kbd></span><span>Cues einschalten und bestätigen</span>
+    <span><kbd>R</kbd></span><span>Marker auf Automatik</span><span><kbd>⌘Z</kbd> <kbd>⇧⌘Z</kbd></span><span>Rückgängig, Wiederholen</span><span><kbd>/</kbd></span><span>Suche</span></div>`}
     </div><div class="foot"><button class="btn primary" data-close>Verstanden</button></div>`;
   }else if(kind==='edit'){const t=ctx;
     h=`<h2>Infos bearbeiten</h2><p class="sub">Änderungen gehen beim Export nach rekordbox und Serato mit. Deine Audiodatei bleibt unverändert.</p><div class="body">
@@ -1494,14 +1758,15 @@ function openModal(kind,ctx){
     <div class="note warn" id="scueWarn" hidden>Originaldateien werden verändert (nur der Serato-Tag, der Ton bleibt identisch). Vorher ein Backup des Sticks machen. rekordbox und CDJs spielen die Dateien weiter normal.</div>
     </div><div class="foot"><button class="btn ghost" data-close>Abbrechen</button><button class="btn primary" data-act="doSerato" id="sGo">ZIP herunterladen</button></div>`;
   }
-  m.innerHTML=h;$('#modalBg').classList.add('on');
+  m.innerHTML=h;m.onchange=null;m.oninput=null;m.classList.remove('wide');$('#modalBg').classList.add('on');m.scrollTop=0;
   if(kind==='settings'){const on=(id,fn)=>$('#'+id).addEventListener('change',e=>{fn(e.target);saveS();relCache=null;renderMain();renderBar();renderDetail()});
-    on('sMix',e=>S.mixBars=+e.value);on('sLoop',e=>S.loopMax=+e.value);on('sSens',e=>S.sens=clamp(+e.value||3,1,12));on('sMode',e=>S.energyMode=e.value);on('sConf',e=>S.requireConfirm=e.checked);
+    on('sMix',e=>S.mixBars=+e.value);on('sLoop',e=>S.loopMax=+e.value);on('sSens',e=>S.sens=+e.value);on('sTgt',e=>S.mixTarget=e.value);on('sDrop',e=>S.playOnDrop=e.checked);on('sMode',e=>S.energyMode=e.value);on('sConf',e=>S.requireConfirm=e.checked);
     on('sOver',e=>S.overwrite=e.checked);on('sRate',e=>S.writeRating=e.checked);on('sCom',e=>S.writeComment=e.checked);on('sMax',e=>S.maxMin=+e.value)}
   if(kind==='tour'){m.onclick=e=>{const b=e.target.closest('[data-tour]');if(b){openModal('tour',{i:+b.dataset.tour});return}const d=e.target.closest('[data-dj]');if(d){tourDj=d.dataset.dj;openModal('tour',{i:TOUR.cur})}};
   }else{m.onclick=null}
-  if(kind==='serato')m.addEventListener('change',e=>{if(e.target.name==='scue'){$('#scueWarn').hidden=e.target.value!=='inplace';$('#sGo').textContent=e.target.value==='none'?'ZIP herunterladen':'Stick wählen & schreiben'}});
-  if(kind==='xml'){renderXmlDiff();m.addEventListener('change',e=>{if(e.target.name==='xmode'){$('#xOverNote').hidden=e.target.value!=='over';$('#xScope').hidden=e.target.value==='over'}if(['xmode','xscope'].includes(e.target.name)||e.target.id==='xRoot')renderXmlDiff()});m.addEventListener('input',e=>{if(e.target.id==='xName'){$('input[name=xmode][value=new]').checked=true;$('#xOverNote').hidden=true;$('#xScope').hidden=false}})}
+  if(kind==='serato')m.onchange=(e=>{if(e.target.name==='scue'){$('#scueWarn').hidden=e.target.value!=='inplace';$('#sGo').textContent=e.target.value==='none'?'ZIP herunterladen':'Stick wählen & schreiben'}});
+  if(kind==='xml'){renderXmlDiff();m.onchange=e=>{if(e.target.id==='xForce'){state.forceStick=e.target.checked;$('#xForceBox').hidden=!state.forceStick}if(e.target.name==='xmode'){$('#xOverNote').hidden=e.target.value!=='over';$('#xScope').hidden=e.target.value==='over'}if(['xmode','xscope'].includes(e.target.name)||['xRoot','xForce'].includes(e.target.id))renderXmlDiff()};m.oninput=e=>{if(e.target.id==='xName'){$('input[name=xmode][value=new]').checked=true;$('#xOverNote').hidden=true;$('#xScope').hidden=false}}}
+  if(kind==='needdir')m.onclick=e=>{const a=e.target.closest('[data-act=pickMore]');if(a){closeModal();pickDir(ctx.h)}};
   const f=m.querySelector('input,select,button.primary');if(f)f.focus();
 }
 function closeModal(){$('#modalBg').classList.remove('on');if(lastFocus&&lastFocus.focus)lastFocus.focus()}
@@ -1514,15 +1779,15 @@ $('#pillLib').onclick=()=>$('#inXml').click();$('#pillMusic').onclick=pickMusic;
 $('#btnSide').onclick=()=>{if(isM())document.body.classList.toggle('showside');else document.body.classList.toggle('noside');setTimeout(()=>{drawTL();renderRows()},50)};
 $('#scrim').onclick=()=>document.body.classList.remove('showside');
 $('#curPl').onclick=()=>{if(isM())document.body.classList.add('showside')};
-$('#dClose').onclick=()=>{stop();state.focus=null;renderDetail();updateSel()};
-function pickMusic(){matchMedia('(pointer:coarse)').matches?$('#inFiles').click():$('#inDir').click()}
+$('#dClose').onclick=()=>{state.focus=null;renderDetail();updateSel();renderPlayer()};
+function pickMusic(){if(matchMedia('(pointer:coarse)').matches)$('#inFiles').click();else if(dirApi())pickDir();else $('#inDir').click()}
 $('#inFiles').addEventListener('change',async e=>{const fs=[...e.target.files];e.target.value='';await handleFiles(fs)});
 $('#btnSettings').onclick=()=>openModal('settings');$('#btnHelp').onclick=()=>openModal('guide');$('#btnTour').onclick=()=>openModal('tour',{i:0});$('#btnCancel').onclick=()=>{state.cancel=true};
 $('#btnAnalyze').onclick=()=>analyzeIds(state.sel.size>1?[...state.sel]:state.view);
 $('#btnExport').onclick=e=>{e.stopPropagation();$('#exportMenu').classList.toggle('open')};
 document.addEventListener('click',e=>{if(!e.target.closest('.menu-wrap'))$('#exportMenu').classList.remove('open')});
 $('#exportMenu').onclick=e=>{const b=e.target.closest('button');if(!b)return;$('#exportMenu').classList.remove('open');if(b.dataset.act==='csv')exportCsv();else openModal(b.dataset.act)};
-$('#modalBg').addEventListener('click',e=>{if(e.target.id==='modalBg'||e.target.closest('[data-close]'))closeModal();const a=e.target.closest('[data-act]');if(a){if(a.dataset.act==='doXml')exportXml();if(a.dataset.act==='doSerato')exportSerato();if(a.dataset.act==='metaSave'||a.dataset.act==='metaReset')saveMeta(a.dataset.act==='metaReset')}});
+$('#modalBg').addEventListener('click',e=>{if(e.target.id==='modalBg'||e.target.closest('[data-close]'))closeModal();const a=e.target.closest('[data-act]');if(a){if(a.dataset.act==='doXml')exportXml();if(a.dataset.act==='loadLib'){closeModal();$('#inXml').click()}if(a.dataset.act==='xmlOther'){XMLF.handle=null;IDB.put('handles','xml',null);$('#xFile').outerHTML=fileBox()}if(a.dataset.act==='gotoPlan'){closeModal();setView('plan')}if(a.dataset.act==='doSerato')exportSerato();if(a.dataset.act==='metaSave'||a.dataset.act==='metaReset')saveMeta(a.dataset.act==='metaReset')}});
 function saveMeta(reset){const t=state.tracks.get(state.focus);if(!t)return;applyMeta(t);let meta=null;
   if(!reset){meta={};for(const[k]of META){const v=$('#me_'+k).value.trim();if(v!==String(t.orig[k]??''))meta[k]=v}if(!Object.keys(meta).length)meta=null}
   if(meta&&meta.keyRaw&&!parseKey(meta.keyRaw)){toast('Key nicht erkannt – z.B. 8A, Am oder F#m',1);return}
@@ -1531,15 +1796,18 @@ function saveMeta(reset){const t=state.tracks.get(state.focus);if(!t)return;appl
 let rowsRaf=0;$('#main').addEventListener('scroll',()=>{if(!rowsRaf)rowsRaf=requestAnimationFrame(()=>{rowsRaf=0;renderRows()})},{passive:true});
 $('#main').addEventListener('click',e=>{
   const a=e.target.closest('[data-act]');if(a){if(a.dataset.act==='xml')$('#inXml').click();if(a.dataset.act==='dir')pickMusic();if(a.dataset.act==='help')openModal('guide');if(a.dataset.act==='tour')openModal('tour',{i:0});return}
+  const re=e.target.closest('[data-re]');if(re){reconnect(+re.dataset.re);return}
   const th=e.target.closest('th[data-sort]');if(th){const k=th.dataset.sort,i=state.sort.findIndex(s=>s.k===k);
     if(e.shiftKey){if(i>=0)state.sort[i].d*=-1;else state.sort.push({k,d:k==='energy'?-1:1})}else{if(i===0&&state.sort.length===1)state.sort[0].d*=-1;else state.sort=[{k,d:1}]}
     state.sort=state.sort.filter((s,j,arr)=>!(s.k==='idx'&&arr.length>1));renderBar();renderMain();return}
+  const pbt=e.target.closest('[data-play]');if(pbt){const id=pbt.dataset.play;if(state.focus!==id){state.focus=id;state.sel=new Set([id]);state.anchor=id;renderDetail();updateSel()}playId(id);renderRows();return}
+  const ctg=e.target.closest('[data-cue]');if(ctg){const t=state.tracks.get(ctg.dataset.cue),on=cuesOn(t);setManual(t,{cue:!on});if(!on&&state.focus!==t.id){stop();state.focus=t.id;state.sel=new Set([t.id]);state.anchor=t.id;updateSel();renderDetail()}toast(on?'Cues aus: '+t.title:'Cues an: '+t.title,0,1);return}
   const tr=e.target.closest('tbody tr.r');if(!tr)return;const id=tr.dataset.id;
   if(e.shiftKey&&state.anchor){const i0=state.view.indexOf(state.anchor),i1=state.view.indexOf(id);state.sel=new Set(state.view.slice(Math.min(i0,i1),Math.max(i0,i1)+1))}
   else if(e.metaKey||e.ctrlKey){state.sel.has(id)?state.sel.delete(id):state.sel.add(id);state.anchor=id}else{state.sel=new Set([id]);state.anchor=id}
   if(state.focus!==id){stop();state.focus=id;renderDetail()}updateSel()});
 $('#main').addEventListener('dblclick',e=>{const tr=e.target.closest('tbody tr.r');if(!tr)return;const t=state.tracks.get(tr.dataset.id);if(t.analysis)jump('A');else analyzeIds([t.id])});
-$('#side').addEventListener('click',e=>{const sb=e.target.closest('[data-src]');if(sb){sb.dataset.src==='lib'?$('#inXml').click():pickMusic();return}const f=e.target.closest('[data-folder]');if(f){const k=f.dataset.folder;state.collapsed.has(k)?state.collapsed.delete(k):state.collapsed.add(k);renderSide();return}
+$('#side').addEventListener('click',e=>{const re=e.target.closest('[data-re]');if(re){reconnect(+re.dataset.re);return}const sb=e.target.closest('[data-src]');if(sb){document.body.classList.remove('showside');sb.dataset.src==='lib'?$('#inXml').click():pickMusic();return}const f=e.target.closest('[data-folder]');if(f){const k=f.dataset.folder;state.collapsed.has(k)?state.collapsed.delete(k):state.collapsed.add(k);renderSide();return}
   const p=e.target.closest('[data-pl]');if(!p)return;state.cur=+p.dataset.pl;state.sel.clear();state.focus=null;stop();document.body.classList.remove('showside');$('#main').scrollTop=0;renderAll()});
 $('#side').addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();e.target.click()}});
 $('#q').addEventListener('input',e=>{state.q=e.target.value;renderMain()});
@@ -1553,52 +1821,72 @@ $('#sorts').addEventListener('dragstart',e=>{const c=e.target.closest('.chip');i
 $('#sorts').addEventListener('dragover',e=>{const c=e.target.closest('.chip');if(c&&dragI!==null){e.preventDefault();$$('.chip').forEach(x=>x.classList.toggle('over',x===c))}});
 $('#sorts').addEventListener('drop',e=>{const c=e.target.closest('.chip');if(!c||dragI===null)return;e.preventDefault();e.stopPropagation();const[s]=state.sort.splice(dragI,1);state.sort.splice(+c.dataset.i,0,s);dragI=null;renderBar();renderMain()});
 $('#sorts').addEventListener('dragend',()=>{dragI=null;$$('.chip').forEach(x=>x.classList.remove('drag','over'))});
-$('#btnPlay').onclick=()=>{if(PB.src)stop();else{const t=state.tracks.get(state.focus);const ct=t?.analysis?cueTimes(t):null;play(ct?ct.A:0)}};
+$('#btnPlay').onclick=()=>{if(state.focus)playId(state.focus)};$('#plBtn').onclick=togglePlay;
+$('.plbar').addEventListener('click',e=>{const t=state.tracks.get(PB.id||'');if(!t)return;const r=e.currentTarget.getBoundingClientRect();play((e.clientX-r.left)/r.width*(t.analysis?t.analysis.dur:t.dur||1),null,t.id)});
+$('#cueBar').addEventListener('click',e=>{if(!e.target.closest('#cueAll'))return;const ids=(state.sel.size>1?[...state.sel]:listIds()).filter(id=>state.tracks.get(id)?.analysis),on=ids.every(id=>cuesOn(state.tracks.get(id)));setMany([...new Set(ids)],{cue:!on},on?`Cues für ${ids.length} Tracks aus`:`Cues für ${ids.length} Tracks an`)});
+$('#dAdj').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const t=state.tracks.get(state.focus);if(!t)return;if(b.dataset.mv)moveMarker(TL.sel,+b.dataset.mv);else if(b.dataset.lb){setManual(t,{LB:+b.dataset.lb,ok:true,...(t.manual?.cue==null?{cue:true}:{})});previewMarker(t,'L')}else if(b.dataset.set){const[k,v]=b.dataset.set.split(':');setMarker(k,+v)}else if(b.dataset.adj==='undo')undo();else if(b.dataset.adj==='redo')redo();else if(b.dataset.adj==='reset')resetMarkers(t)});
+function resetMarkers(t){setManual(t,{A:null,F:null,G:null,L:null,LB:null});toast('Marker wieder automatisch',0,1)}
 $('#dJumps').onclick=e=>{const b=e.target.closest('[data-jump]');if(b)jump(b.dataset.jump)};
 $('#dFacts').onclick=e=>{const b=e.target.closest('[data-e]');if(!b)return;const t=state.tracks.get(state.focus);if(!t)return;const v=+b.dataset.e;setManual(t,{E:v||null});toast(v?`Energie für „${t.title}“ auf ${v}/5 gesetzt`:'Energie wieder automatisch')};
 $('#dActs').onclick=e=>{const b=e.target.closest('[data-act]');if(!b)return;const t=state.tracks.get(state.focus);if(!t)return;const a=b.dataset.act;
   if(a==='edit'){openModal('edit',t);return}
-  if(a==='confirm')setManual(t,{ok:true});if(a==='unconfirm')setManual(t,{ok:null});if(a==='reset')setManual(t,{A:null,F:null,G:null,L:null});if(a==='reanalyze')analyzeIds([t.id],true)};
+  if(a==='confirm')setManual(t,{ok:true,cue:true});if(a==='unconfirm')setManual(t,{ok:null});if(a==='cues')setManual(t,{cue:!cuesOn(t)});if(a==='reanalyze')analyzeIds([t.id],true)};
 const cv=$('#tl');
-const HIT=()=>matchMedia('(pointer:coarse)').matches?16:8;let tlDown=null;
-cv.addEventListener('pointerdown',e=>{const g=tlGeom();if(!g.a)return;const r=cv.getBoundingClientRect(),mx=e.clientX-r.left,ct=cueTimes(g.t);
-  const hit=['G','F','A','L'].map(k=>({k,d:Math.abs(g.x(k==='L'?ct.L0:ct[k])-mx)})).filter(o=>o.d<HIT()).sort((p,q)=>p.d-q.d)[0];
-  if(hit){TL.drag=hit.k;TL.sel=hit.k;snap(g.t);cv.setPointerCapture(e.pointerId);e.preventDefault()}else tlDown={x:mx,t:Date.now()}});
-cv.addEventListener('pointerup',e=>{const g=tlGeom();if(TL.drag){TL.drag=null;$('#tlTip').style.display='none';IDB.put('manual',mKey(g.t),g.t.manual);refreshTrack(g.t);return}
-  if(tlDown&&g.a){const mx=e.clientX-cv.getBoundingClientRect().left;if(Math.abs(mx-tlDown.x)<6)play(mx>3?barT(g.a,nearestBar(g.a,g.s(mx))):0)}tlDown=null});
-cv.addEventListener('pointermove',e=>{const g=tlGeom();if(!g.a)return;const r=cv.getBoundingClientRect(),mx=e.clientX-r.left,tip=$('#tlTip');
-  if(TL.drag){const k=TL.drag,nb=g.a.rms.length;const b=clamp(nearestBar(g.a,g.s(mx)),0,k==='L'?nb-1:nb);const c=computeCues(g.t);if(c[k]!==b){const p={[k]:b,ok:true};if(k==='G'&&g.t.manual?.F==null)p.F=null;t_set(g.t,p)}
-    tip.style.display='block';tip.style.left=Math.min(r.width-120,g.x(barT(g.a,b))+24)+'px';tip.textContent=`${k} → Bar ${b+1} · ${fmtT(barT(g.a,b))}`;return}
-  if(e.pointerType==='mouse'){TL.hover=nearestBar(g.a,g.s(mx));const ct=cueTimes(g.t);cv.style.cursor=['G','F','A','L'].some(k=>Math.abs(g.x(k==='L'?ct.L0:ct[k])-mx)<HIT())?'ew-resize':'crosshair';
-    tip.style.display='block';tip.style.left=Math.min(r.width-120,mx+28)+'px';tip.textContent=`Bar ${TL.hover+1} · ${fmtT(barT(g.a,TL.hover))}`;drawTL()}});
-cv.addEventListener('pointerleave',()=>{if(!TL.drag&&TL.hover>=0){TL.hover=-1;$('#tlTip').style.display='none';drawTL()}});
-function t_set(t,p){t.manual=Object.assign({},t.manual||{},p);for(const k in t.manual)if(t.manual[k]==null)delete t.manual[k];drawTL()}
+const HIT=()=>matchMedia('(pointer:coarse)').matches?22:10;let tlDown=null;
+const KS=['G','F','A','L'];
+/* pointer handling shared by the overview (bars, magnetic to phrase starts) and the zoom view (beats) */
+function bindMarkers(cv,G){ // G() → {t,a,c,w,x(pos),pos(x,e)}
+  const hitAt=(g,mx,my)=>{const hs=KS.map(k=>({k,d:Math.abs(g.x(g.c[k])-mx)+(my<24?-6:0)+(TL.sel===k?-3:0)})).filter(o=>o.d<HIT()).sort((p,q)=>p.d-q.d);return hs[0]};
+  let pre=null,moved=false;
+  cv.addEventListener('pointerdown',e=>{if(e.button)return;const g=G();if(!g||!g.a)return;const r=cv.getBoundingClientRect(),mx=e.clientX-r.left,my=e.clientY-r.top,hit=hitAt(g,mx,my);
+    if(hit){TL.drag=hit.k;TL.dx=g.x(g.c[hit.k])-mx;TL.zc=g.mid;if(TL.sel!==hit.k&&cv.id==='tl'){TL.sel=hit.k;TL.resel=true}else TL.sel=hit.k;pre=cloneM(g.t.manual);moved=false;cv.setPointerCapture(e.pointerId);e.preventDefault();drawTL()}
+    else tlDown={x:mx,y:e.clientY,t:Date.now()}});
+  cv.addEventListener('touchstart',e=>{if(TL.drag)e.preventDefault()},{passive:false});
+  cv.addEventListener('pointermove',e=>{const g=G();if(!g||!g.a)return;const r=cv.getBoundingClientRect(),mx=e.clientX-r.left,tip=$('#tlTip');
+    if(TL.drag){const k=TL.drag,b=g.pos(mx+(TL.dx||0),e,k);if(g.c[k]!==b){const p=markerPatch(g.t,k,b);t_set(g.t,p);moved=true}
+      const ph=g.c.bnd.includes(b);tip.style.display='block';tip.style.left=Math.min(r.width-170,Math.max(4,mx+24))+'px';tip.textContent=`${LBL[k]} · ${posTxt(b)} · ${fmtT(barT(g.a,b))}${ph?' · Phrasenstart':''}`;return}
+    if(e.pointerType==='mouse'){const my=e.clientY-r.top;cv.style.cursor=hitAt(g,mx,my)?'ew-resize':'crosshair';
+      if(cv.id==='tl'){TL.hover=g.pos(mx,e);tip.style.display='block';tip.style.left=Math.min(r.width-120,mx+28)+'px';tip.textContent=`${posTxt(TL.hover)} · ${fmtT(barT(g.a,TL.hover))}`;drawTL()}}});
+  const end=e=>{const g=G();$('#tlTip').style.display='none';
+    if(TL.drag){const k=TL.drag;TL.drag=null;TL.zc=null;if(g&&moved){pushHist([{id:g.t.id,m:pre}]);IDB.put('manual',mKey(g.t),g.t.manual);refreshTrack(g.t);previewMarker(g.t,k);tlDown=null;return}
+      if(g){renderDetail();if(e.type==='pointerup')jump(k)}tlDown=null;return}
+    if(tlDown&&g&&g.a&&e.type==='pointerup'){const mx=e.clientX-cv.getBoundingClientRect().left;if(Math.abs(mx-tlDown.x)<6&&Math.abs(e.clientY-tlDown.y)<10)play(cv.id==='tl'&&mx<=3?0:barT(g.a,g.pos(mx,e)),null,g.t.id)}tlDown=null};
+  cv.addEventListener('pointerup',end);cv.addEventListener('pointercancel',end);
+  cv.addEventListener('pointerleave',()=>{if(!TL.drag&&TL.hover>=0){TL.hover=-1;$('#tlTip').style.display='none';drawTL()}})}
+bindMarkers(cv,()=>{const g=tlGeom();if(!g.a)return null;const c=computeCues(g.t);return{t:g.t,a:g.a,c,mid:c[TL.sel],x:b=>g.x(barT(g.a,b)),pos:(mx,e,k)=>{const sec=clamp(g.s(mx),0,g.dur);if(e.altKey)return nearestPos(g.a,sec,0.25);let b=nearestPos(g.a,sec,1);if(k&&!e.shiftKey){let bd=9,bb=b;for(const x of c.bnd){const d=Math.abs(g.x(barT(g.a,x))-mx);if(d<bd){bd=d;bb=x}}b=bb}return clamp(b,0,k==='L'?g.a.rms.length-1:g.a.rms.length)}}});
+function bindZoom(){const z=$('#tlz');if(!z)return;bindMarkers(z,()=>{const g=zGeom();if(!g)return null;return{t:g.t,a:g.a,c:g.c,mid:g.mid,x:g.x,pos:(mx,e,k)=>clamp(Math.round(g.b(mx)*4)/4,0,k==='L'?g.a.rms.length-1:g.a.rms.length)}})}
+function t_set(t,p){t.manual=Object.assign({},t.manual||{},p);cleanM(t);drawTL()}
 window.addEventListener('resize',()=>{drawTL();renderRows()});
 document.addEventListener('keydown',e=>{
   if($('#modalBg').classList.contains('on')){if(e.key==='Escape')closeModal();if(e.key==='Tab'){const f=$$('#modal input,#modal select,#modal button').filter(x=>!x.disabled&&x.offsetParent);if(f.length){const i=f.indexOf(document.activeElement);if(e.shiftKey&&i<=0){e.preventDefault();f[f.length-1].focus()}else if(!e.shiftKey&&i===f.length-1){e.preventDefault();f[0].focus()}}}return}
   if(e.target.matches('input,select,textarea')){if(e.key==='Escape')e.target.blur();return}
   if(!state.source)return;const v=state.view;
-  if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='z'){e.preventDefault();undo();return}
+  if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='z'){e.preventDefault();e.shiftKey?redo():undo();return}
+  if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='y'){e.preventDefault();redo();return}
+  if(e.key===' '&&!e.metaKey&&!e.ctrlKey&&!e.altKey){if(e.target.closest&&e.target.closest('button,[role=button],[tabindex]')&&e.target.matches(':focus-visible')&&!e.target.closest('tr,canvas,.pi'))return;e.preventDefault();togglePlay();return}
+  if(PLAN.on){planKey(e);return}
   if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='a'){e.preventDefault();state.sel=new Set(v);updateSel();return}
   if(e.key==='ArrowDown'||e.key==='ArrowUp'){e.preventDefault();let i=v.indexOf(state.focus);i=e.key==='ArrowDown'?Math.min(v.length-1,i+1):Math.max(0,i-1);if(i<0)i=0;const id=v[i];if(!id)return;
     if(e.shiftKey)state.sel.add(id);else{state.sel=new Set([id]);state.anchor=id}stop();state.focus=id;scrollToId(id);updateSel();renderDetail();return}
-  if(e.key==='ArrowLeft'||e.key==='ArrowRight'){if(!state.focus)return;e.preventDefault();moveMarker(TL.sel,(e.key==='ArrowRight'?1:-1)*(e.shiftKey?8:1));return}
+  if(e.key==='ArrowLeft'||e.key==='ArrowRight'){if(!state.focus)return;e.preventDefault();moveMarker(TL.sel,(e.key==='ArrowRight'?1:-1)*(e.shiftKey?8:e.altKey?0.25:1));return}
   if(e.key==='Enter'){if(e.target.closest('button'))return;analyzeIds(state.sel.size?[...state.sel]:v);return}
-  if(e.key===' '){if(e.target.closest('button'))return;e.preventDefault();$('#btnPlay').click();return}
   if(e.metaKey||e.ctrlKey||e.altKey)return;const k=e.key.toUpperCase();
   if(KEY2CUE[k]){jump(KEY2CUE[k]);return}
-  if(k==='C'){const t=state.tracks.get(state.focus);if(t&&t.analysis){setManual(t,{ok:true});toast('Bestätigt: '+t.title)}return}
-  if(k==='R'){const t=state.tracks.get(state.focus);if(t&&t.manual)setManual(t,{A:null,F:null,G:null,L:null});return}
+  if(k==='C'){const t=state.tracks.get(state.focus);if(t&&t.analysis){setManual(t,{ok:true,cue:true});toast('Cues an und bestätigt: '+t.title,0,1)}return}
+  if(k==='R'){const t=state.tracks.get(state.focus);if(t&&t.manual)resetMarkers(t);return}
   if(e.key==='/'){e.preventDefault();$('#q').focus();return}if(e.key==='?'){openModal('guide');return}if(e.key==='Escape'){state.sel.clear();updateSel()}});
 let dragDepth=0;
 window.addEventListener('dragenter',e=>{if(e.dataTransfer.types.includes('Files')){dragDepth++;$('#drop').classList.add('on')}});
 window.addEventListener('dragleave',()=>{dragDepth=Math.max(0,dragDepth-1);if(!dragDepth)$('#drop').classList.remove('on')});
 window.addEventListener('dragover',e=>{if(e.dataTransfer.types.includes('Files'))e.preventDefault()});
-window.addEventListener('drop',async e=>{if(!e.dataTransfer.types.includes('Files'))return;e.preventDefault();dragDepth=0;$('#drop').classList.remove('on');await handleFiles(await readDropEntries([...e.dataTransfer.items]))});
+window.addEventListener('drop',async e=>{if(!e.dataTransfer.types.includes('Files'))return;e.preventDefault();dragDepth=0;$('#drop').classList.remove('on');
+  const it0=[...e.dataTransfer.items];if(it0.length===1&&it0[0].getAsFileSystemHandle&&dirApi()){const ent=it0[0].webkitGetAsEntry&&it0[0].webkitGetAsEntry();if(ent&&ent.isDirectory){try{const h=await it0[0].getAsFileSystemHandle();if(h&&h.kind==='directory'){await openDir(h);return}}catch(x){}}}
+  await handleFiles(await readDropEntries([...e.dataTransfer.items]))});
 window.addEventListener('error',e=>{toast('Unerwarteter Fehler: '+(e.message||'unbekannt')+' – Seite ggf. neu laden. Deine Daten bleiben unverändert.',1)});
 window.addEventListener('unhandledrejection',e=>{toast('Unerwarteter Fehler: '+((e.reason&&e.reason.message)||e.reason)+' – Deine Daten bleiben unverändert.',1)});
 window.addEventListener('beforeunload',e=>{if(state.busy){e.preventDefault();e.returnValue=''}});
 renderAll();
+Promise.all([XMLF.init(),DIRS.init()]).then(()=>{if(!state.source&&DIRS.list.length)renderMain()});
 try{if(!localStorage.getItem('jailr-tour')&&!/[?&]notour/.test(location.search)){localStorage.setItem('jailr-tour','seen');setTimeout(()=>{if(!$('#modalBg').classList.contains('on'))openModal('tour',{i:0})},700)}}catch(e){}
 </script>
 </body>

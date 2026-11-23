@@ -17,6 +17,8 @@ Läuft komplett lokal im Browser. Es wird nichts hochgeladen – die Seite ist p
 - **Lautstärke (LUFS) & Gain-Empfehlung** relativ zur Playlist, Hinweise zu niedriger Bitrate und Übersteuerung
 - **Mehrfach-Sortierung** nach Key (Camelot), BPM, Energie u. a. gleichzeitig
 - **Export** nach rekordbox (XML) – als neue Playlist oder bestehende überschreiben – oder nach **Serato**: Crates plus **Hot Cues und Emergency Loop direkt in die MP3s** (als Kopie oder in die Originale, Ton bleibt bitgenau gleich; Chrome/Edge)
+- **Quantize-Prüfung:** misst das rekordbox-Beatgrid am Audio (Versatz, Drift, Takt 1), mit Klick zum Anhören und optionaler Korrektur in der XML
+- **Klarer Status pro Track:** Fertig, Quantize, Cues, Qualität oder Lautheit prüfen
 - **Problemliste (CSV)** mit allem, was nicht automatisch ging, und was zu tun ist
 
 ## Zwei Wege rein

@@ -433,6 +433,7 @@ body.planning aside{display:block}
     <div class="menu" id="exportMenu" role="menu">
       <button data-act="xml" role="menuitem"><svg class="i" viewBox="0 0 24 24"><path d="M4 4h16v16H4zM8 9h8M8 13h8M8 17h5"/></svg><div>rekordbox XML<small>Cues, Rating &amp; Energie zurück nach rekordbox</small></div></button>
       <button data-act="serato" role="menuitem"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="2"/></svg><div>Serato<small>Crates und auf Wunsch Cues direkt auf den Stick</small></div></button>
+      <button data-act="active" role="menuitem"><svg class="i" viewBox="0 0 24 24"><path d="M17 2l4 4-4 4M3 11V9a3 3 0 0 1 3-3h15M7 22l-4-4 4-4M21 13v2a3 3 0 0 1-3 3H3"/></svg><div>Active Loops auf dem Stick<small>Emergency Loops scharf schalten, nach dem Export aus rekordbox</small></div></button>
       <button data-act="csv" role="menuitem"><svg class="i" viewBox="0 0 24 24"><path d="M12 9v4M12 17h.01M10.3 3.9L2 18a2 2 0 0 0 1.7 3h16.6a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg><div>Problemliste (CSV)<small>Alle Tracks mit Fehlern, Warnungen und was zu tun ist</small></div></button>
     </div>
   </div>
@@ -488,7 +489,7 @@ function download(name,data,type){const b=data instanceof Blob?data:new Blob([da
 const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
 const safeName=s=>String(s).replace(/[\/\\:*?"<>|%\x00-\x1f]/g,'-').replace(/^\.+/,'').slice(0,120)||'Playlist';
 
-const ALG_V=11;const APP_V='3.0';
+const ALG_V=12;const APP_V='3.0';
 const RATING_VAL=[0,51,102,153,204,255];
 const ENERGY_T=[48,56,63,70];
 const DEFAULTS={mixBars:8,mixV:2,loopMax:16,loopBars:8,sens:3,overwrite:false,energyMode:'abs',writeRating:true,writeComment:true,phrase:8,requireConfirm:true,maxMin:20,mixTarget:'outro',playOnDrop:true};
@@ -631,7 +632,7 @@ const RB={
       else if(tag==='PQTZ'){const n=dv.getUint32(p+20);for(let i=0;i<n;i++){const b=p+24+i*8;if(b+8>p+lt)break;beats.push({n:dv.getUint16(b),bpm:dv.getUint16(b+2)/100,t:dv.getUint32(b+4)/1000})}}
       else if(tag==='PCOB'){const hot=dv.getUint32(p+12)===1;let q=p+lh;
         while(q+40<=p+lt&&id(q)==='PCPT'){const ql=dv.getUint32(q+8)||56;const st=dv.getUint32(q+16),hc=dv.getUint32(q+12),ty=dv.getUint8(q+28),tm=dv.getUint32(q+32),lt2=dv.getUint32(q+36);
-          if(st!==0)cob.push({num:hot?hc-1:-1,type:ty===2?4:0,start:tm/1000,end:ty===2&&lt2!==0xffffffff?lt2/1000:null,name:''});q+=ql}}
+          if(ty===1||ty===2)cob.push({num:hot?hc-1:-1,type:ty===2?4:0,start:tm/1000,end:ty===2&&lt2!==0xffffffff?lt2/1000:null,name:''});q+=ql}}
       else if(tag==='PCO2'){let q=p+lh;
         while(q+28<=p+lt&&id(q)==='PCP2'){const ql=dv.getUint32(q+8)||0x90;const hc=dv.getUint32(q+12),ty=dv.getUint8(q+16),tm=dv.getUint32(q+20),lt2=dv.getUint32(q+24);
           co2.push({num:hc?hc-1:-1,type:ty===2?4:0,start:tm/1000,end:ty===2&&lt2!==0xffffffff?lt2/1000:null,name:''});q+=ql}}
@@ -847,10 +848,10 @@ function downbeats(t,dur){
   const db=beats.filter(b=>b[1]===1).map(b=>b[0]);if(!db.length)return null;const bar=240/T[T.length-1].bpm;if(db[db.length-1]+bar<=dur+0.05)db.push(db[db.length-1]+bar);return db}
 /* MP3 files carry encoder delay. rekordbox counts it, the browser decoder cuts it off – so the decoded audio starts 26 or 52 ms early
    against the rekordbox grid. Measure the shift on the real onsets (audio time = grid time + off) and use it everywhere. */
-function gridOffset(L,R,sr,beats){
+function gridOffset(L,R,sr,beats,from=0.2,cnt=320){
   const N=256,HOP=64,n=L.length;if(beats.length<40)return{off:0,q:0};
   const re=new Float32Array(N),im=new Float32Array(N),w=new Float32Array(N);for(let i=0;i<N;i++)w[i]=0.5-0.5*Math.cos(2*Math.PI*i/N);
-  const b0=Math.floor(beats.length*0.2),b1=Math.min(beats.length-2,b0+320),per=beats[b0+1][0]-beats[b0][0],H=Math.floor(per*sr/HOP/2)-1,acc=new Float64Array(2*H+1);
+  const b0=Math.floor(beats.length*from),b1=Math.min(beats.length-2,b0+cnt),per=beats[b0+1][0]-beats[b0][0],H=Math.floor(per*sr/HOP/2)-1,acc=new Float64Array(2*H+1);
   let prev=null;
   for(let b=b0;b<b1;b++){const c=Math.round(beats[b][0]*sr);prev=null;
     for(let k=-H-1;k<=H;k++){const o=c+k*HOP-N/2;for(let i=0;i<N;i++){const j=o+i;re[i]=j>=0&&j<n?(L[j]+R[j])*0.5*w[i]:0;im[i]=0}fftMag(re,im);
@@ -891,6 +892,10 @@ function kickBeats(L,R,sr,db,nb,off,rms,body){
   let tt=0;for(let b=0;b<NB;b++)tt+=tpl[b]*tpl[b];const out=new Uint8Array(tot);
   for(let q=0;q<tot;q++){let vt=0;for(let b=0;b<NB;b++)vt+=Math.min(V[q][b],1.3*tpl[b])*tpl[b];const p=tt>1?clamp(vt/tt):0,l=clamp((low[q]-(lRef-12))/9);out[q]=Math.round(100*Math.min(1,Math.sqrt(p*l)*1.02))}
   return out}
+function kickPhase(kk){ // 0–3: beat on which kicks return/stop; only reported when it is unmistakable
+  const n=kk.length,k=i=>clamp((kk[i]-25)/35),m=(a,b)=>{let x=0;for(let i=a;i<b;i++)x+=k(i);return x/(b-a)},on=[0,0,0,0],of=[0,0,0,0];
+  for(let q=8;q<n-8;q++){if(k(q)>0.6&&m(q-3,q)<0.15&&m(q,q+8)>0.85)on[q&3]++;if(k(q)<0.2&&k(q-1)>0.6&&m(q-8,q)>0.85&&m(q,q+3)<0.15)of[q&3]++}
+  const t=on.map((x,i)=>x+of[i]),tot=t.reduce((a,b)=>a+b,0);for(let i=1;i<4;i++)if(on[i]>=3&&of[i]>=2&&t[i]>=0.8*tot)return i;return 0}
 async function analyzeTrack(t){
   if(!t.file)throw new AErr('nofile');
   if(!t.tempos.length)throw new AErr('nogrid');
@@ -904,8 +909,15 @@ async function analyzeTrack(t){
   const HOP=256,nh=Math.floor(n/HOP);const eA=new Float32Array(nh),eL=new Float32Array(nh),eM=new Float32Array(nh),eH=new Float32Array(nh);
   const aLo=1-Math.exp(-2*Math.PI*150/sr),aHi=1-Math.exp(-2*Math.PI*4000/sr);let l1=0,l2=0,h1=0,h2=0;
   for(let k=0,i=0;k<nh;k++){let sa=0,sl=0,sm=0,shh=0;for(let j=0;j<HOP;j++,i++){const x=(L[i]+R[i])*0.5;l1+=aLo*(x-l1);l2+=aLo*(l1-l2);h1+=aHi*(x-h1);h2+=aHi*(h1-h2);const m=h2-l2,h=x-h2;sa+=x*x;sl+=l2*l2;sm+=m*m;shh+=h*h}eA[k]=sa/HOP;eL[k]=sl/HOP;eM[k]=sm/HOP;eH[k]=shh/HOP}
-  const db=downbeats(t,dur);if(!db||db.length<9)throw new AErr('grid');
-  const go=gridOffset(L,R,sr,gridBeats(t,dur)),off=go.off;await sleep(0);
+  let db=downbeats(t,dur);if(!db||db.length<9)throw new AErr('grid');
+  const gb=gridBeats(t,dur),go=gridOffset(L,R,sr,gb),off=go.off;await sleep(0);
+  // does the grid run away? compare the shift early and late in the track
+  let drift=0;{const g1=gridOffset(L,R,sr,gb,0.08,110),g2=gridOffset(L,R,sr,gb,0.72,110);if(g1.q>1.5&&g2.q>1.5)drift=Math.round((g2.off-g1.off)*1000)}await sleep(0);
+  // is beat 1 of the grid really the downbeat? kicks that come back after a fill tell
+  let phase=0;{const nb0=db.length-1,r0=[];for(let b=0;b<nb0;b++){const h0=Math.max(0,Math.floor((db[b]+off)*sr/HOP)),hx=Math.max(h0+1,Math.min(nh,Math.floor((db[b+1]+off)*sr/HOP)));let x=0;for(let k=h0;k<hx;k++)x+=eA[k];r0.push(10*Math.log10(x/(hx-h0)+1e-12))}
+    const rb0=pct(r0,0.8);phase=kickPhase(kickBeats(L,R,sr,db,nb0,off,r0,r0.map(v=>v>=rb0-6)));
+    if(phase){const nd=gb.filter(x=>x[1]===phase+1).map(x=>x[0]);const bar=240/t.tempos[t.tempos.length-1].bpm;if(nd.length>8){if(nd[nd.length-1]+bar<=dur+0.05)nd.push(nd[nd.length-1]+bar);db=nd}else phase=0}}
+  await sleep(0);
   const nb=db.length-1,dB=v=>r1(10*Math.log10(v+1e-12));const rms=[],low=[],mid=[],hi=[];
   for(let b=0;b<nb;b++){const h0=Math.max(0,Math.floor((db[b]+off)*sr/HOP)),hx=Math.max(h0+1,Math.min(nh,Math.floor((db[b+1]+off)*sr/HOP)));let a=0,l=0,m=0,h=0,c=0;for(let k=h0;k<hx;k++){a+=eA[k];l+=eL[k];m+=eM[k];h+=eH[k];c++}c=c||1;rms.push(dB(a/c));low.push(dB(l/c));mid.push(dB(m/c));hi.push(dB(h/c))}
   const bf=beatSpec(L,R,sr,db,nb,off);await sleep(0);
@@ -917,7 +929,7 @@ async function analyzeTrack(t){
   const full=rms.filter(v=>v>=rB-4).length/Math.max(1,nb),bassRel=pct(low,0.8)-rB;
   const sT=clamp((bpm-120)/55),sD=clamp((opb-0.4)/2.2),sA=clamp((full-0.4)/0.5),sB=clamp((bassRel+7)/6),sH=clamp((hiRatio+30)/22);
   const score=Math.round(100*(0.3*sT+0.25*sD+0.2*sA+0.15*sB+0.1*sH));
-  return{v:ALG_V,dur:r1(dur),db:db.map(x=>Math.round(x*1000)/1000),rms,low,mid,hi,bf,kk,off,offQ:go.q,lufs:r1(loud),peak:r1(20*Math.log10(pk+1e-9)),clip:Math.round(clip/(n*nc)*1e5)/1e5,
+  return{v:ALG_V,dur:r1(dur),db:db.map(x=>Math.round(x*1000)/1000),rms,low,mid,hi,bf,kk,off,offQ:go.q,drift,phase,lufs:r1(loud),peak:r1(20*Math.log10(pk+1e-9)),clip:Math.round(clip/(n*nc)*1e5)/1e5,
     opb:Math.round(opb*100)/100,hiRatio:r1(hiRatio),score,parts:[sT,sD,sA,sB,sH].map(x=>Math.round(x*100)),full:Math.round(full*100),bassRel:r1(bassRel)};
 }
 
@@ -944,6 +956,7 @@ function structure(a){
   const n8=nv(8),n4=nv(4),raw=new Float32Array(nb+1);for(let b=1;b<nb;b++)raw[b]=0.6*n8[b]+0.4*n4[b];
   const sc=Math.max(1.5,pct([...raw],0.93)),sco=new Float32Array(nb+1),fill=new Float32Array(nb+1),trans=new Float32Array(nb+1);
   // kick switches on or off for good (not just a fill)
+  const full=b=>kb[b]>=0.75||(kb[b]>=0.3&&a.low[b]>=ref.low-3&&a.rms[b]>=ref.rms-2.5);
   const isOn=b=>kb[b]>=0.55&&a.low[b]>=ref.low-7;
   for(let b=2;b<nb-1;b++){const on=isOn(b);if(on===isOn(b-1))continue;let p=0,n=0,pc=0,nc=0;for(let i=1;i<=4;i++){if(b-i>=0){pc++;p+=isOn(b-i)!==on}if(b+i-1<nb){nc++;n+=isOn(b+i-1)===on}}if(p/pc>=0.75&&n/nc>=0.66)trans[b]=1}
   for(let b=1;b<nb;b++){
@@ -966,7 +979,7 @@ function structure(a){
   for(const x of seg)x.t=x.k>0.6&&x.en>=hiE-0.12?'main':x.k>0.6?'groove':'break';
   const first=seg.findIndex(x=>x.t==='main'),last=seg.length-1-[...seg].reverse().findIndex(x=>x.t==='main');
   seg.forEach((x,i)=>{if(first>=0){if(i<first)x.t='intro';else if(i>last)x.t='outro';else if(x.t==='break'&&i+1<seg.length&&seg[i+1].t==='main'&&i>0&&seg[i-1].t==='break')x.t='build'}});
-  const out={nb,ref,kq,kb,prof,raw,sco,fill,bnd,seg,en,medProf,medK,hiE,sc,isOn};structCache.set(a,out);return out;
+  const out={nb,ref,kq,kb,prof,raw,sco,fill,bnd,seg,en,medProf,medK,hiE,sc,isOn,full};structCache.set(a,out);return out;
 }
 const cueCache=new WeakMap();
 const beatNo=x=>Math.round(x*4)/4; // marker positions are bars, quarter steps = beats
@@ -996,12 +1009,13 @@ function findH(a,st,bA){
   const rich=(x,y)=>{const p=medProf(x,y);return p?avg(p):-24};
   let tail=nb;while(tail>8&&(a.rms[tail-1]<st.ref.rms-12||kb[tail-1]<0.25))tail--; // last bar that still has music with a kick
   let mus=nb;while(mus>tail&&a.rms[mus-1]<st.ref.rms-20)mus--; // music after the kick has stopped = beatless outro
+  {const p=bnd.filter(x=>x<tail-3).pop()||bA,al=p+Math.round((tail-p)/4)*4;if(Math.abs(al-tail)===1&&al<=nb&&al>p)tail=al}
   const cands=[],mainR=pct(seg.filter(x=>x.k>0.6&&x.e-x.s>=4).map(x=>avg(x.p)),0.6);
   const low=a.low,rms=a.rms,ref=st.ref;
   for(const b of[...new Set([...bnd.filter(x=>x>0&&x<tail),tail])]){
     if(b-W<bA||b<Math.max(16,nb*0.25))continue;
     // window quality: kick on every bar except an optional fill right before H
-    let bad=0;for(let i=b-W;i<b;i++)if(kb[i]<0.6&&i<b-1)bad++;if(kb[b-W]<0.75||bad>Math.max(W>=8?1:0,Math.floor(W/16))||(W>=8&&medK(b-8,b)<0.75))continue;
+    let bad=0;for(let i=b-W;i<b;i++)if(!st.full(i)&&i<b-1)bad++;if(!st.full(b-W)||bad>Math.max(W>=8?1:0,Math.floor(W/16)))continue;
     {const wl=[],wr=[];let hole=0;for(let i=b-W;i<b;i++){wl.push(low[i]);wr.push(rms[i]);if(i<b-1&&(low[i]<ref.low-6||rms[i]<ref.rms-5))hole++}if(med(wl)<ref.low-3.5||med(wr)<ref.rms-3.5||hole>Math.max(1,Math.floor(W/12)))continue} // full low end, no hole: never inside a break
     const si=seg.findIndex(x=>x.s<b&&x.e>=b),prev=seg[si],before=prev?Math.max(rich(b-8,b),prev.e===b&&prev.e-prev.s<=24?avg(prev.p):-24):rich(b-8,b);
     const a8=b<mus?rich(b,Math.min(nb,b+8)):-24,kL=medK(b-8,b)-(b<tail?medK(b,Math.min(nb,b+4)):0);
@@ -1016,7 +1030,7 @@ function findH(a,st,bA){
     else if(c.type==='break')c.score=(late>=0.6?0.3:0.1)+0.1*v;
     else c.score=v>=thr?1.5+0.5*v+(c.kL>0.5?1:0):v>=thr*0.5?0.8+0.3*v+0.4*late:0.15+0.15*late;
     if(c.type!=='end'){if(c.left>56)c.score=Math.min(c.score-1.6,0.2);else if(c.left>48)c.score-=0.4}
-    c.score-=0.5*Math.max(0,mainR-c.before-1.2);c.score+=0.35*c.al+(c.type!=='break'&&c.left>=8&&c.left<=40?0.25:0)}
+    if(c.type!=='end')c.score-=0.5*Math.max(0,mainR-c.before-1.2);if(c.type==='outro'&&v>=2.4*thr/0.8&&c.left<=40)c.score=Math.max(c.score,1.5);c.score+=0.35*c.al+(c.type!=='break'&&c.left>=8&&c.left<=40?0.25:0)}
   cands.sort((x,y)=>y.score-x.score);
   return{cands,tail,thr}}
 function computeCues(t){
@@ -1032,32 +1046,31 @@ function computeCues(t){
   const phase=((bA%8)+8)%8;
   {const ln=st.seg.filter(x=>x.s>=bA&&x.e<nb).map(x=>x.e-x.s);if(ln.length>=4&&ln.filter(l=>l%4).length/ln.length>0.45){flags.push('Abschnitte passen nicht ins Taktraster – Beatgrid bzw. Takt 1 in rekordbox prüfen');low(0)}}
   // downbeat check: do the big changes fall on beat 1 of the grid?
-  const bp=beatPhase(a,st);if(bp.phase){flags.push(`Downbeat scheint um ${bp.phase} Beat${bp.phase>1?'s':''} verschoben – Grid in rekordbox prüfen`);low(0)}
+  if(a.phase){info.push(`Downbeat im rekordbox-Grid liegt ${a.phase} Beat${a.phase>1?'s':''} daneben, die Cues sitzen auf dem echten Downbeat`);low(1)}
+  if(Math.abs(a.drift||0)>12){flags.push(`Beatgrid läuft um ${Math.abs(a.drift)} ms weg – in rekordbox nachziehen`);low(0)}
+  if(fa.kick>=0&&fa.vote<0.5&&!st.bnd.includes(bA)){info.push('Phrasenlage am Anfang nicht eindeutig');low(1)}
   const fh=findH(a,st,bA);let cand=fh.cands;
   if(S.mixTarget==='break'){const br=cand.filter(c=>c.type==='break');if(br.length)cand=[br.sort((x,y)=>(y.dk+y.al*2)-(x.dk+x.al*2))[0],...cand.filter(c=>c!==br[0])]}
   let bG,drop=0,hT='';
   if(!cand.length){bG=fh.tail;const g=Math.max(bA,bG-S.mixBars);flags.push('Kein klares Mix-Out-Fenster gefunden');low(0);bG=Math.max(g+1,bG)}
-  else{const c=cand[0];bG=c.b;drop=c.type==='break'?c.dk:c.d;hT=c.type;
+  else{const c=cand[0];bG=c.b;if(c.score<0.9&&S.mixTarget!=='break'){flags.push('Kein eindeutiger Mix-Out-Punkt – H bitte selbst prüfen');low(0)}drop=c.type==='break'?c.dk:c.d;hT=c.type;
     if(c.type==='end'){info.push('Kein Outro: volle Energie bis zum Ende, H liegt am Trackende')}
-    else if(c.type==='outro'&&drop<fh.thr*0.5){flags.push('Kein klarer Energieabfall – H bitte selbst prüfen');low(0)}
+    else if(c.type==='outro'&&drop<fh.thr*0.5&&c.score>=0.9){flags.push('Kein klarer Energieabfall – H bitte selbst prüfen');low(0)}
     else if(c.type==='outro'&&drop<fh.thr){info.push(`Energieabfall nur schwach (${drop.toFixed(1)} dB)`);low(1)}
     else if(c.type==='break')info.push('H liegt am Breakdown, danach kommt der Track zurück');
-    if(c.al<0.5){info.push('H liegt nicht auf einer 4-Takt-Phrase');low(1)}
+    if(c.al<0.5){info.push('Abschnitt vor H hat eine ungerade Länge – H kurz anhören');low(1)}
     const c2=cand[1];if(c2&&c2.score>c.score-0.1&&Math.abs(c2.b-c.b)>=8&&c.score<2){info.push('Mehrere mögliche Mix-Out-Punkte');low(1)}}
   let bF=bG-S.mixBars;if(bF<bA){bF=bA;flags.push('Track kürzer als das Mix-Out-Fenster – G liegt auf A');low(0)}
   for(const[nm,b]of[['G',bF],['H',bG]])if(b>0&&b<nb){const v=vocalIn(a,st,b);if(v){info.push(`Bei ${nm} setzt ein Vocal oder Lead ein – kurz anhören`);low(1)}}
-  let bL,LBt,lErr;{let r=pickLoop(a,st,Math.max(bA,bF-8),fh.tail);if(r.err>LOOP_T){const r2=pickLoop(a,st,Math.max(bA,bF-40),fh.tail);if(r2.err<r.err-0.3)r=r2}bL=r.bar;LBt=r.len;lErr=r.err;
+  let bL,LBt,lErr;{const r=pickLoop(a,st,Math.max(bA,bG-8),fh.tail,bG);
+    if(r.err<99&&r.bar<bG)info.push(hT==='end'?'Kein Outro: der Loop liegt auf den letzten Takten vor H':'Hinter H gibt es keinen sauberen Loop, er liegt davor – als Active Loop rastet er vor dem Mix-Ende ein');bL=r.bar;LBt=r.len;lErr=r.err;
     if(r.err>LOOP_T){info.push(r.err>=99?'Kein sauberer Loop gefunden – bitte anhören':`Loop nicht ganz sauber (Abweichung ${r.err.toFixed(1)} dB) – bitte anhören`);low(r.err>LOOP_T+1.2?0:1);if(r.err>LOOP_T+1.2)flags.push('Emergency Loop unsicher')}}
-  const m=t.manual||{},fG=m.G??bG;
+  const m0=t.manual||{},dPh=((m0.ph||0)-(a.phase||0))/4,m=dPh?{...m0,...Object.fromEntries(['A','F','G','L'].filter(k=>m0[k]!=null).map(k=>[k,Math.max(0,m0[k]+dPh)]))}:m0,fG=m.G??bG;
   if(m.L!=null){const r=loopAt(a,st,m.L,m.LB);LBt=r.len;lErr=r.err}else if(m.LB){LBt=m.LB;lErr=loopErr(a,st,bL,m.LB).err}
   const c={p0:bA,phase,flags,info,drop,LB:LBt,lErr,conf:['low','mid','high'][conf],auto:{A:bA,F:bF,G:bG,L:bL},A:m.A??bA,F:m.F??(m.G!=null?Math.max(m.A??bA,fG-S.mixBars):bF),G:fG,L:m.L??bL,
     manual:['A','F','G','L','LB'].some(k=>m[k]!=null),ok:!!m.ok,hType:hT,seg:st.seg,bnd:st.bnd,hCands:fh.cands.slice(0,6).map(x=>({b:x.b,type:x.type,d:r1(x.type==='break'?x.dk:x.d),score:Math.round(x.score*100)/100}))};
   cueCache.set(t,{sig,a,c});return c;
 }
-function beatPhase(a,st){ // kick/section onsets per beat position; only report a clearly different beat
-  const{nb,kq,bnd}=st,h=[0,0,0,0];let n=0;
-  for(let q=8;q<nb*4-8;q++){let p=0,f=0;for(let i=1;i<=8;i++)p+=kq[q-i];for(let i=0;i<8;i++)f+=kq[q+i];if(p<1.2&&f>6.2&&kq[q]>0.5&&kq[q-1]<0.4){h[q&3]++;n++}}
-  let m=0;for(let i=1;i<4;i++)if(h[i]>h[m])m=i;return{phase:m&&n>=3&&h[m]>=0.67*n?m:0,h}}
 function vocalIn(a,st,b){ // something new and tonal enters in the mid band on this bar that was not there in the 4 bars before
   const{prof,nb}=st;if(b<4||b+2>nb)return false;let up=0;for(let j=12;j<22;j++){const p=[];for(let i=b-4;i<b;i++)p.push(prof[i][j]);const n=(prof[b][j]+prof[Math.min(nb-1,b+1)][j])/2;up+=Math.max(0,n-Math.max(...p))}return up/10>3.2}
 /* Emergency loop: seamless means (1) the beats before the loop end sound like the beats before the loop start, (2) what follows the loop end is what the loop starts with,
@@ -1076,12 +1089,14 @@ function loopErr(a,st,bar,L){
   let err=Math.max(seam,0.9*u)+0.25*Math.max(0,hi-lo-1.2)+(hi<st.ref.rms-8?1.5:0)+(kMin<0.3?3*(0.3-kMin)/0.3:0);
   return{err:Math.round(err*100)/100,pre,post,u,kMin}}
 function loopAt(a,st,bar,fix){if(fix)return{len:fix,err:loopErr(a,st,bar,fix).err};let best=null;for(const L of LOOP_LENS){if(L>S.loopMax)continue;const e=loopErr(a,st,bar,L).err;if(e<=LOOP_T)return{len:L,err:e};if(!best||e<best.err)best={len:L,err:e}}return best||{len:4,err:99}}
-function pickLoop(a,st,from,to){
+/* The emergency loop is meant as Active Loop: it engages by itself when playback reaches it. So it has to sit behind H and as late as possible –
+   a loop inside the mix-out window would trap the track while it is still being mixed. */
+function pickLoop(a,st,from,to,hBar){
   if(!bRows(a))return{bar:Math.max(0,Math.min(from,st.nb-2)),len:Math.min(16,S.loopMax),err:99};
   const C=[];for(let b=Math.max(1,Math.floor(from));b<to;b++)for(const L of LOOP_LENS){if(L>S.loopMax||b+L/4>to)continue;const r=loopErr(a,st,b,L);
-    const i=st.bnd.filter(x=>x<=b).pop()||0,onPh=(b-i)%4===0?0:(b-i)%2===0?0.15:0.35;C.push({bar:b,len:L,err:r.err,rank:r.err+onPh+0.5*(to-b)/Math.max(8,to-from)+(b+L/4>to-1?0.8:0)})}
-  for(const L of LOOP_LENS){const ok=C.filter(c=>c.len===L&&c.err<=LOOP_T).sort((x,y)=>x.rank-y.rank);if(ok.length)return ok[0]}
-  return C.sort((x,y)=>x.rank-y.rank)[0]||{bar:Math.max(1,Math.min(from,st.nb-2)),len:4,err:99}}
+    const i=st.bnd.filter(x=>x<=b).pop()||0,onPh=(b-i)%4===0?0:(b-i)%2===0?0.12:0.3;C.push({bar:b,len:L,err:r.err,late:b>=hBar,rank:0.6*r.err+onPh+0.05*(to-b-L/4)+(b+L/4>to-1?0.5:0)})}
+  for(const[late,T]of[[true,LOOP_T],[true,LOOP_T+0.7],[false,LOOP_T]])for(const L of LOOP_LENS){const ok=C.filter(c=>c.len===L&&c.late===late&&c.err<=T).sort((x,y)=>x.rank-y.rank);if(ok.length)return ok[0]}
+  return C.sort((x,y)=>(x.err+(x.late?0:0.8))-(y.err+(y.late?0:0.8)))[0]||{bar:Math.max(1,Math.min(from,st.nb-2)),len:4,err:99}}
 function cueTimes(t){const c=computeCues(t);if(!c)return null;const a=t.analysis,cap=x=>Math.min(x,a.dur-0.05);return{A:cap(barT(a,c.A)),F:cap(barT(a,c.F)),G:cap(barT(a,c.G)),L0:cap(barT(a,c.L)),L1:cap(beatT(a,c.L*4+c.LB)),c}}
 function isOurLoop(n){n=n||'';return n.startsWith(CUE.L.name)||n.startsWith('Exit Loop')}
 function slotState(t,k){if(k==='L')return t.marks.some(m=>m.num===-1&&isOurLoop(m.name))?'repl':'set';const ex=t.marks.find(m=>m.num===CUE[k].num);return ex?(S.overwrite?'repl':'kept'):'set'}
@@ -1327,7 +1342,7 @@ function nearestBar(a,s){return nearestPos(a,s,1)}
 function nearestPos(a,s,step){let best=0,bd=1e9;for(let b=0;b<a.db.length;b++){const d=Math.abs(a.db[b]-s);if(d<bd){bd=d;best=b}}
   if(step<1)for(let q=best*4-4;q<=best*4+4;q++){if(q<0)continue;const d=Math.abs(barT(a,q/4)-s);if(d<bd){bd=d;best=q/4}}return best}
 const posTxt=b=>`Takt ${Math.floor(b)+1}${b%1?'.'+(Math.round((b%1)*4)+1):''}`;
-function markerPatch(t,k,nv){const nb=t.analysis.rms.length;nv=clamp(beatNo(nv),0,k==='L'?nb-1:nb);const p={[k]:nv,ok:true};if(k==='G'&&t.manual?.F==null)p.F=null;if(t.manual?.cue==null)p.cue=true;return p}
+function markerPatch(t,k,nv){const nb=t.analysis.rms.length;nv=clamp(beatNo(nv),0,k==='L'?nb-1:nb);const p={[k]:nv,ok:true},ph=t.analysis.phase||0;if((t.manual?.ph||0)!==ph){const d=((t.manual?.ph||0)-ph)/4;for(const j of['A','F','G','L'])if(j!==k&&t.manual?.[j]!=null)p[j]=Math.max(0,t.manual[j]+d);p.ph=ph||null}if(k==='G'&&t.manual?.F==null)p.F=null;if(t.manual?.cue==null)p.cue=true;return p}
 function moveMarker(k,delta){const t=state.tracks.get(state.focus);if(!t||!t.analysis)return;const c=computeCues(t),p=markerPatch(t,k,c[k]+delta);if(p[k]===c[k])return;setManual(t,p);previewMarker(t,k)}
 function setMarker(k,v){const t=state.tracks.get(state.focus);if(!t||!t.analysis)return;setManual(t,markerPatch(t,k,v));previewMarker(t,k)}
 function previewMarker(t,k){if(!S.playOnDrop||PB.st==='stop'||PB.id!==t.id)return;const ct=cueTimes(t);if(k==='L')play(ct.L0,[ct.L0,ct.L1],t.id);else play(ct[k],null,t.id)} // keeps playing from the new spot
@@ -1829,6 +1844,54 @@ function planSerato(){ // hand the set over as a playlist, the Serato dialog doe
   const nm=planName(),i0=state.playlists.findIndex(p=>p.set&&p.name===nm),pl={name:nm,folder:[],ids:[...PLAN.ids],set:true};let i=i0;if(i0>=0)state.playlists[i0]=pl;else{i=state.playlists.length;state.playlists.push(pl);state.tree.push({type:'list',name:nm,depth:0,idx:i,parent:''})}
   renderSide();openModal('serato',{only:i})}
 
+/* ================= Active Loops on the stick =================
+   rekordbox XML has no field for "active loop". On a rekordbox stick the flag is one number in the memory list of ANLZ0000.DAT
+   (PCOB type 0 → PCPT, status at +0x10: 4 = active). Only that number is changed, every file is backed up, written and read back. */
+const ACT={
+  scan(buf){ // memory loops of a .DAT
+    const dv=new DataView(buf),id=o=>String.fromCharCode(dv.getUint8(o),dv.getUint8(o+1),dv.getUint8(o+2),dv.getUint8(o+3)),out=[];if(dv.byteLength<28||id(0)!=='PMAI')return out;
+    let p=dv.getUint32(4),g=0;while(p+12<=dv.byteLength&&g++<1000){const lh=dv.getUint32(p+4),lt=dv.getUint32(p+8);if(lt<12||p+lt>dv.byteLength)break;
+      if(id(p)==='PCOB'&&dv.getUint32(p+12)===0){let q=p+lh;while(q+40<=p+lt&&id(q)==='PCPT'){const ql=dv.getUint32(q+8)||56;if(dv.getUint32(q+12)===0)out.push({o:q+16,status:dv.getUint32(q+16),loop:dv.getUint8(q+28)===2,t:dv.getUint32(q+32),e:dv.getUint32(q+36)});q+=ql}}
+      p+=lt}
+    return out},
+  names(buf){ // comments of memory cues in .EXT
+    const dv=new DataView(buf),id=o=>String.fromCharCode(dv.getUint8(o),dv.getUint8(o+1),dv.getUint8(o+2),dv.getUint8(o+3)),out=[];if(dv.byteLength<28||id(0)!=='PMAI')return out;
+    let p=dv.getUint32(4),g=0;while(p+12<=dv.byteLength&&g++<1000){const lh=dv.getUint32(p+4),lt=dv.getUint32(p+8);if(lt<12||p+lt>dv.byteLength)break;
+      if(id(p)==='PCO2'&&dv.getUint32(p+12)===0){let q=p+lh;while(q+44<=p+lt&&id(q)==='PCP2'){const ql=dv.getUint32(q+8)||0x2c,n=dv.getUint32(q+40);let c='';for(let i=0;i+1<n&&q+45+i<q+ql;i+=2){const u=dv.getUint16(q+44+i);if(!u)break;c+=String.fromCharCode(u)}out.push({t:dv.getUint32(q+20),e:dv.getUint32(q+24),name:c,loop:dv.getUint8(q+16)===2});q+=ql}}
+      p+=lt}
+    return out},
+  async file(root,path){const ps=path.split('/').filter(Boolean),n=ps.pop();let d=root;for(const x of ps){const c=await childDir(d,x);if(!c)return null;d=c}try{return await d.getFileHandle(n)}catch(e){return null}},
+  async plan(root,pio,on){
+    const pdb=await this.file(pio,'rekordbox/export.pdb');if(!pdb)throw new Error('Kein rekordbox-Stick: export.pdb fehlt');
+    const lib=RB.parse(await(await pdb.getFile()).arrayBuffer()),known=new Map();for(const t of state.tracks.values())if(t.analysis&&cuesOn(t)){const c=cueTimes(t);known.set(nfc(t.title).toLowerCase()+'|'+nfc(t.artist).toLowerCase(),c)}
+    const R={jobs:[],already:0,none:0,other:[],err:[],total:lib.tracks.length};
+    for(const t of lib.tracks){if(!t.anlz){R.none++;continue}try{
+      const rel=t.anlz.replace(/^\/?PIONEER\//i,''),fh=await this.file(pio,rel);if(!fh){R.none++;continue}const buf=await(await fh.getFile()).arrayBuffer(),loops=this.scan(buf).filter(x=>x.loop);if(!loops.length){R.none++;continue}
+      let ours=null;const ext=await this.file(pio,rel.replace(/\.DAT$/i,'.EXT'));if(ext){const nm=this.names(await(await ext.getFile()).arrayBuffer()).filter(x=>x.loop&&isOurLoop(x.name));ours=loops.find(l=>nm.some(n=>Math.abs(n.t-l.t)<=3&&Math.abs(n.e-l.e)<=3))}
+      if(!ours){const k=known.get(nfc(t.title).toLowerCase()+'|'+nfc(t.artist).toLowerCase());if(k)ours=loops.find(l=>Math.abs(l.t-k.L0*1000)<=12&&Math.abs(l.e-k.L1*1000)<=12)}
+      if(!ours){R.none++;continue}
+      const act=this.scan(buf).find(l=>l.status===4&&l.o!==ours.o);if(on&&act){R.other.push(t.title);continue}
+      if((ours.status===4)===on){R.already++;continue}
+      R.jobs.push({t,fh,rel,buf,o:ours.o,at:ours.t/1000,old:ours.status})}catch(e){R.err.push(`${t.title}: ${e.message||e}`)}}
+    return R},
+  async write(root,R,on){
+    let ok=0;const err=[],stamp=today()+' '+new Date().toTimeString().slice(0,5).replace(':','-');
+    for(const j of R.jobs){try{
+      const now=await(await j.fh.getFile()).arrayBuffer();if(now.byteLength!==j.buf.byteLength||new Uint8Array(now).some((v,i)=>v!==new Uint8Array(j.buf)[i]))throw new Error('Datei hat sich inzwischen geändert');
+      if(root)await writeFileAt(root,`JAILR Prep/Active-Loop-Sicherung/${stamp}/${j.rel}`,j.buf);
+      const nb=j.buf.slice(0);new DataView(nb).setUint32(j.o,on?4:0);const w=await j.fh.createWritable();await w.write(nb);await w.close();
+      const back=new Uint8Array(await(await j.fh.getFile()).arrayBuffer()),want=new Uint8Array(nb);if(back.length!==want.length||back.some((v,i)=>v!==want[i]))throw new Error('Prüfung nach dem Schreiben fehlgeschlagen');ok++}
+      catch(e){err.push(`${j.t.title}: ${e.message||e.name}`)}}
+    return{ok,err,stamp}}
+};
+async function activeLoops(on=true){
+  if(!dirApi()){toast('Geht nur in Chrome oder Edge am Rechner.',1);return}
+  let h;try{h=await window.showDirectoryPicker({id:'jailr-music',mode:'readwrite',...(state.stickHandle?{startIn:state.stickHandle}:{})})}catch(e){if(e.name!=='AbortError')toast('Auswahl fehlgeschlagen: '+e.message,1);return}
+  try{scanMsg(true,'Stick wird gelesen…');let root=h,sp=await stickParts(h);if(!sp.root&&sp.pio){root=null;for(const o of DIRS.list){try{const p=await o.resolve(h);if(p&&p.length&&await o.queryPermission({mode:'readwrite'})==='granted'){root=o;break}}catch(e){}}}else if(sp.root)root=sp.root;
+    if(!sp.pio)throw new Error('Kein PIONEER-Ordner gefunden. Bitte den Stick wählen.');const R=await ACT.plan(root,sp.pio,on);scanMsg(false);openModal('active',{R,root,on})}
+  catch(e){toast(e.message||String(e),1)}finally{scanMsg(false)}}
+async function activeWrite(ctx){closeModal();scanMsg(true,'Active Loops werden geschrieben…');const r=await ACT.write(ctx.root,ctx.R,ctx.on);scanMsg(false);toast(`${r.ok} Loops ${ctx.on?'sind jetzt Active Loops':'sind wieder normale Loops'}${r.err.length?`, ${r.err.length} Fehler: ${r.err[0]}`:''}. Stick vor dem Abziehen auswerfen.`,r.err.length>0)}
+
 /* ================= problem list (CSV) ================= */
 function exportCsv(){
   const rows=[['Titel','Artist','Status','Problem','Was tun']];
@@ -1867,7 +1930,7 @@ const TOUR=[
  {t:'Was JAILR Prep macht',b:`<p>Die App hört deine Tracks an, bewertet sie und hilft dir beim Set. Cues setzt sie nur, wenn du das willst.</p>
   <div class="cuemap"><span class="on" style="background:var(--cA)">A<small>Start</small></span><span>B</span><span>C</span><span>D</span><span>E</span><span>F</span><span class="on" style="background:var(--cF)">G<small>Mix-Out</small></span><span class="on" style="background:var(--cG)">H<small>Ende</small></span></div>
   <ol class="guide"><li><b>Energie 1–5, Lautheit, Gain</b> für jeden Track.</li><li><b>A</b>: erster Downbeat, auf dem der Kick einsetzt, auf der Phrase.</li><li><b>G → H</b>: 32 Beats zum Rausmischen. H sitzt dort, wo die Energie wirklich abfällt.</li>
-  <li><b>Emergency Loop</b>: 16, 8 oder 4 Beats, die längste Länge, die nahtlos läuft.</li><li><b>Set-Planer</b>: Reihenfolge nach Key, Tempo und Energiekurve.</li></ol>
+  <li><b>Emergency Loop</b>: 16, 8 oder 4 Beats, die längste Länge, die nahtlos läuft. Er liegt hinter H und so spät wie möglich, damit er als Active Loop erst greift, wenn du fertig gemixt hast.</li><li><b>Set-Planer</b>: Reihenfolge nach Key, Tempo und Energiekurve.</li></ol>
   <div class="note">Deine Musik verlässt nie deinen Rechner. Deine eigenen Hot Cues bleiben, solange „überschreiben“ aus ist.</div>`},
  {t:'Playlists und Musik laden',b:()=>`<ol class="guide"><li><b>Collection laden:</b> in rekordbox <b>Datei → Collection im xml-Format exportieren</b>, hier mit „rekordbox XML laden“ öffnen.</li>
   <li><b>Musik verbinden:</b> Musikordner oder Stick wählen. ${dirApi()?'Dein Browser fragt nur nach Lesezugriff, nichts wird hochgeladen.':'In Chrome oder Edge geht das ohne die Frage „Dateien hochladen?“.'}</li>
@@ -1891,7 +1954,7 @@ const TOUR=[
   <li><b>Export:</b> als rekordbox-Playlist in genau dieser Reihenfolge oder als Serato-Crate.</li></ol>`},
  {t:'Exportieren',b:()=>`<ol class="guide"><li><b>Export → rekordbox XML</b>: neue Playlist oder bestehende überschreiben. Die Vorschau zeigt jede Änderung.</li>
   <li>${xmlApi()?'<b>Immer dieselbe Datei:</b> Beim ersten Mal wählst du den Speicherort, danach überschreibt die App dieselbe XML. Den Pfad in rekordbox stellst du nur einmal ein.':'<b>Immer dieselbe Datei:</b> Dein Browser kann nicht überschreiben. Lösch vor dem Export die alte „JAILR Prep.xml“ oder ersetze sie durch die neue. In Chrome und Edge geht das automatisch.'}</li>
-  <li><b>Kommentar:</b> kurz und lesbar, z. B. „Energie 4/5 · Gain +3 dB“. Dein eigener Text bleibt davor.</li><li><b>Serato</b>: Crates als ZIP oder Crates und Cues direkt auf Stick oder Platte.</li></ol>
+  <li><b>Kommentar:</b> kurz und lesbar, z. B. „Energie 4/5 · Gain +3 dB“. Dein eigener Text bleibt davor.</li><li><b>Active Loops:</b> Die XML kann „Active“ nicht übertragen. Nach dem Export aus rekordbox auf den Stick schaltet <b>Export → Active Loops auf dem Stick</b> alle Emergency Loops scharf. Sie rasten dann von selbst ein, bevor der Track ausläuft.</li><li><b>Serato</b>: Crates als ZIP oder Crates und Cues direkt auf Stick oder Platte.</li></ol>
   <div class="note">Vor dem Schreiben prüft die App, dass jeder Pfad in deiner Collection steht und alle deine Cues enthalten sind.</div>`},
  {t:'Zurück in dein DJ-Programm',b:()=>`<div class="seg"><button data-dj="rb" class="${tourDj==='rb'?'on':''}">rekordbox</button><button data-dj="se" class="${tourDj==='se'?'on':''}">Serato</button></div>`+(tourDj==='rb'?`
   <p><b>Einmal einrichten</b></p><ol class="guide"><li><b>Voreinstellungen → Betrachten → Layout</b>: „rekordbox xml“ anhaken.</li>
@@ -1907,8 +1970,9 @@ const TOUR=[
 function fileBox(){
   if(!xmlApi())return`<div class="note warn">Dieser Browser kann keine feste Datei überschreiben. Die XML landet als <b>JAILR Prep.xml</b> im Download-Ordner. Damit rekordbox sie findet: <b>alte „JAILR Prep.xml“ vorher löschen</b> oder die neue Datei („JAILR Prep (1).xml“) so umbenennen und die alte ersetzen. Mit Chrome oder Edge geht das automatisch.</div>`;
   return`<div class="note" id="xFile">${XMLF.handle?`Überschreibt immer <b>${esc(XMLF.handle.name)}</b>. Der Pfad in rekordbox bleibt gleich. <button class="lnk" data-act="xmlOther">Andere Datei wählen</button>`:'Beim ersten Mal wählst du den Speicherort. Die App merkt ihn sich und überschreibt danach immer dieselbe Datei. Den Pfad in rekordbox stellst du nur einmal ein.'}</div>`}
+let modalCtx=null;
 function openModal(kind,ctx){
-  lastFocus=document.activeElement;const m=$('#modal');let h='';const pl=state.cur>=0?state.playlists[state.cur]:null;
+  modalCtx=ctx;lastFocus=document.activeElement;const m=$('#modal');let h='';const pl=state.cur>=0?state.playlists[state.cur]:null;
   const sw=(id,on)=>`<label class="switch"><input type="checkbox" id="${id}" ${on?'checked':''}><span></span></label>`;
   if(kind==='settings'){
     h=`<h2>Einstellungen</h2><p class="sub">Gilt sofort. Verschobene Cues und eigene Energie-Werte bleiben.</p><div class="body">
@@ -1945,6 +2009,18 @@ function openModal(kind,ctx){
     ${needLib?`<div class="note err"><b>Erst deine Collection-XML laden</b>, sonst legt rekordbox die Tracks doppelt an. <div style="margin-top:8px"><button class="btn sm primary" data-act="loadLib">Collection-XML laden</button></div></div>`:''}
     <h3>Datei</h3>${fileBox()}<h3>Vorschau</h3>${diffHtml(cx)}
     </div><div class="foot"><button class="btn ghost" data-close>Abbrechen</button><button class="btn primary" data-act="doPlanXml" ${cx.plans.length&&!needLib?'':'disabled'}>${xmlApi()?'Prüfen & speichern':'Prüfen & herunterladen'}</button></div>`;
+  }else if(kind==='activeintro'){
+    h=`<h2>Emergency Loops scharf schalten</h2><p class="sub">Ein Active Loop rastet von selbst ein, sobald der Track dort ankommt. Deshalb liegt er hinter H, möglichst spät.</p><div class="body">
+    <h3>Auf dem Stick (USB)</h3><ol class="guide"><li>XML exportieren, in rekordbox importieren und die Playlist wie gewohnt auf den Stick exportieren.</li><li>Dann hier den Stick wählen. Die App findet die Emergency Loops und setzt bei jedem die Markierung „Active“.</li></ol>
+    <div class="note">Geändert wird nur diese eine Markierung in den Analyse-Dateien. Jede Datei wird vorher gesichert (Ordner „JAILR Prep/Active-Loop-Sicherung“), geschrieben und zurückgelesen. Eigene Active Loops bleiben.</div>
+    <h3>In der rekordbox-Sammlung (Laptop mit FLX4)</h3><div class="note warn">Das XML-Format von rekordbox kann „Active“ nicht übertragen. In der Sammlung schaltest du ihn pro Track einmal selbst: Track laden, in der <b>Memory-Liste</b> den Emergency Loop suchen und auf sein <b>orangefarbenes Loop-Symbol</b> klicken, bis es rot ist. Importierst du den Track später neu aus der XML, ist die Markierung wieder weg. Am FLX4 schaltet <b>Shift + 4 Beat</b> Active Loops an und aus.</div>
+    </div><div class="foot"><button class="btn ghost" data-act="actOff" style="margin-right:auto" ${dirApi()?'':'disabled'}>Wieder ausschalten</button><button class="btn ghost" data-close>Schließen</button><button class="btn primary" data-act="actOn" ${dirApi()?'':'disabled'}>Stick wählen</button></div>`;
+  }else if(kind==='active'){const{R,on,root}=ctx;
+    h=`<h2>${on?'Active Loops setzen':'Active Loops ausschalten'}</h2><p class="sub">${R.total} Tracks auf dem Stick gelesen.</p><div class="body">
+    <div class="sum"><div><b>${R.jobs.length}</b><span>werden geändert</span></div><div><b>${R.already}</b><span>schon ${on?'aktiv':'aus'}</span></div><div><b>${R.other.length}</b><span>eigener Active Loop bleibt</span></div><div><b>${R.none}</b><span>ohne Emergency Loop</span></div></div>
+    ${R.err.length?`<div class="note err">${esc(R.err.slice(0,3).join('; '))}</div>`:''}${!R.jobs.length&&!R.already?'<div class="note warn">Kein Emergency Loop auf dem Stick gefunden. Erst die XML in rekordbox importieren und die Playlist auf den Stick exportieren.</div>':''}${root?'':'<div class="note warn">Du hast nur PIONEER gewählt, dann kann die App keine Sicherung auf den Stick legen. Besser den Stick selbst wählen.</div>'}
+    ${R.jobs.length?`<div class="diff"><table><tbody>${R.jobs.map(j=>`<tr><td>${esc(j.t.title)}</td><td>${esc(j.t.artist)}</td><td>Loop ab ${fmtT(j.at)}</td></tr>`).join('')}</tbody></table></div>`:''}
+    </div><div class="foot"><button class="btn ghost" data-close>Abbrechen</button><button class="btn primary" data-act="actGo" ${R.jobs.length&&root?'':'disabled'}>${R.jobs.length} ändern</button></div>`;
   }else if(kind==='libwarn'){const inf=state.libInfo||{};
     h=`<h2>Das sieht nicht nach deiner Collection aus</h2><p class="sub">${inf.own?'Diese XML hat JAILR Prep selbst exportiert.':`${inf.stick} von ${inf.files} Tracks zeigen auf ein Laufwerk unter /Volumes.`}</p><div class="body">
     <div class="note warn">Importierst du damit nach rekordbox, kann es deine Tracks <b>doppelt</b> anlegen. rekordbox erkennt Tracks nur am exakten Pfad.</div>
@@ -1969,7 +2045,7 @@ function openModal(kind,ctx){
     ${ctx&&f&&!f.fresh?'':`<ol class="guide"><li><b>Voreinstellungen → Betrachten → Layout</b>: „rekordbox xml“ anhaken.</li><li><b>Voreinstellungen → Erweitert → Datenbank → rekordbox xml</b>: bei „Importierte Bibliothek“ ${f?`<b>${esc(f.name)}</b>`:'<b>JAILR Prep.xml</b>'} wählen.</li></ol><h3>Jedes Mal</h3>`}
     <ol class="guide"><li>Links auf <b>&lt;/&gt;</b> (rekordbox xml) und auf <b>↻</b> klicken. <b>Ohne ↻ liest rekordbox die alte Datei.</b></li>
     <li>${ctx&&ctx.mode==='over'?'Deine Playlist':'Ordner <b>JAILR Prep</b>'} → „${esc(ctx?ctx.name:'Playlist')}“ öffnen, <b>alle Tracks markieren</b> (⌘A / Strg+A) → Rechtsklick → <b>In Sammlung importieren</b> → Ja („Diese Frage nicht mehr stellen“ anhaken).</li>
-    <li>Rechtsklick auf die Playlist → <b>Wiedergabeliste importieren</b>.${ctx&&ctx.mode==='over'?' Gibt es danach zwei gleichnamige: die alte löschen.':''}</li></ol>
+    <li>Rechtsklick auf die Playlist → <b>Wiedergabeliste importieren</b>.${ctx&&ctx.mode==='over'?' Gibt es danach zwei gleichnamige: die alte löschen.':''}</li><li><b>Emergency Loop scharf schalten:</b> Playlist auf den Stick exportieren, dann hier <b>Export → Active Loops auf dem Stick</b>. In der Sammlung: Loop-Symbol in der Memory-Liste anklicken, bis es rot ist.</li></ol>
     ${ctx?'':`<h3>Wenn etwas nicht klappt</h3><div style="color:var(--fg2);font-size:12.5px;line-height:1.6">Tracks mit <b>Fehler</b> werden nie verändert. Filter „Fehler“ zeigt sie, Export → Problemliste sagt, was zu tun ist. Tracks mit <b>niedriger Sicherheit</b> erst anhören, Marker anpassen und mit <kbd>C</kbd> bestätigen.</div>
     <h3>Energie (1–5)</h3><div style="color:var(--fg2);font-size:12.5px;line-height:1.6">Tempo 30 %, Dichte 25 %, Drive 20 %, Bass 15 %, Höhen 10 %. Lautstärke zählt bewusst nicht, die regelst du mit dem Gain. Klick auf die Balken im Detail setzt deinen eigenen Wert.</div>
     <h3>Tasten</h3><div style="display:grid;grid-template-columns:auto 1fr;gap:6px 12px;color:var(--fg2);font-size:12.5px">
@@ -2024,8 +2100,8 @@ $('#btnSettings').onclick=()=>openModal('settings');$('#btnHelp').onclick=()=>op
 $('#btnAnalyze').onclick=()=>analyzeIds(PLAN.on?poolIds():state.sel.size>1?[...state.sel]:state.view);
 $('#btnExport').onclick=e=>{e.stopPropagation();$('#exportMenu').classList.toggle('open')};
 document.addEventListener('click',e=>{if(!e.target.closest('.menu-wrap'))$('#exportMenu').classList.remove('open')});
-$('#exportMenu').onclick=e=>{const b=e.target.closest('button');if(!b)return;$('#exportMenu').classList.remove('open');if(b.dataset.act==='csv')exportCsv();else if(PLAN.on&&PLAN.ids.length&&b.dataset.act==='xml')openModal('planxml');else if(PLAN.on&&PLAN.ids.length&&b.dataset.act==='serato')planSerato();else openModal(b.dataset.act)};
-$('#modalBg').addEventListener('click',e=>{if(e.target.id==='modalBg'||e.target.closest('[data-close]'))closeModal();const a=e.target.closest('[data-act]');if(a){if(a.dataset.act==='doXml')exportXml();if(a.dataset.act==='loadLib'){closeModal();$('#inXml').click()}if(a.dataset.act==='xmlOther'){XMLF.handle=null;IDB.put('handles','xml',null);$('#xFile').outerHTML=fileBox()}if(a.dataset.act==='gotoPlan'){closeModal();setView('plan')}if(a.dataset.act==='doPlanXml')exportXml(planCx());if(a.dataset.act==='doSerato')exportSerato();if(a.dataset.act==='metaSave'||a.dataset.act==='metaReset')saveMeta(a.dataset.act==='metaReset')}});
+$('#exportMenu').onclick=e=>{const b=e.target.closest('button');if(!b)return;$('#exportMenu').classList.remove('open');if(b.dataset.act==='csv')exportCsv();else if(b.dataset.act==='active')openModal('activeintro');else if(PLAN.on&&PLAN.ids.length&&b.dataset.act==='xml')openModal('planxml');else if(PLAN.on&&PLAN.ids.length&&b.dataset.act==='serato')planSerato();else openModal(b.dataset.act)};
+$('#modalBg').addEventListener('click',e=>{if(e.target.id==='modalBg'||e.target.closest('[data-close]'))closeModal();const a=e.target.closest('[data-act]');if(a){if(a.dataset.act==='doXml')exportXml();if(a.dataset.act==='actOn'||a.dataset.act==='actOff'){closeModal();activeLoops(a.dataset.act==='actOn')}if(a.dataset.act==='actGo')activeWrite(modalCtx);if(a.dataset.act==='loadLib'){closeModal();$('#inXml').click()}if(a.dataset.act==='xmlOther'){XMLF.handle=null;IDB.put('handles','xml',null);$('#xFile').outerHTML=fileBox()}if(a.dataset.act==='gotoPlan'){closeModal();setView('plan')}if(a.dataset.act==='doPlanXml')exportXml(planCx());if(a.dataset.act==='doSerato')exportSerato();if(a.dataset.act==='metaSave'||a.dataset.act==='metaReset')saveMeta(a.dataset.act==='metaReset')}});
 function saveMeta(reset){const t=state.tracks.get(state.focus);if(!t)return;applyMeta(t);let meta=null;
   if(!reset){meta={};for(const[k]of META){const v=$('#me_'+k).value.trim();if(v!==String(t.orig[k]??''))meta[k]=v}if(!Object.keys(meta).length)meta=null}
   if(meta&&meta.keyRaw&&!parseKey(meta.keyRaw)){toast('Key nicht erkannt – z.B. 8A, Am oder F#m',1);return}

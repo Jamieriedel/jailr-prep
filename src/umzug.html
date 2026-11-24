@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex">
+<!--CSP--><link rel="canonical" href="https://jamieriedel.com/JAILR-Prep/"><title>JAILR Prep ist umgezogen</title>
+<style>:root{color-scheme:dark}body{margin:0;background:#11100F;color:#F4F0E8;font:16px/1.6 system-ui,-apple-system,sans-serif;min-height:100vh;display:grid;place-items:center}main{max-width:34rem;padding:28px 20px}h1{font-size:1.8rem;line-height:1.15;margin:0 0 .6rem}p{color:#c9c2b6;margin:.5rem 0}.row{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px}button,.b{font:inherit;font-weight:600;border:1px solid #3a3732;border-radius:12px;padding:12px 18px;background:#1a1917;color:#F4F0E8;cursor:pointer;text-decoration:none}.p{background:#F4F0E8;color:#11100F;border-color:#F4F0E8}#ok{color:#4CD07D}.s{color:#8d867b;font-size:.85rem;margin-top:26px}.s a{color:inherit}[hidden]{display:none!important}</style></head>
+<body><main><h1>JAILR Prep ist umgezogen</h1>
+<p id="plain">Die neue Adresse ist <b>jamieriedel.com/JAILR-Prep</b>.</p>
+<div id="data" hidden><p>In diesem Browser liegen noch <b id="n"></b> von dir. Speichere sie einmal als Datei und lade sie auf der neuen Seite unter <b>Einstellungen → Sicherung laden</b>.</p></div>
+<div class="row"><button id="save" hidden>1. Sicherung speichern</button><a class="b p" id="go" href="https://jamieriedel.com/JAILR-Prep/">Zur neuen Seite</a></div><p id="ok" role="status"></p>
+<p class="s"><a href="https://jamieriedel.com/impressum.html">Impressum</a> · <a href="https://jamieriedel.com/JAILR-Prep/datenschutz.html">Datenschutz</a></p></main>
+<script>
+const NEW='https://jamieriedel.com/JAILR-Prep/',$=i=>document.getElementById(i);
+$('go').href=NEW+location.hash;
+function openDb(){return new Promise(async res=>{try{if(indexedDB.databases){const l=await indexedDB.databases();if(!l.some(d=>d.name==='jailr-prep'))return res(null)}
+  const q=indexedDB.open('jailr-prep');q.onupgradeneeded=()=>{q.transaction.abort()};q.onsuccess=()=>res(q.result);q.onerror=()=>res(null);q.onblocked=()=>res(null)}catch(e){res(null)}})}
+function all(db,st){return new Promise(res=>{const o={};if(!db||!db.objectStoreNames.contains(st))return res(o);try{const q=db.transaction(st).objectStore(st).openCursor();q.onsuccess=()=>{const c=q.result;if(c){o[c.key]=c.value;c.continue()}else res(o)};q.onerror=()=>res(o)}catch(e){res(o)}})}
+(async()=>{
+  const db=await openDb(),tracks=await all(db,'manual'),sets=await all(db,'sets');let settings=null;try{settings=JSON.parse(localStorage.getItem('jailr-prep-settings')||'null')}catch(e){}
+  if(db)db.close();
+  const nt=Object.keys(tracks).length,ns=Object.keys(sets).filter(k=>k!=='__cur').length+(sets.__cur&&sets.__cur.tracks&&sets.__cur.tracks.length&&!Object.keys(sets).some(k=>k!=='__cur')?1:0);
+  if(!nt&&!ns&&!settings){location.replace(NEW+location.hash);return}
+  const parts=[];if(nt)parts.push(nt+(nt===1?' bearbeiteter Track':' bearbeitete Tracks'));if(ns)parts.push(ns+(ns===1?' Set':' Sets'));if(!parts.length)parts.push('deine Einstellungen');
+  $('n').textContent=parts.join(' und ');$('data').hidden=false;$('save').hidden=false;$('go').textContent='2. Zur neuen Seite';
+  $('save').onclick=()=>{const b=new Blob([JSON.stringify({app:'JAILR Prep',v:1,date:new Date().toISOString(),settings,tracks,sets})],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='JAILR Prep Sicherung.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),60000);$('ok').textContent='Gespeichert im Download-Ordner.'};
+})();
+</script></body></html>

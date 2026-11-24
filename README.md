@@ -21,6 +21,7 @@ Läuft komplett lokal im Browser. Es wird nichts hochgeladen – die Seite ist p
 - **Export** nach rekordbox (XML) – als neue Playlist oder bestehende überschreiben – oder nach **Serato**: Crates plus **Hot Cues und Emergency Loop direkt in die MP3s** (als Kopie oder in die Originale, Ton bleibt bitgenau gleich; Chrome/Edge)
 - **Quantize-Prüfung:** misst das rekordbox-Beatgrid am Audio (Versatz, Drift, Takt 1), mit Klick zum Anhören und optionaler Korrektur in der XML
 - **Klarer Status pro Track:** Fertig, Quantize, Cues, Qualität oder Lautheit prüfen
+- **Teilen:** Set oder Playlist als Link oder Datei, ohne Musik und ohne Server. Wer ihn öffnet, sieht, welche Tracks in der eigenen Library liegen, und kann passende Cues übernehmen
 - **Problemliste (CSV)** mit allem, was nicht automatisch ging, und was zu tun ist
 
 ## Zwei Wege rein
@@ -49,7 +50,7 @@ Läuft komplett lokal im Browser. Es wird nichts hochgeladen – die Seite ist p
 
 ## Entwicklung
 
-`index.html` ist gebaut aus `src/src.html` (`python3 src/build.py`): bettet die Schrift ein und setzt den CSP-Hash des Skripts.
+Live: https://jamieriedel.com/JAILR-Prep/ (Ordner `JAILR-Prep/` im Repo jamieriedel-website). `python3 src/build.py` baut die App aus `src/src.html` nach `dist/index.html` und die Umzugsseite der alten Adresse nach `index.html`: bettet die Schrift ein und setzt den CSP-Hash des Skripts.
 Schrift: Space Grotesk (SIL Open Font License).
 
 Made by JAILR.

@@ -22,6 +22,7 @@ Läuft komplett lokal im Browser. Es wird nichts hochgeladen – die Seite ist p
 - **Quantize-Prüfung:** misst das rekordbox-Beatgrid am Audio (Versatz, Drift, Takt 1), mit Klick zum Anhören und optionaler Korrektur in der XML
 - **Klarer Status pro Track:** Fertig, Quantize, Cues, Qualität oder Lautheit prüfen
 - **Teilen:** Set oder Playlist als Link oder Datei, ohne Musik und ohne Server. Wer ihn öffnet, sieht, welche Tracks in der eigenen Library liegen, und kann passende Cues übernehmen
+- **Set Master:** macht eine rekordbox-Aufnahme (WAV, optional CUE) fertig: misst Lautheit, True Peak und Übersteuerung, füllt Aussetzer mit einem Echo im Takt, gleicht Pegel an, begrenzt auf die Ziel-Lautheit und schreibt WAV, CUE, Tracklist und Report. Läuft blockweise im Web Worker, nichts wird hochgeladen
 - **Problemliste (CSV)** mit allem, was nicht automatisch ging, und was zu tun ist
 
 ## Zwei Wege rein
